@@ -1,7 +1,8 @@
+import React from "react";
 import { lusitana } from "@/app/ui/fonts";
-import UploadFile from "@/app/ui/file-input/upload-file";
+import UploadFileComp from "./components/upload-file";
 
-export default function Home() {
+const Home = () => {
   return (
     <main className="flex min-h-screen flex-col p-6 bg-white">
       <h1
@@ -9,7 +10,9 @@ export default function Home() {
       >
         Home
       </h1>
-      <UploadFile />
+      <UploadFileComp />
     </main>
   );
-}
+};
+
+export default Home;
