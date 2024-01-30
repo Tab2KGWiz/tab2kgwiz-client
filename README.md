@@ -1,5 +1,7 @@
 # Tabular Data to Knowledge Graph Wizard - Client
 
+[![Open Issues](https://img.shields.io/github/issues-raw/Tab2KGWiz/tab2kgwiz-client?logo=github)](https://github.com/Tab2KGWiz/tab2kgwiz-client/issues)
+
 ## Requirements
 
 For development, you will only need Node.js installed on your environement.
