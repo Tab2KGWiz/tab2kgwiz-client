@@ -1,4 +1,10 @@
-export default async function UploadFile() {
+import React from "react";
+
+interface Props {
+  handleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const UploadFile: React.FC<Props> = (props): JSX.Element => {
   return (
     <div className="flex items-center justify-center w-full">
       <label
@@ -29,8 +35,15 @@ export default async function UploadFile() {
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">CSV</p>
         </div>
-        <input id="dropzone-file" type="file" className="hidden" />
+        <input
+          id="dropzone-file"
+          type="file"
+          className="hidden"
+          onChange={props.handleChange}
+        />
       </label>
     </div>
   );
-}
+};
+
+export default UploadFile;
