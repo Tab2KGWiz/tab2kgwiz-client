@@ -1,6 +1,6 @@
 # Tabular Data to Knowledge Graph Wizard - Client
 
-[![Open Issues](https://img.shields.io/github/issues-raw/Tab2KGWiz/tab2kgwiz-client?logo=github)]([https://github.com/Tab2KGWiz/tab2kgwiz-client/issues](https://github.com/orgs/Tab2KGWiz/projects/2))
+[![Open Issues](https://img.shields.io/github/issues-raw/Tab2KGWiz/tab2kgwiz-client?logo=github)](https://github.com/orgs/Tab2KGWiz/projects/2)
 
 ## Requirements
 
