@@ -9,6 +9,18 @@ const UploadFileComp = () => {
   const [header, setHeader] = React.useState<string[] | undefined>();
   const [row, setRow] = React.useState<string[][]>([]);
 
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [totalPages, setTotalPages] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  useEffect(() => {
+    setTotalPages(Math.ceil(row.length / pageSize));
+  }, [row, pageSize]);
+
   useEffect(() => {
     if (file) {
       const reader = new FileReader();
@@ -43,7 +55,18 @@ const UploadFileComp = () => {
     <div>
       <UploadFile handleChange={handleChange} />
       <br />
-      {header && <Table header={header} body={row} />}
+      {header && (
+        <Table
+          header={header}
+          body={row.slice(currentPage * pageSize, (currentPage + 1) * pageSize)}
+          page={currentPage}
+          pages={totalPages}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          previousText="Previous"
+          nextText="Next"
+        />
+      )}
     </div>
   );
 };

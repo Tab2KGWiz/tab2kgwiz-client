@@ -1,12 +1,18 @@
 import React from "react";
+import Pagination from "@/app/components/pagination";
 
 interface Props {
   header: string[] | undefined;
   body: string[][] | undefined;
+  pages: number;
+  page: number;
+  pageSize: number;
+  onPageChange: Function;
+  previousText: string;
+  nextText: string;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
-  console.log(props.body);
   return (
     <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
       <div className="mx-auto max-w-screen-xl px-4 lg:px-12">
@@ -34,6 +40,15 @@ const Table: React.FC<Props> = (props): JSX.Element => {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              page={props.page}
+              pages={props.pages}
+              pageSize={props.pageSize}
+              onPageChange={props.onPageChange}
+              previousText="Previous"
+              nextText="Next"
+              rowsNum={props.body?.length}
+            />
           </div>
         </div>
       </div>
