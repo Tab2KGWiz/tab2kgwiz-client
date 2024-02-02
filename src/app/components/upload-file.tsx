@@ -13,6 +13,10 @@ const UploadFileComp = () => {
   const [totalPages, setTotalPages] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(10);
 
+  const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
+    new Map(),
+  );
+
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
@@ -37,6 +41,10 @@ const UploadFileComp = () => {
           const rows = lines.slice(1).map((line) => line.split(","));
           setHeader(headers);
           setRow(rows);
+
+          const headerMapping = new Map<string, string>();
+          headers.forEach((header) => headerMapping.set(header, "int"));
+          setHeaderMapping(headerMapping);
         }
       };
 
@@ -50,6 +58,8 @@ const UploadFileComp = () => {
     const newFile = event.target.files && event.target.files[0];
     setFile(newFile);
   };
+
+  const handleXSDFormat = () => {};
 
   return (
     <div>
@@ -65,6 +75,7 @@ const UploadFileComp = () => {
           onPageChange={handlePageChange}
           previousText="Previous"
           nextText="Next"
+          headerMapping={headerMapping}
         />
       )}
     </div>

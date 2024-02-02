@@ -1,5 +1,6 @@
 import React from "react";
 import Pagination from "@/app/components/pagination";
+import DropDown from "@/app/components/drop-down";
 
 interface Props {
   header: string[] | undefined;
@@ -10,6 +11,7 @@ interface Props {
   onPageChange: Function;
   previousText: string;
   nextText: string;
+  headerMapping: Map<string, string>;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -22,8 +24,11 @@ const Table: React.FC<Props> = (props): JSX.Element => {
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                   {props.header?.map((item, index) => (
-                    <th key={index} scope="col" className="px-6 py-3">
+                    <th key={index} scope="col" className="px-6 py-3 ">
                       {item.toString()}
+                      <DropDown
+                        dataType={props.headerMapping.get(`${item.toString()}`)}
+                      />
                     </th>
                   ))}
                 </tr>

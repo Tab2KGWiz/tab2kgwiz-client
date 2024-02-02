@@ -1,5 +1,4 @@
 import React from "react";
-import { lusitana } from "@/app/ui/fonts";
 import UploadFileComp from "./components/upload-file";
 
 const Home = () => {
@@ -8,6 +7,7 @@ const Home = () => {
       <h1 className={`font-normal text-gray-500 dark:text-gray-400`}>
         Tab2KGWiz
       </h1>
+
       <UploadFileComp />
     </main>
   );
