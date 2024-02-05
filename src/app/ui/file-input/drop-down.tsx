@@ -4,6 +4,10 @@ interface Props {
   toggleDropDown: () => void;
   isDropDownOpen: boolean;
   dataType: string | undefined;
+  xsdDataType: string[] | undefined;
+  handleXSDFormat: (
+    event: React.MouseEvent<HTMLInputElement, MouseEvent>,
+  ) => void;
 }
 
 const DropDownUI: React.FC<Props> = (props): JSX.Element => {
@@ -44,33 +48,37 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           aria-labelledby="dropdownMenuButton1"
           data-te-dropdown-menu-ref
         >
-          <li>
-            <div className="flex p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+          {props.xsdDataType?.map((item, index) => (
+            <li
+              key={index}
+              className="flex p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
+            >
               <div className="flex items-center h-5">
                 <input
-                  id="helper-radio-4"
+                  id={`helper-radio-${index + 1}`}
                   name="helper-radio"
                   type="radio"
-                  value=""
+                  value={`${item}`}
+                  onClick={props.handleXSDFormat}
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 
-                  dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                      dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                 />
               </div>
               <div className="ms-2 text-sm">
                 <label
-                  htmlFor="helper-radio-4"
+                  htmlFor={`helper-radio-${index + 1}`}
                   data-te-dropdown-menu-ref
                   className="font-medium text-gray-900 dark:text-gray-300"
                 >
-                  <div>{props.dataType}</div>
+                  <div>{item}</div>
                   <p
                     id="helper-radio-text-4"
                     className="text-xs font-normal text-gray-500 dark:text-gray-300"
                   ></p>
                 </label>
               </div>
-            </div>
-          </li>
+            </li>
+          ))}
         </ul>
       </div>
     </div>

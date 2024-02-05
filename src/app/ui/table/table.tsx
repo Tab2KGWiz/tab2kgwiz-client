@@ -11,7 +11,9 @@ interface Props {
   onPageChange: Function;
   previousText: string;
   nextText: string;
+  setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
+  xsdDataType: string[] | undefined;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -27,7 +29,11 @@ const Table: React.FC<Props> = (props): JSX.Element => {
                     <th key={index} scope="col" className="px-6 py-3 ">
                       {item.toString()}
                       <DropDown
-                        dataType={props.headerMapping.get(`${item.toString()}`)}
+                        // dataType={props.headerMapping.get(`${item.toString()}`)}
+                        xsdDataType={props.xsdDataType}
+                        setHeaderMapping={props.setHeaderMapping}
+                        title={item.toString()}
+                        headerMapping={props.headerMapping}
                       />
                     </th>
                   ))}
