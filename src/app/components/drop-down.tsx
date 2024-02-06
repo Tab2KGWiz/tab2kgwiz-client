@@ -1,6 +1,6 @@
 import React from "react";
 import DropDownUI from "../ui/file-input/drop-down";
-import useOutsideClick from "../hooks/useOutSideClick";
+import useOutsideClick from "../hooks/useOutsideClick";
 
 interface Props {
   xsdDataType: string[] | undefined;
