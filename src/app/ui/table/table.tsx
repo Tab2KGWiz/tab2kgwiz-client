@@ -1,6 +1,6 @@
 import React from "react";
 import Pagination from "@/app/components/pagination";
-import DropDown from "@/app/components/drop-down";
+import TableUI from "../file-input/table";
 
 interface Props {
   header: string[] | undefined;
@@ -22,35 +22,13 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       <div className="mx-auto max-w-screen-xl px-4 lg:px-12">
         <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                  {props.header?.map((item, index) => (
-                    <th key={index} scope="col" className="px-6 py-3 ">
-                      {item.toString()}
-                      <DropDown
-                        // dataType={props.headerMapping.get(`${item.toString()}`)}
-                        xsdDataType={props.xsdDataType}
-                        setHeaderMapping={props.setHeaderMapping}
-                        title={item.toString()}
-                        headerMapping={props.headerMapping}
-                      />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {props.body?.map((items, index) => (
-                  <tr key={index} className="border-b dark:border-gray-700">
-                    {items.map((item, index) => (
-                      <td key={index} className="px-4 py-3">
-                        {item.toString()}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <TableUI
+              body={props.body}
+              header={props.header}
+              xsdDataType={props.xsdDataType}
+              setHeaderMapping={props.setHeaderMapping}
+              headerMapping={props.headerMapping}
+            />
             <Pagination
               page={props.page}
               pages={props.pages}
