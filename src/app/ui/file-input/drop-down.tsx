@@ -15,10 +15,10 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
     <div>
       <div className="relative" data-te-dropdown-ref>
         <button
-          className="flex items-center whitespace-nowrap rounded	bg-primary text-xs font-medium leading-normal text-gray-700 
+          className="flex items-center whitespace-nowrap rounded bg-primary text-xs font-medium leading-normal text-gray-700 
           px-0 pb-[0px] pt-[0px] bg-gray-50"
           type="button"
-          id="dropdownMenuButton1"
+          id="dropdownMenuButton"
           onClick={props.toggleDropDown}
           data-te-dropdown-toggle-ref
           aria-expanded="false"
@@ -26,7 +26,7 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           data-te-ripple-color="light"
         >
           {`[${props.dataType}]`}
-          <span className="ml-2 w-2">
+          <span className="ml-0 w-0">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
@@ -64,21 +64,22 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
                       dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                 />
               </div>
-              <div className="ms-2 text-sm">
+              <div className="ms-2">
                 <label
                   htmlFor={`helper-radio-${index + 1}`}
                   data-te-dropdown-menu-ref
-                  className="font-medium text-gray-900 dark:text-gray-300"
+                  className="bg-primary text-xs font-medium leading-normal text-gray-700 bg-gray-50"
                 >
                   <div>{item}</div>
                   <p
-                    id="helper-radio-text-4"
+                    id={`helper-radio-text-${index + 1}`}
                     className="text-xs font-normal text-gray-500 dark:text-gray-300"
                   ></p>
                 </label>
               </div>
             </li>
           ))}
+          <li></li>
         </ul>
       </div>
     </div>
