@@ -1,5 +1,6 @@
 import React from "react";
 import DropDownUI from "../ui/file-input/drop-down";
+import useOutsideClick from "../hooks/useOutSideClick";
 
 interface Props {
   xsdDataType: string[] | undefined;
@@ -23,8 +24,12 @@ const DropDown: React.FC<Props> = (props): JSX.Element => {
     setIsDropDownOpen(!isDropDownOpen);
   };
 
+  const ref = useOutsideClick(() => {
+    setIsDropDownOpen(false);
+  });
+
   return (
-    <div>
+    <div ref={ref}>
       <DropDownUI
         toggleDropDown={toggleDropDown}
         isDropDownOpen={isDropDownOpen}
