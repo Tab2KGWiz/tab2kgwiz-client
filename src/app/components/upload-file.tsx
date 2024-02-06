@@ -17,6 +17,36 @@ const UploadFileComp = () => {
     new Map(),
   );
 
+  //const [xsdDataType, setXSD] = React.useState<string[]>();
+  const xsdDataType = [
+    "time",
+    "dateTime",
+    "date",
+    "gYear",
+    "gDay",
+    "gMonth",
+    "gYearMonth",
+    "gMonthDay",
+    "boolean",
+    "decimal",
+    "float",
+    "double",
+  ];
+  // setXSD([
+  //   "time",
+  //   "dateTime",
+  //   "date",
+  //   "gYear",
+  //   "gDay",
+  //   "gMonth",
+  //   "gYearMonth",
+  //   "gMonthDay",
+  //   "boolean",
+  //   "decimal",
+  //   "float",
+  //   "double",
+  // ]);
+
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
@@ -59,8 +89,6 @@ const UploadFileComp = () => {
     setFile(newFile);
   };
 
-  const handleXSDFormat = () => {};
-
   return (
     <div>
       <UploadFile handleChange={handleChange} />
@@ -76,6 +104,8 @@ const UploadFileComp = () => {
           previousText="Previous"
           nextText="Next"
           headerMapping={headerMapping}
+          setHeaderMapping={setHeaderMapping}
+          xsdDataType={xsdDataType}
         />
       )}
     </div>

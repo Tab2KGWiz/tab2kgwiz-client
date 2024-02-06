@@ -4,6 +4,10 @@ interface Props {
   toggleDropDown: () => void;
   isDropDownOpen: boolean;
   dataType: string | undefined;
+  xsdDataType: string[] | undefined;
+  handleXSDFormat: (
+    event: React.MouseEvent<HTMLInputElement, MouseEvent>,
+  ) => void;
 }
 
 const DropDownUI: React.FC<Props> = (props): JSX.Element => {
@@ -11,10 +15,10 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
     <div>
       <div className="relative" data-te-dropdown-ref>
         <button
-          className="flex items-center whitespace-nowrap rounded	bg-primary text-xs font-medium leading-normal text-gray-700 
+          className="flex items-center whitespace-nowrap rounded bg-primary text-xs font-medium leading-normal text-gray-700 
           px-0 pb-[0px] pt-[0px] bg-gray-50"
           type="button"
-          id="dropdownMenuButton1"
+          id="dropdownMenuButton"
           onClick={props.toggleDropDown}
           data-te-dropdown-toggle-ref
           aria-expanded="false"
@@ -22,7 +26,7 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           data-te-ripple-color="light"
         >
           {`[${props.dataType}]`}
-          <span className="ml-2 w-2">
+          <span className="ml-0 w-0">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
@@ -44,33 +48,38 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           aria-labelledby="dropdownMenuButton1"
           data-te-dropdown-menu-ref
         >
-          <li>
-            <div className="flex p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+          {props.xsdDataType?.map((item, index) => (
+            <li
+              key={index}
+              className="flex p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
+            >
               <div className="flex items-center h-5">
                 <input
-                  id="helper-radio-4"
+                  id={`helper-radio-${index + 1}`}
                   name="helper-radio"
                   type="radio"
-                  value=""
+                  value={`${item}`}
+                  onClick={props.handleXSDFormat}
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 
-                  dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                      dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                 />
               </div>
-              <div className="ms-2 text-sm">
+              <div className="ms-2">
                 <label
-                  htmlFor="helper-radio-4"
+                  htmlFor={`helper-radio-${index + 1}`}
                   data-te-dropdown-menu-ref
-                  className="font-medium text-gray-900 dark:text-gray-300"
+                  className="bg-primary text-xs font-medium leading-normal text-gray-700 bg-gray-50"
                 >
-                  <div>{props.dataType}</div>
+                  <div>{item}</div>
                   <p
-                    id="helper-radio-text-4"
+                    id={`helper-radio-text-${index + 1}`}
                     className="text-xs font-normal text-gray-500 dark:text-gray-300"
                   ></p>
                 </label>
               </div>
-            </div>
-          </li>
+            </li>
+          ))}
+          <li></li>
         </ul>
       </div>
     </div>
