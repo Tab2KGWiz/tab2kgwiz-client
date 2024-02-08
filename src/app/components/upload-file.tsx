@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import UploadFile from "../ui/file-input/upload-file";
 import Table from "../ui/table/table";
+import { detectXSD } from "../lib/XSDDetector";
 
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
@@ -19,33 +20,17 @@ const UploadFileComp = () => {
 
   //const [xsdDataType, setXSD] = React.useState<string[]>();
   const xsdDataType = [
+    "anyURI",
     "time",
     "dateTime",
     "date",
-    "gYear",
-    "gDay",
-    "gMonth",
-    "gYearMonth",
-    "gMonthDay",
     "boolean",
+    "integer",
     "decimal",
     "float",
     "double",
+    "string",
   ];
-  // setXSD([
-  //   "time",
-  //   "dateTime",
-  //   "date",
-  //   "gYear",
-  //   "gDay",
-  //   "gMonth",
-  //   "gYearMonth",
-  //   "gMonthDay",
-  //   "boolean",
-  //   "decimal",
-  //   "float",
-  //   "double",
-  // ]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -69,11 +54,24 @@ const UploadFileComp = () => {
         if (lines && lines.length > 1) {
           const headers = lines[0].split(",");
           const rows = lines.slice(1).map((line) => line.split(","));
+
+          // const one = rows[0];
+          // one.forEach((row, indexI) => {
+          //   console.log(detectXSD(row));
+          // });
+
+          // rows.forEach((row, indexI) => {
+          //   row.forEach((ceil, indexJ) => {
+          //     console.log(detectXSD(ceil));
+          //   });
+          // });
           setHeader(headers);
           setRow(rows);
 
           const headerMapping = new Map<string, string>();
-          headers.forEach((header) => headerMapping.set(header, "int"));
+          headers.forEach((header, index) =>
+            headerMapping.set(header, detectXSD(rows[0][index])),
+          );
           setHeaderMapping(headerMapping);
         }
       };
