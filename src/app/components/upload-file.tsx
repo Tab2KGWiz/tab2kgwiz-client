@@ -5,9 +5,12 @@ import UploadFile from "../ui/file-input/upload-file";
 import Table from "../ui/table/table";
 import { detectXSD } from "../lib/XSDDetector";
 
+import * as dfd from "danfojs";
+
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
   const [header, setHeader] = React.useState<string[] | undefined>();
+  //const [row, setRow] = React.useState<ArrayType2D | ArrayType1D>([]);
   const [row, setRow] = React.useState<string[][]>([]);
 
   const [currentPage, setCurrentPage] = React.useState(0);
@@ -42,43 +45,26 @@ const UploadFileComp = () => {
 
   useEffect(() => {
     if (file) {
-      const reader = new FileReader();
-      const blob = new Blob([file], { type: file?.type });
-
-      reader.readAsText(blob);
-
-      reader.onload = () => {
-        const result = reader.result?.toString();
-        const lines = result?.split("\n");
-
-        if (lines && lines.length > 1) {
-          const headers = lines[0].split(",");
-          const rows = lines.slice(1).map((line) => line.split(","));
-
-          // const one = rows[0];
-          // one.forEach((row, indexI) => {
-          //   console.log(detectXSD(row));
-          // });
-
-          // rows.forEach((row, indexI) => {
-          //   row.forEach((ceil, indexJ) => {
-          //     console.log(detectXSD(ceil));
-          //   });
-          // });
+      dfd
+        .readCSV(file)
+        .then((df) => {
+          const headers = df.head().columns;
+          // Replace all null (blank) ceil with a "-"
+          const rowsWithNull = df.fillNa("-");
+          const rowsWithoutNull = rowsWithNull.values as string[][];
+          console.log(df.fillNa("-"));
           setHeader(headers);
-          setRow(rows);
+          setRow(rowsWithoutNull);
 
           const headerMapping = new Map<string, string>();
           headers.forEach((header, index) =>
-            headerMapping.set(header, detectXSD(rows[0][index])),
+            headerMapping.set(header, detectXSD(rowsWithoutNull[0][index])),
           );
           setHeaderMapping(headerMapping);
-        }
-      };
-
-      reader.onerror = () => {
-        console.log(reader.error);
-      };
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
   }, [file]);
 
