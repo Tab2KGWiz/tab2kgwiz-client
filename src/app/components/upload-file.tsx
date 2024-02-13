@@ -53,8 +53,7 @@ const UploadFileComp = () => {
         .then((df) => {
           const headers = df.head().columns;
           // Replace all null (blank) ceil with a "-"
-          const rowsWithNull = df.fillNa("-");
-          const rowsWithoutNull = rowsWithNull.values as string[][];
+          const rowsWithoutNull = df.fillNa("-").values as string[][];
           setHeader(headers);
           setRow(rowsWithoutNull);
 
