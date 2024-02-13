@@ -46,13 +46,15 @@ const UploadFileComp = () => {
   useEffect(() => {
     if (file) {
       dfd
-        .readCSV(file)
+        .readCSV(file, {
+          // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
+          dynamicTyping: false,
+        })
         .then((df) => {
           const headers = df.head().columns;
           // Replace all null (blank) ceil with a "-"
           const rowsWithNull = df.fillNa("-");
           const rowsWithoutNull = rowsWithNull.values as string[][];
-          console.log(df.fillNa("-"));
           setHeader(headers);
           setRow(rowsWithoutNull);
 
