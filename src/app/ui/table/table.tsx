@@ -29,16 +29,16 @@ const Table: React.FC<Props> = (props): JSX.Element => {
               setHeaderMapping={props.setHeaderMapping}
               headerMapping={props.headerMapping}
             />
-            <Pagination
-              page={props.page}
-              pages={props.pages}
-              pageSize={props.pageSize}
-              onPageChange={props.onPageChange}
-              previousText="Previous"
-              nextText="Next"
-              rowsNum={props.body?.length}
-            />
           </div>
+          <Pagination
+            page={props.page}
+            pages={props.pages}
+            pageSize={props.pageSize}
+            onPageChange={props.onPageChange}
+            previousText="Previous"
+            nextText="Next"
+            rowsNum={props.body?.length}
+          />
         </div>
       </div>
     </section>
