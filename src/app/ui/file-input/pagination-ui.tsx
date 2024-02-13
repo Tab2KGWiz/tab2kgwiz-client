@@ -11,6 +11,7 @@ interface Props {
   activePage: number;
   changePage: (nextPage: number) => void;
   visiblePages: number[];
+  totalRows: number;
 }
 
 const PaginationUi: React.FC<Props> = ({
@@ -23,6 +24,7 @@ const PaginationUi: React.FC<Props> = ({
   changePage,
   visiblePages,
   nextText,
+  totalRows,
 }) => {
   return (
     <div>
@@ -33,8 +35,8 @@ const PaginationUi: React.FC<Props> = ({
         <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
           {rowsNum
             ? `Showing ${page * pageSize + 1} - ${
-                page + 1 === pages ? rowsNum : (page + 1) * pageSize
-              } of ${rowsNum} results`
+                page + 1 === pages ? totalRows : (page + 1) * pageSize
+              } of ${totalRows} results`
             : `No results found`}
         </span>
 

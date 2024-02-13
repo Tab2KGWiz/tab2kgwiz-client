@@ -14,6 +14,7 @@ interface Props {
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
   xsdDataType: string[] | undefined;
+  totalRows: number;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -38,6 +39,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             previousText="Previous"
             nextText="Next"
             rowsNum={props.body?.length}
+            totalRows={props.totalRows}
           />
         </div>
       </div>

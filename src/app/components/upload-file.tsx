@@ -106,6 +106,7 @@ const UploadFileComp = () => {
           headerMapping={headerMapping}
           setHeaderMapping={setHeaderMapping}
           xsdDataType={xsdDataType}
+          totalRows={row.length}
         />
       )}
     </div>
