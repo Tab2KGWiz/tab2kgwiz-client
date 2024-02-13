@@ -15,7 +15,7 @@ const TableUI: React.FC<Props> = (props): JSX.Element => {
       <thead className="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
           {props.header?.map((item, index) => (
-            <th key={index} scope="col" className="px-6 py-3 ">
+            <th key={index} scope="col" className="px-6 py-3">
               {item.toString()}
               <DropDown
                 // dataType={props.headerMapping.get(`${item.toString()}`)}
