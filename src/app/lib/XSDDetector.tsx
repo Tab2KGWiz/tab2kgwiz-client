@@ -5,6 +5,15 @@ export function detectXSD(value: string) {
       regex: /^(?:[a-zA-Z][\w+.-]*:)?\/\/([^\/?#]+)(?:[\/?#]|$)/,
     },
     {
+      type: "date",
+      regex: /^\d{4}-\d{2}-\d{2}(Z|([-+]\d{2}:\d{2})?)?$/,
+    },
+    {
+      type: "time",
+      regex:
+        /^0\d|1\d|2[0-3]:[0-5]\d:[0-5]\d(\.\d+)?(Z|([-+][01]\d:[0-5]\d)?)$/,
+    },
+    {
       type: "dateTime",
       regex:
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/,
