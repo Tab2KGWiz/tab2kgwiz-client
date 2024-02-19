@@ -6,45 +6,40 @@ describe("detect xsd", () => {
     expect(detectXSD("1")).toBe("integer");
   });
 
-  test("Test Date Data Type 01", () => {
+  test("Test Date Data Type", () => {
     expect(detectXSD("2002-09-24Z")).toBe("date");
-  });
-
-  test("Test Date Data Type 02", () => {
     expect(detectXSD("2002-09-24-06:00")).toBe("date");
-  });
-
-  test("Test Date Data Type 03", () => {
     expect(detectXSD("2002-09-24+06:00")).toBe("date");
-  });
-
-  test("Test Date Data Type 04", () => {
     expect(detectXSD("2002-09-12")).toBe("date");
   });
 
-  test("Test Time Data Type 01", () => {
-    expect(detectXSD("1999")).toBe("time");
+  test("Test Time Data Type", () => {
+    expect(detectXSD("23:69:00")).not.toBe("time");
+    expect(detectXSD("09:00:00")).toBe("time");
+    expect(detectXSD("09:30:10Z")).toBe("time");
+    expect(detectXSD("09:30:10.5")).toBe("time");
+    expect(detectXSD("09:30:10-06:00")).toBe("time");
+    expect(detectXSD("09:30:10+06:00")).toBe("time");
+    expect(detectXSD("09:30:10+")).not.toBe("time");
   });
 
-  // test("Test Time Data Type 02", () => {
-  //   expect(detectXSD("23:69:00")).not.toBe("time");
-  // });
+  // Month days?
+  test("Test Date time Data Type", () => {
+    expect(detectXSD("2002-05-30T09:00:00")).toBe("dateTime");
+    expect(detectXSD("2002-05-30T09:30:10.5")).toBe("dateTime");
+    expect(detectXSD("2002-05-30T09:30:10Z")).toBe("dateTime");
+    expect(detectXSD("2002-05-30T09:30:10-06:00")).toBe("dateTime");
+    expect(detectXSD("2002-05-30T09:30:10+06:00")).toBe("dateTime");
+    expect(detectXSD("2002-05-30T24:69:60+06:00")).not.toBe("dateTime");
+    expect(detectXSD("2002-05-30T09:30:10+06:0")).not.toBe("dateTime");
+  });
 
-  // test("Test Time Data Type 03", () => {
-  //   expect(detectXSD("23:59:10.5")).toBe("time");
-  // });
-
-  // test("Test Time Data Type 04", () => {
-  //   expect(detectXSD("09:30:10Z")).toBe("time");
-  // });
-
-  // test("Test Time Data Type 05", () => {
-  //   expect(detectXSD("09:30:10-06:00")).toBe("time");
-  //   expect(detectXSD("09:30:10+06:00")).toBe("time");
-  //   expect(detectXSD("09:30:10+")).toBe("time");
-  // });
-
-  // test("Test Time Data Type", () => {
-  //   expect(detectXSD("24:59:59")).toBe("dateTime");
-  // });
+  test("Test duration Data Type", () => {
+    expect(detectXSD("P5Y")).toBe("duration");
+    expect(detectXSD("P5Y2M10D")).toBe("duration");
+    expect(detectXSD("P5Y2M10DT15H")).toBe("duration");
+    expect(detectXSD("PT15H")).toBe("duration");
+    expect(detectXSD("-P10D")).toBe("duration");
+    expect(detectXSD("5Y2M10D")).not.toBe("duration");
+  });
 });
