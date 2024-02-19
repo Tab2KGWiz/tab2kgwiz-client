@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import { detectXSD } from "@/app/lib/XSDDetector";
+import { checkDecimalOrInteger } from "@/app/lib/checkDecimalOrInteger";
 
 describe("detect xsd", () => {
   test("detect xsd", () => {
@@ -41,5 +42,22 @@ describe("detect xsd", () => {
     expect(detectXSD("PT15H")).toBe("duration");
     expect(detectXSD("-P10D")).toBe("duration");
     expect(detectXSD("5Y2M10D")).not.toBe("duration");
+  });
+
+  const values = [
+    "2,000",
+    "2.233",
+    "32,121",
+    "32,121,000",
+    "212,141",
+    "311,212,121",
+    "311,181",
+    "832,120",
+    "82,129",
+    "932,121",
+  ];
+
+  test("Test decimal Data Type", () => {
+    expect(checkDecimalOrInteger(values)).toBe("integer");
   });
 });

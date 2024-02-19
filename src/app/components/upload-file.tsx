@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import UploadFile from "../ui/file-input/upload-file";
 import Table from "../ui/table/table";
 import { detectXSD } from "../lib/XSDDetector";
+import { checkDecimalOrInteger } from "../lib/checkDecimalOrInteger";
 
 import * as dfd from "danfojs";
 
@@ -26,7 +27,7 @@ const UploadFileComp = () => {
     "anyURI",
     "time",
     "dateTime",
-    "date",
+    "duration",
     "boolean",
     "integer",
     "decimal",
@@ -58,9 +59,18 @@ const UploadFileComp = () => {
           setRow(rowsWithoutNull);
 
           const headerMapping = new Map<string, string>();
-          headers.forEach((header, index) =>
-            headerMapping.set(header, detectXSD(rowsWithoutNull[0][index])),
-          );
+          headers.forEach((header, index) => {
+            //Match the pattern of a number with a comma or dot as a thousand separator
+            if (rowsWithoutNull[0][index].match(/\d+[.,]\d{3}$/)) {
+              const format = checkDecimalOrInteger(
+                rowsWithoutNull.slice(0, 10).map((row) => row[index]),
+              );
+
+              headerMapping.set(header, format);
+            } else {
+              headerMapping.set(header, detectXSD(rowsWithoutNull[0][index]));
+            }
+          });
           setHeaderMapping(headerMapping);
         })
         .catch((error) => {
