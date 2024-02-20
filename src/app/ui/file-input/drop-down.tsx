@@ -5,6 +5,7 @@ interface Props {
   toggleDropDown: () => void;
   isDropDownOpen: boolean;
   dataType: string | undefined;
+  dropDownId: number;
   handleXSDFormat: (
     event: React.MouseEvent<HTMLInputElement, MouseEvent>,
   ) => void;
@@ -42,8 +43,8 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           </span>
         </button>
         <ul
-          className="absolute z-[1000] float-left m-0 min-w-max list-none overflow-hidden rounded-lg border-none bg-white bg-clip-padding text-left 
-          text-base shadow-lg dark:bg-neutral-700 [&[data-te-dropdown-show]]:block"
+          className="absolute float-left w-38 m-0 overflow-hidden min-w-max rounded-lg border-none bg-white bg-clip-padding text-left text-base shadow-lg 
+          dark:bg-neutral-700 [&[data-te-dropdown-show]]:block"
           hidden={props.isDropDownOpen ? false : true}
           aria-labelledby="dropdownMenuButton1"
           data-te-dropdown-menu-ref
@@ -51,36 +52,28 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           {xsdDataType.map((item, index) => (
             <li
               key={index}
-              className="flex p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
+              className="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600"
             >
-              <div className="flex items-center h-5">
+              <div className="flex items-center ps-3">
                 <input
-                  id={`helper-radio-${index + 1}`}
+                  id={`helper-radio-${props.dropDownId}-${index + 1}`}
                   name="helper-radio"
                   type="radio"
                   value={`${item}`}
                   //checked={props.dataType === item}
                   onClick={props.handleXSDFormat}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 
-                      dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                 />
-              </div>
-              <div className="ms-2">
                 <label
-                  htmlFor={`helper-radio-${index + 1}`}
+                  htmlFor={`helper-radio-${props.dropDownId}-${index + 1}`}
                   data-te-dropdown-menu-ref
-                  className="bg-primary text-xs font-medium leading-normal text-gray-700 bg-gray-50"
+                  className="w-full py-3 ms-2 text-xs font-medium text-gray-900 dark:text-gray-300"
                 >
-                  <div>{item}</div>
-                  <p
-                    id={`helper-radio-text-${index + 1}`}
-                    className="text-xs font-normal text-gray-500 dark:text-gray-300"
-                  ></p>
+                  {item}
                 </label>
               </div>
             </li>
           ))}
-          <li></li>
         </ul>
       </div>
     </div>
