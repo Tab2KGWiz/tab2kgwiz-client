@@ -10,7 +10,6 @@ import * as dfd from "danfojs";
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
   const [header, setHeader] = React.useState<string[] | undefined>();
-  //const [row, setRow] = React.useState<ArrayType2D | ArrayType1D>([]);
   const [row, setRow] = React.useState<string[][]>([]);
 
   const [currentPage, setCurrentPage] = React.useState(0);
@@ -20,26 +19,6 @@ const UploadFileComp = () => {
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
   );
-
-  //const [xsdDataType, setXSD] = React.useState<string[]>();
-  const xsdDataType = [
-    "anyURI",
-    "time",
-    "dateTime",
-    "date",
-    "duration",
-    "boolean",
-    "integer",
-    "gDay",
-    "gMonth",
-    "gYear",
-    "gMonthDay",
-    "gYearMonth",
-    "decimal",
-    "float",
-    "double",
-    "string",
-  ];
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -97,7 +76,6 @@ const UploadFileComp = () => {
           nextText="Next"
           headerMapping={headerMapping}
           setHeaderMapping={setHeaderMapping}
-          xsdDataType={xsdDataType}
           totalRows={row.length}
         />
       )}

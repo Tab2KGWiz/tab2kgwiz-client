@@ -35,14 +35,10 @@ export function detectXSD(value: string) {
     { type: "decimal", regex: /^[-+]?(\d*\.?\d+|\d+\.\d*)$/ },
     { type: "float", regex: /^^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/ },
     { type: "double", regex: /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/ },
-    // { type: "decimal", regex: /^-?\d+(\.\d+)?$/ },
     { type: "string", regex: /.*/ },
   ];
 
   for (let p of pattern) {
-    // if (p.regex.test(value)) {
-    //   return p.type;
-    // }
     if (new RegExp(p.regex).test(value)) {
       return p.type;
     }

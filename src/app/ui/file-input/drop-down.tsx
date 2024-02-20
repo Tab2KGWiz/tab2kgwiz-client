@@ -1,10 +1,10 @@
 import React from "react";
+import xsdDataType from "@/app/utils/xsdDataTypes";
 
 interface Props {
   toggleDropDown: () => void;
   isDropDownOpen: boolean;
   dataType: string | undefined;
-  xsdDataType: string[] | undefined;
   handleXSDFormat: (
     event: React.MouseEvent<HTMLInputElement, MouseEvent>,
   ) => void;
@@ -48,7 +48,7 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           aria-labelledby="dropdownMenuButton1"
           data-te-dropdown-menu-ref
         >
-          {props.xsdDataType?.map((item, index) => (
+          {xsdDataType.map((item, index) => (
             <li
               key={index}
               className="flex p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600"

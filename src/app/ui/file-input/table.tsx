@@ -4,7 +4,6 @@ import DropDown from "@/app/components/drop-down";
 interface Props {
   body: string[][] | undefined;
   header: string[] | undefined;
-  xsdDataType: string[] | undefined;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
 }
@@ -19,7 +18,6 @@ const TableUI: React.FC<Props> = (props): JSX.Element => {
               {item.toString()}
               <DropDown
                 // dataType={props.headerMapping.get(`${item.toString()}`)}
-                xsdDataType={props.xsdDataType}
                 setHeaderMapping={props.setHeaderMapping}
                 title={item.toString()}
                 headerMapping={props.headerMapping}
