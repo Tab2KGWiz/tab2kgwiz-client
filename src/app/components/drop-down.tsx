@@ -6,6 +6,7 @@ interface Props {
   title: string;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
+  dropDownId: number;
 }
 
 const DropDown: React.FC<Props> = (props): JSX.Element => {
@@ -34,6 +35,7 @@ const DropDown: React.FC<Props> = (props): JSX.Element => {
         isDropDownOpen={isDropDownOpen}
         dataType={props.headerMapping.get(`${props.title}`)}
         handleXSDFormat={handleXSDFormat}
+        dropDownId={props.dropDownId}
       />
     </div>
   );

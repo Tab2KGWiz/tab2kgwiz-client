@@ -18,6 +18,7 @@ const TableUI: React.FC<Props> = (props): JSX.Element => {
               {item.toString()}
               <DropDown
                 // dataType={props.headerMapping.get(`${item.toString()}`)}
+                dropDownId={index}
                 setHeaderMapping={props.setHeaderMapping}
                 title={item.toString()}
                 headerMapping={props.headerMapping}
