@@ -11,6 +11,7 @@ interface Props {
   activePage: number;
   changePage: (nextPage: number) => void;
   visiblePages: number[];
+  totalRows: number;
 }
 
 const PaginationUi: React.FC<Props> = ({
@@ -23,18 +24,19 @@ const PaginationUi: React.FC<Props> = ({
   changePage,
   visiblePages,
   nextText,
+  totalRows,
 }) => {
   return (
-    <div className="mt-5">
+    <div>
       <nav
-        className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
+        className=" flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
         aria-label="Table navigation"
       >
         <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
           {rowsNum
             ? `Showing ${page * pageSize + 1} - ${
-                page + 1 === pages ? rowsNum : (page + 1) * pageSize
-              } of ${rowsNum} results`
+                page + 1 === pages ? totalRows : (page + 1) * pageSize
+              } of ${totalRows} results`
             : `No results found`}
         </span>
 

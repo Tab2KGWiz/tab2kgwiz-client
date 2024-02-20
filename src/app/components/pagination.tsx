@@ -9,6 +9,7 @@ interface Props {
   previousText: string;
   nextText: string;
   rowsNum: number | undefined;
+  totalRows: number;
 }
 
 const Pagination: React.FunctionComponent<Props> = ({
@@ -19,6 +20,7 @@ const Pagination: React.FunctionComponent<Props> = ({
   onPageChange,
   previousText,
   nextText,
+  totalRows,
 }) => {
   const [visiblePages, setVisiblePage] = React.useState<number[]>([]);
 
@@ -70,6 +72,7 @@ const Pagination: React.FunctionComponent<Props> = ({
       changePage={changePage}
       visiblePages={visiblePages}
       nextText={nextText}
+      totalRows={totalRows}
     />
   );
 };

@@ -13,7 +13,7 @@ interface Props {
   nextText: string;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
-  xsdDataType: string[] | undefined;
+  totalRows: number;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -25,20 +25,20 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             <TableUI
               body={props.body}
               header={props.header}
-              xsdDataType={props.xsdDataType}
               setHeaderMapping={props.setHeaderMapping}
               headerMapping={props.headerMapping}
             />
-            <Pagination
-              page={props.page}
-              pages={props.pages}
-              pageSize={props.pageSize}
-              onPageChange={props.onPageChange}
-              previousText="Previous"
-              nextText="Next"
-              rowsNum={props.body?.length}
-            />
           </div>
+          <Pagination
+            page={props.page}
+            pages={props.pages}
+            pageSize={props.pageSize}
+            onPageChange={props.onPageChange}
+            previousText="Previous"
+            nextText="Next"
+            rowsNum={props.body?.length}
+            totalRows={props.totalRows}
+          />
         </div>
       </div>
     </section>

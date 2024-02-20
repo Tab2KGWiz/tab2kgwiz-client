@@ -3,6 +3,9 @@
 import React, { useEffect } from "react";
 import UploadFile from "../ui/file-input/upload-file";
 import Table from "../ui/table/table";
+import { formatAssigner } from "../lib/formatAssigner";
+
+import * as dfd from "danfojs";
 
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
@@ -17,36 +20,6 @@ const UploadFileComp = () => {
     new Map(),
   );
 
-  //const [xsdDataType, setXSD] = React.useState<string[]>();
-  const xsdDataType = [
-    "time",
-    "dateTime",
-    "date",
-    "gYear",
-    "gDay",
-    "gMonth",
-    "gYearMonth",
-    "gMonthDay",
-    "boolean",
-    "decimal",
-    "float",
-    "double",
-  ];
-  // setXSD([
-  //   "time",
-  //   "dateTime",
-  //   "date",
-  //   "gYear",
-  //   "gDay",
-  //   "gMonth",
-  //   "gYearMonth",
-  //   "gMonthDay",
-  //   "boolean",
-  //   "decimal",
-  //   "float",
-  //   "double",
-  // ]);
-
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
@@ -57,30 +30,28 @@ const UploadFileComp = () => {
 
   useEffect(() => {
     if (file) {
-      const reader = new FileReader();
-      const blob = new Blob([file], { type: file?.type });
-
-      reader.readAsText(blob);
-
-      reader.onload = () => {
-        const result = reader.result?.toString();
-        const lines = result?.split("\n");
-
-        if (lines && lines.length > 1) {
-          const headers = lines[0].split(",");
-          const rows = lines.slice(1).map((line) => line.split(","));
+      dfd
+        .readCSV(file, {
+          // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
+          dynamicTyping: false,
+        })
+        .then((df) => {
+          const headers = df.head().columns;
+          // Replace all null (blank) ceil with a "-"
+          const rowsWithoutNull = df.fillNa("-").values as string[][];
           setHeader(headers);
-          setRow(rows);
+          setRow(rowsWithoutNull);
 
           const headerMapping = new Map<string, string>();
-          headers.forEach((header) => headerMapping.set(header, "int"));
+          headers.forEach((header, index) => {
+            // Check and assign the format of the data and set the format to the Mapç
+            formatAssigner(rowsWithoutNull, index, headerMapping, header);
+          });
           setHeaderMapping(headerMapping);
-        }
-      };
-
-      reader.onerror = () => {
-        console.log(reader.error);
-      };
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
   }, [file]);
 
@@ -105,7 +76,7 @@ const UploadFileComp = () => {
           nextText="Next"
           headerMapping={headerMapping}
           setHeaderMapping={setHeaderMapping}
-          xsdDataType={xsdDataType}
+          totalRows={row.length}
         />
       )}
     </div>
