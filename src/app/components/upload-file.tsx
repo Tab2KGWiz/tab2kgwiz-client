@@ -14,7 +14,7 @@ const UploadFileComp = () => {
 
   const [currentPage, setCurrentPage] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(0);
-  const [pageSize, setPageSize] = React.useState(10);
+  const [pageSize, setPageSize] = React.useState(15);
 
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
