@@ -13,7 +13,6 @@ interface Props {
   nextText: string;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
-  xsdDataType: string[] | undefined;
   totalRows: number;
 }
 
@@ -26,7 +25,6 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             <TableUI
               body={props.body}
               header={props.header}
-              xsdDataType={props.xsdDataType}
               setHeaderMapping={props.setHeaderMapping}
               headerMapping={props.headerMapping}
             />

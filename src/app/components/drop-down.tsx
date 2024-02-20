@@ -3,7 +3,6 @@ import DropDownUI from "../ui/file-input/drop-down";
 import useOutsideClick from "../hooks/useOutsideClick";
 
 interface Props {
-  xsdDataType: string[] | undefined;
   title: string;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
@@ -34,7 +33,6 @@ const DropDown: React.FC<Props> = (props): JSX.Element => {
         toggleDropDown={toggleDropDown}
         isDropDownOpen={isDropDownOpen}
         dataType={props.headerMapping.get(`${props.title}`)}
-        xsdDataType={props.xsdDataType}
         handleXSDFormat={handleXSDFormat}
       />
     </div>
