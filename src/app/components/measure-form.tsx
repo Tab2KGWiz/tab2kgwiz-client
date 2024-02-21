@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import MeasureFormUI from "../ui/file-input/measure-form-ui";
 
 interface Props {
   itemsList: string[] | undefined;
+  headerMapping: Map<string, string>;
 }
 
 const MeasureForm: React.FC<Props> = (props): JSX.Element => {
@@ -11,6 +12,33 @@ const MeasureForm: React.FC<Props> = (props): JSX.Element => {
     new Map(),
   );
 
+  // Map the measurement fields according to their data type
+  React.useEffect(() => {
+    const newMeasureMap = new Map<string, boolean>();
+    props.headerMapping.forEach((value, key) => {
+      if (
+        value == "date" ||
+        value == "time" ||
+        value == "dateTime" ||
+        value == "gDay" ||
+        value == "gMonth" ||
+        value == "gYear" ||
+        value == "duration" ||
+        value == "gMonthDay" ||
+        value == "gYearMonth" ||
+        value == "integer" ||
+        value == "decimal" ||
+        value == "float" ||
+        value == "double"
+      ) {
+        newMeasureMap.set(key, true);
+      } else {
+        newMeasureMap.set(key, false);
+      }
+    });
+    setMeasureMap(newMeasureMap);
+  }, [props.headerMapping]);
+
   const toogleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
@@ -18,10 +46,17 @@ const MeasureForm: React.FC<Props> = (props): JSX.Element => {
   const toogleMeasure = (
     event: React.MouseEvent<HTMLInputElement, MouseEvent>,
   ) => {
-    setMeasureMap(
+    const newValue = event.currentTarget.checked;
+    const key = event.currentTarget.value;
+
+    // Asynchronously function to update the state, if we want to console.log the state after the update, we should use the useEffect hook
+    setMeasureMap((prevMeasureMap) => {
+      const newMeasureMap = new Map(prevMeasureMap);
       // Input-value, Input-checked
-      measureMap.set(event.currentTarget.value, event.currentTarget.checked),
-    );
+      newMeasureMap.set(key, newValue);
+
+      return newMeasureMap;
+    });
   };
 
   return (
@@ -30,6 +65,7 @@ const MeasureForm: React.FC<Props> = (props): JSX.Element => {
       isModalOpen={isModalOpen}
       itemsList={props.itemsList}
       toogleMeasure={toogleMeasure}
+      measureMap={measureMap}
     ></MeasureFormUI>
   );
 };

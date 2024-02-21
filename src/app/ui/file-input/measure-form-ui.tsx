@@ -4,6 +4,7 @@ interface Props {
   toogleModal: () => void;
   isModalOpen: boolean;
   itemsList: string[] | undefined;
+  measureMap: Map<string, boolean>;
   toogleMeasure: (
     event: React.MouseEvent<HTMLInputElement, MouseEvent>,
   ) => void;
@@ -13,7 +14,8 @@ const MeasureFormUI: React.FC<Props> = (props): JSX.Element => {
   return (
     <div>
       <button
-        className="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        className="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 
+        mb-4 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         type="button"
         onClick={props.toogleModal}
       >
@@ -64,6 +66,8 @@ const MeasureFormUI: React.FC<Props> = (props): JSX.Element => {
                   className="flex items-center ps-4 border border-gray-200 rounded dark:border-gray-700"
                 >
                   <input
+                    // checked={props.measureMap.get(item)}
+                    defaultChecked={props.measureMap.get(item)}
                     id={`measurement-checkbox-${index}`}
                     type="checkbox"
                     value={`${item}`}
@@ -88,7 +92,7 @@ const MeasureFormUI: React.FC<Props> = (props): JSX.Element => {
                 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                   onClick={props.toogleModal}
                 >
-                  Save
+                  Close
                 </button>
               </div>
             </div>
