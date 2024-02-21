@@ -1,6 +1,7 @@
 import React from "react";
 import Pagination from "@/app/components/pagination";
 import TableUI from "../file-input/table";
+import MeasureForm from "@/app/components/measure-form";
 
 interface Props {
   header: string[] | undefined;
@@ -41,6 +42,8 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           />
         </div>
       </div>
+
+      <MeasureForm itemsList={props.header}></MeasureForm>
     </section>
   );
 };
