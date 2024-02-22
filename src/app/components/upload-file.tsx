@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import UploadFile from "../ui/file-input/upload-file";
-import Table from "../ui/table/table";
+import Table from "./table";
 import { formatAssigner } from "../lib/formatAssigner";
 
 import * as dfd from "danfojs";

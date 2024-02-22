@@ -1,6 +1,6 @@
 import React from "react";
 import Pagination from "@/app/components/pagination";
-import TableUI from "../file-input/table";
+import TableUI from "../ui/file-input/table";
 import MeasureForm from "@/app/components/measure-form";
 
 interface Props {
