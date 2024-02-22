@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useEffect, useReducer } from "react";
 import DropDownUI from "../ui/file-input/drop-down";
 import useOutsideClick from "../hooks/useOutsideClick";
 
@@ -11,13 +11,17 @@ interface Props {
 
 const DropDown: React.FC<Props> = (props): JSX.Element => {
   const [isDropDownOpen, setIsDropDownOpen] = React.useState(false);
+  const [selectedDataType, setSelectedDataType] = React.useState(
+    props.headerMapping.get(`${props.title}`),
+  );
 
   const handleXSDFormat = (
     event: React.MouseEvent<HTMLInputElement, MouseEvent>,
   ) => {
-    props.setHeaderMapping(
-      props.headerMapping.set(props.title, event.currentTarget.value),
-    );
+    const newheaderMapping = new Map(props.headerMapping);
+    newheaderMapping.set(props.title, event.currentTarget.value);
+    props.setHeaderMapping(newheaderMapping);
+    setSelectedDataType(event.currentTarget.value);
   };
 
   const toggleDropDown = () => {
@@ -33,9 +37,9 @@ const DropDown: React.FC<Props> = (props): JSX.Element => {
       <DropDownUI
         toggleDropDown={toggleDropDown}
         isDropDownOpen={isDropDownOpen}
-        dataType={props.headerMapping.get(`${props.title}`)}
         handleXSDFormat={handleXSDFormat}
         dropDownId={props.dropDownId}
+        selectedDataType={selectedDataType}
       />
     </div>
   );

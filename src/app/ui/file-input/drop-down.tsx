@@ -4,8 +4,8 @@ import xsdDataType from "@/app/utils/xsdDataTypes";
 interface Props {
   toggleDropDown: () => void;
   isDropDownOpen: boolean;
-  dataType: string | undefined;
   dropDownId: number;
+  selectedDataType: string | undefined;
   handleXSDFormat: (
     event: React.MouseEvent<HTMLInputElement, MouseEvent>,
   ) => void;
@@ -14,19 +14,18 @@ interface Props {
 const DropDownUI: React.FC<Props> = (props): JSX.Element => {
   return (
     <div>
-      <div className="relative" data-te-dropdown-ref>
+      <div className="relative">
         <button
           className="flex items-center whitespace-nowrap rounded bg-primary text-xs font-medium leading-normal text-gray-700 
           px-0 pb-[0px] pt-[0px] bg-gray-50"
           type="button"
           id="dropdownMenuButton"
           onClick={props.toggleDropDown}
-          data-te-dropdown-toggle-ref
           aria-expanded="false"
           data-te-ripple-init
           data-te-ripple-color="light"
         >
-          {`[${props.dataType}]`}
+          {`[${props.selectedDataType}]`}
           <span className="ml-0 w-0">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +46,6 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
           dark:bg-neutral-700 [&[data-te-dropdown-show]]:block"
           hidden={props.isDropDownOpen ? false : true}
           aria-labelledby="dropdownMenuButton1"
-          data-te-dropdown-menu-ref
         >
           {xsdDataType.map((item, index) => (
             <li
@@ -60,13 +58,14 @@ const DropDownUI: React.FC<Props> = (props): JSX.Element => {
                   name="helper-radio"
                   type="radio"
                   value={`${item}`}
-                  //checked={props.dataType === item}
+                  //checked={props.selectedDataType === item}
+                  disabled={props.selectedDataType === item}
                   onClick={props.handleXSDFormat}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                  className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 
+                  dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500`}
                 />
                 <label
                   htmlFor={`helper-radio-${props.dropDownId}-${index + 1}`}
-                  data-te-dropdown-menu-ref
                   className="w-full py-3 ms-2 text-xs font-medium text-gray-900 dark:text-gray-300"
                 >
                   {item}
