@@ -1,6 +1,7 @@
 import React from "react";
 import Pagination from "@/app/components/pagination";
-import TableUI from "../file-input/table";
+import TableUI from "../ui/file-input/table";
+import MeasureForm from "@/app/components/measure-form";
 
 interface Props {
   header: string[] | undefined;
@@ -20,6 +21,11 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   return (
     <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
       <div className="mx-auto max-w-full px-6 lg:px-12">
+        <MeasureForm
+          itemsList={props.header}
+          headerMapping={props.headerMapping}
+        ></MeasureForm>
+
         <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <TableUI

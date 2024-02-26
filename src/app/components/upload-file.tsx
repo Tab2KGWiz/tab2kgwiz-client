@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import UploadFile from "../ui/file-input/upload-file";
-import Table from "../ui/table/table";
+import Table from "./table";
 import { formatAssigner } from "../lib/formatAssigner";
 
 import * as dfd from "danfojs";
@@ -14,7 +14,7 @@ const UploadFileComp = () => {
 
   const [currentPage, setCurrentPage] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(0);
-  const [pageSize, setPageSize] = React.useState(15);
+  const [pageSize, setPageSize] = React.useState(10);
 
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
@@ -27,6 +27,12 @@ const UploadFileComp = () => {
   useEffect(() => {
     setTotalPages(Math.ceil(row.length / pageSize));
   }, [row, pageSize]);
+
+  useEffect(() => {
+    setHeader(undefined);
+    setRow([]);
+    setHeaderMapping(new Map());
+  }, [file]);
 
   useEffect(() => {
     if (file) {
