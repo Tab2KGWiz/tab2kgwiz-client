@@ -29,6 +29,12 @@ const UploadFileComp = () => {
   }, [row, pageSize]);
 
   useEffect(() => {
+    setHeader(undefined);
+    setRow([]);
+    setHeaderMapping(new Map());
+  }, [file]);
+
+  useEffect(() => {
     if (file) {
       dfd
         .readCSV(file, {
