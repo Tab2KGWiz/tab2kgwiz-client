@@ -1,5 +1,6 @@
 import React from "react";
 import DropDown from "@/app/components/drop-down";
+import MeasureForm from "@/app/components/measure-form";
 
 interface Props {
   body: string[][] | undefined;
@@ -16,6 +17,10 @@ const TableUI: React.FC<Props> = (props): JSX.Element => {
           {props.header?.map((item, index) => (
             <th key={index} scope="col" className="px-6 py-3">
               {item.toString()}
+              <MeasureForm
+                columnValue={item}
+                headerMapping={props.headerMapping}
+              ></MeasureForm>
               <DropDown
                 // dataType={props.headerMapping.get(`${item.toString()}`)}
                 dropDownId={index}
