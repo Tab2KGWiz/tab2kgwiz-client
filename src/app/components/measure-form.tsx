@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import MeasureFormUI from "../ui/file-input/measure-form-ui";
 
 interface Props {
-  itemsList: string[] | undefined;
   headerMapping: Map<string, string>;
+  columnValue: string;
 }
 
 const MeasureForm: React.FC<Props> = (props): JSX.Element => {
@@ -43,27 +43,28 @@ const MeasureForm: React.FC<Props> = (props): JSX.Element => {
     setIsModalOpen(!isModalOpen);
   };
 
-  const toogleMeasure = (
-    event: React.MouseEvent<HTMLInputElement, MouseEvent>,
-  ) => {
-    const newValue = event.currentTarget.checked;
+  const toogleMeasure = (event: React.ChangeEvent<HTMLInputElement>) => {
     const key = event.currentTarget.value;
 
     // Asynchronously function to update the state, if we want to console.log the state after the update, we should use the useEffect hook
     setMeasureMap((prevMeasureMap) => {
       const newMeasureMap = new Map(prevMeasureMap);
       // Input-value, Input-checked
-      newMeasureMap.set(key, newValue);
+      newMeasureMap.set(key, !newMeasureMap.get(key));
 
       return newMeasureMap;
     });
   };
 
+  // useEffect(() => {
+  //   console.log(measureMap);
+  // }, [measureMap]);
+
   return (
     <MeasureFormUI
       toogleModal={toogleModal}
       isModalOpen={isModalOpen}
-      itemsList={props.itemsList}
+      columnValue={props.columnValue}
       toogleMeasure={toogleMeasure}
       measureMap={measureMap}
     ></MeasureFormUI>
