@@ -5,7 +5,7 @@ import UploadFile from "../ui/file-input/upload-file";
 import Table from "./table";
 import { formatAssigner } from "../lib/formatAssigner";
 
-import * as dfd from "danfojs";
+//import * as dfd from "danfojs";
 
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
@@ -36,28 +36,31 @@ const UploadFileComp = () => {
 
   useEffect(() => {
     if (file) {
-      dfd
-        .readCSV(file, {
-          // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
-          dynamicTyping: false,
-        })
-        .then((df) => {
-          const headers = df.head().columns;
-          // Replace all null (blank) ceil with a "-"
-          const rowsWithoutNull = df.fillNa("-").values as string[][];
-          setHeader(headers);
-          setRow(rowsWithoutNull);
+      (async () => {
+        const dfd = await import("danfojs");
+        dfd
+          .readCSV(file, {
+            // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
+            dynamicTyping: false,
+          })
+          .then((df) => {
+            const headers = df.head().columns;
+            // Replace all null (blank) ceil with a "-"
+            const rowsWithoutNull = df.fillNa("-").values as string[][];
+            setHeader(headers);
+            setRow(rowsWithoutNull);
 
-          const headerMapping = new Map<string, string>();
-          headers.forEach((header, index) => {
-            // Check and assign the format of the data and set the format to the Mapç
-            formatAssigner(rowsWithoutNull, index, headerMapping, header);
+            const headerMapping = new Map<string, string>();
+            headers.forEach((header, index) => {
+              // Check and assign the format of the data and set the format to the Mapç
+              formatAssigner(rowsWithoutNull, index, headerMapping, header);
+            });
+            setHeaderMapping(headerMapping);
+          })
+          .catch((error) => {
+            console.log(error);
           });
-          setHeaderMapping(headerMapping);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      })();
     }
   }, [file]);
 
