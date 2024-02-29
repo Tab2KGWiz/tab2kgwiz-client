@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import UploadFile from "../ui/file-input/upload-file";
 import Table from "./table";
 import { formatAssigner } from "../lib/formatAssigner";
+import { LoadingSkeleton } from "../ui/loading-skeleton";
 
 //import * as dfd from "danfojs";
 
@@ -15,6 +16,8 @@ const UploadFileComp = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(10);
+
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
@@ -37,6 +40,7 @@ const UploadFileComp = () => {
   useEffect(() => {
     if (file) {
       (async () => {
+        setIsLoading(true);
         const dfd = await import("danfojs");
         dfd
           .readCSV(file, {
@@ -59,6 +63,9 @@ const UploadFileComp = () => {
           })
           .catch((error) => {
             console.log(error);
+          })
+          .finally(() => {
+            setIsLoading(false);
           });
       })();
     }
@@ -73,20 +80,30 @@ const UploadFileComp = () => {
     <div>
       <UploadFile handleChange={handleChange} />
       <br />
-      {header && (
-        <Table
-          header={header}
-          body={row.slice(currentPage * pageSize, (currentPage + 1) * pageSize)}
-          page={currentPage}
-          pages={totalPages}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-          previousText="Previous"
-          nextText="Next"
-          headerMapping={headerMapping}
-          setHeaderMapping={setHeaderMapping}
-          totalRows={row.length}
-        />
+
+      {isLoading ? (
+        <LoadingSkeleton />
+      ) : (
+        <>
+          {header && (
+            <Table
+              header={header}
+              body={row.slice(
+                currentPage * pageSize,
+                (currentPage + 1) * pageSize,
+              )}
+              page={currentPage}
+              pages={totalPages}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              previousText="Previous"
+              nextText="Next"
+              headerMapping={headerMapping}
+              setHeaderMapping={setHeaderMapping}
+              totalRows={row.length}
+            />
+          )}
+        </>
       )}
     </div>
   );
