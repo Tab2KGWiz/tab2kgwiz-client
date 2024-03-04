@@ -5,6 +5,7 @@ import UploadFile from "../ui/file-input/upload-file";
 import Table from "./table";
 import { formatAssigner } from "../lib/formatAssigner";
 import { LoadingSkeleton } from "../ui/loading-skeleton";
+import Alerts from "./alerts";
 
 //import * as dfd from "danfojs";
 
@@ -18,6 +19,8 @@ const UploadFileComp = () => {
   const [pageSize, setPageSize] = React.useState(10);
 
   const [isLoading, setIsLoading] = React.useState(false);
+
+  const [isError, setIsError] = React.useState(false);
 
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
@@ -35,13 +38,20 @@ const UploadFileComp = () => {
     setHeader(undefined);
     setRow([]);
     setHeaderMapping(new Map());
+    setIsError(false);
   }, [file]);
 
   useEffect(() => {
     if (file) {
+      if (file?.type !== "text/csv") {
+        setIsError(true);
+        return console.log("Invalid file type");
+      }
+
       (async () => {
         setIsLoading(true);
         const dfd = await import("danfojs");
+
         dfd
           .readCSV(file, {
             // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
@@ -73,6 +83,7 @@ const UploadFileComp = () => {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFile = event.target.files && event.target.files[0];
+
     setFile(newFile);
   };
 
@@ -81,7 +92,12 @@ const UploadFileComp = () => {
       <UploadFile handleChange={handleChange} />
       <br />
 
-      {isLoading ? (
+      {isError ? (
+        <Alerts
+          message="Invalid file type. Please upload a CSV file"
+          type="error"
+        />
+      ) : isLoading ? (
         <LoadingSkeleton />
       ) : (
         <>
