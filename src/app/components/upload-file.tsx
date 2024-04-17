@@ -6,8 +6,7 @@ import Table from "./table";
 import { formatAssigner } from "../lib/formatAssigner";
 import { LoadingSkeleton } from "../ui/loading-skeleton";
 import Alerts from "./alerts";
-
-//import * as dfd from "danfojs";
+import CreateMapping from "../services/create-mapping";
 
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
@@ -47,6 +46,21 @@ const UploadFileComp = () => {
         setIsError(true);
         return console.log("Invalid file type");
       }
+
+      (async () => {
+        try {
+          const mappingData = {
+            fileName: file.name,
+            providedBy: "supplier",
+          };
+
+          const newMapping = await CreateMapping.createMapping(mappingData);
+
+          console.log("Mapping created: ", newMapping);
+        } catch (error) {
+          console.error("Error creating mapping: ", error);
+        }
+      })();
 
       (async () => {
         setIsLoading(true);
