@@ -2,6 +2,7 @@
 
 import { FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { title } from "process";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,29 +13,22 @@ export default function LoginPage() {
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email");
     const password = formData.get("password");
-
-    // const getter = await fetch("http://localhost:8080/");
-
-    // if (getter.ok) {
-    //   alert("Getted!");
-    // } else {
-    //   alert("Get failed!");
-    // }
+    const username = "demoSupplier";
 
     const jsonData = {
       password: password,
       email: email,
-      username: email,
+      username: username,
     };
 
-    const response = await fetch("http://localhost:8080/suppliers", {
+    const response = await fetch("http://localhost:8080/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(jsonData),
     });
 
     if (response.ok) {
-      router.push("");
+      router.push("/");
     } else {
       alert("Login failed!");
     }
