@@ -10,8 +10,6 @@ const CreateMapping = {
         "http://localhost:8080/mappings",
         mappingData,
       );
-
-      console.log("!!!", response);
     } catch (error) {
       console.error(error);
     }
