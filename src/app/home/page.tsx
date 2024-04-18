@@ -2,10 +2,10 @@
 
 import React, { useEffect } from "react";
 import UploadFile from "../ui/file-input/upload-file";
-import Table from "./table";
+import Table from "../components/table";
 import { formatAssigner } from "../lib/formatAssigner";
 import { LoadingSkeleton } from "../ui/loading-skeleton";
-import Alerts from "./alerts";
+import Alerts from "../components/alerts";
 import CreateMapping from "../services/create-mapping";
 
 const UploadFileComp = () => {
@@ -50,8 +50,7 @@ const UploadFileComp = () => {
       (async () => {
         try {
           const mappingData = {
-            fileName: file.name,
-            providedBy: "supplier",
+            title: file.name,
           };
 
           const newMapping = await CreateMapping.createMapping(mappingData);
