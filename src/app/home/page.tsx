@@ -6,7 +6,11 @@ import Table from "../components/table";
 import { formatAssigner } from "../lib/formatAssigner";
 import { LoadingSkeleton } from "../ui/loading-skeleton";
 import Alerts from "../components/alerts";
-import CreateMapping from "../services/create-mapping";
+import CreateMapping from "../services/post-mapping";
+import { toCSV, toJSON } from "danfojs";
+import { DataFrame } from "danfojs/dist/danfojs-base";
+import PostMapping from "../services/post-mapping";
+import PostColumn from "../services/post-column";
 
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
@@ -24,6 +28,12 @@ const UploadFileComp = () => {
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
   );
+
+  const columnsData = {
+    title: "",
+    dataType: "",
+    ontologyType: "",
+  };
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -48,20 +58,6 @@ const UploadFileComp = () => {
       }
 
       (async () => {
-        try {
-          const mappingData = {
-            title: file.name,
-          };
-
-          const newMapping = await CreateMapping.createMapping(mappingData);
-
-          console.log("Mapping created: ", newMapping);
-        } catch (error) {
-          console.error("Error creating mapping: ", error);
-        }
-      })();
-
-      (async () => {
         setIsLoading(true);
         const dfd = await import("danfojs");
 
@@ -71,6 +67,8 @@ const UploadFileComp = () => {
             dynamicTyping: false,
           })
           .then((df) => {
+            createNewMapping(file, df);
+
             const headers = df.head().columns;
             // Replace all null (blank) ceil with a "-"
             const rowsWithoutNull = df.fillNa("-").values as string[][];
@@ -79,8 +77,16 @@ const UploadFileComp = () => {
 
             const headerMapping = new Map<string, string>();
             headers.forEach((header, index) => {
-              // Check and assign the format of the data and set the format to the Mapç
+              // Remove all blank spaces and convert to lowercase
+              const ontologyType = header.split(" ").join("").toLowerCase();
+              columnsData.title = header;
+              columnsData.ontologyType = ontologyType;
+
+              // Check and assign the format of the data and set the format to the Map
               formatAssigner(rowsWithoutNull, index, headerMapping, header);
+              columnsData.dataType =
+                "xsd:" + headerMapping.get(header) || "undefined";
+              createNewColumn(columnsData);
             });
             setHeaderMapping(headerMapping);
           })
@@ -139,3 +145,41 @@ const UploadFileComp = () => {
 };
 
 export default UploadFileComp;
+
+function createNewMapping(file: File, df: DataFrame) {
+  (async () => {
+    try {
+      const mappingData = {
+        title: file.name,
+        fileContent: toCSV(df),
+        fileFormat: file.type.split("/")[1],
+        fileName: file.name,
+        mainOntology: "schema:Pork",
+        // prefixesURIS:
+        //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
+      };
+
+      const newMapping = await PostMapping.postMapping(mappingData);
+
+      console.log("Mapping created: ", newMapping);
+    } catch (error) {
+      console.error("Error creating mapping: ", error);
+    }
+  })();
+}
+
+function createNewColumn(columnData: {
+  title: string;
+  dataType: string;
+  ontologyType: string;
+}) {
+  (async () => {
+    try {
+      const newColumn = await PostColumn.postColumn(columnData);
+
+      console.log("Column created: ", newColumn);
+    } catch (error) {
+      console.error("Error creating column: ", error);
+    }
+  })();
+}
