@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
+import Cookies from "js-cookie";
 
 export default function SignIn() {
   const router = useRouter();
@@ -26,7 +28,17 @@ export default function SignIn() {
     });
     if (res.ok) {
       const json = await res.json();
-      localStorage.setItem("token", json.token);
+      //localStorage.setItem("token", json.token);
+
+      const expirationTime = new Date(
+        new Date().getTime() + 24 * 60 * 60 * 1000, // 24 hours
+      );
+
+      Cookies.set("accessToken", json.token, {
+        expires: expirationTime,
+        path: "/",
+      });
+
       router.push("/home");
     } else {
       alert("Bad credentials");
@@ -39,11 +51,13 @@ export default function SignIn() {
         <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
           <form className="w-full max-w-md">
             <div className="flex justify-center mx-auto">
-              <img
+              <Image
                 className="w-auto h-7 sm:h-8"
                 src="https://merakiui.com/images/logo.svg"
                 alt=""
-              />
+                width={200}
+                height={50}
+              ></Image>
             </div>
 
             <div className="flex items-center justify-center mt-6">
