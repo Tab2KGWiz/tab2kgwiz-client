@@ -55,6 +55,10 @@ const UploadFileComp = () => {
       if (file?.type !== "text/csv") {
         setIsError(true);
         return console.log("Invalid file type");
+      } else if (file.size > 10000000) {
+        // Allow only files less than 10MB
+        setIsError(true);
+        return console.log("File size too large");
       }
 
       (async () => {
