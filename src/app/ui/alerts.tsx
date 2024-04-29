@@ -8,7 +8,7 @@ interface Props {
 
 const AlertsUI: React.FC<Props> = (props): JSX.Element => {
   return (
-    <div className={`fixed bottom-4 right-4`}>
+    <div className="fixed bottom-4 right-4 z-10">
       {props.type === "Error" && (
         <div
           className="relative px-4 py-3 leading-normal text-red-700 bg-red-100 rounded-lg"

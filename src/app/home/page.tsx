@@ -6,8 +6,7 @@ import Table from "../components/table";
 import { formatAssigner } from "../lib/formatAssigner";
 import { LoadingSkeleton } from "../ui/loading-skeleton";
 import Alerts from "../components/alerts";
-import CreateMapping from "../services/post-mapping";
-import { toCSV, toJSON } from "danfojs";
+import { toCSV } from "danfojs";
 import { DataFrame } from "danfojs/dist/danfojs-base";
 import PostMapping from "../services/post-mapping";
 import PostColumn from "../services/post-column";
@@ -121,13 +120,15 @@ const UploadFileComp = () => {
       <UploadFile handleChange={handleChange} />
       <br />
 
-      {alertState ? (
+      {alertState && (
         <Alerts
           message={alertMessage}
           type={alertState}
           setAlertState={setAlertState}
         />
-      ) : isLoading ? (
+      )}
+
+      {isLoading ? (
         <LoadingSkeleton />
       ) : (
         <>
