@@ -2,6 +2,8 @@ import React from "react";
 import Pagination from "@/app/components/pagination";
 import TableUI from "../ui/file-input/table";
 import MeasureForm from "@/app/components/measure-form";
+import PostYaml from "../services/post-yaml";
+import PostYarrrml from "../services/post-yarrrml";
 
 interface Props {
   header: string[] | undefined;
@@ -18,8 +20,40 @@ interface Props {
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
+  const handleGenerateYaml = () => {
+    PostYaml.postYaml("CEP-2021-S1-WEIGHT.csv");
+  };
+
+  const handleYarrrmlParser = () => {
+    PostYarrrml.postYarrrml();
+  };
+
   return (
     <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+      <div className="flex">
+        <button
+          data-modal-target="popup-modal"
+          data-modal-toggle="popup-modal"
+          className="block ml-12 mb-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm 
+        px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          type="button"
+          onClick={handleGenerateYaml}
+        >
+          Generate Yaml
+        </button>
+
+        <button
+          data-modal-target="popup-modal"
+          data-modal-toggle="popup-modal"
+          className="block ml-12 mb-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm 
+        px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          type="button"
+          onClick={handleYarrrmlParser}
+        >
+          Yarrrml parser
+        </button>
+      </div>
+
       <div className="mx-auto max-w-full px-6 lg:px-12">
         <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
