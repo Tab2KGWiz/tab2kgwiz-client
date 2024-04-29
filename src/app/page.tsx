@@ -4,9 +4,14 @@ import React from "react";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Alerts from "./components/alerts";
 
 const Home = () => {
   const router = useRouter();
+
+  const [alertState, setAlertState] = useState("");
+
+  const [alertMessage, setAlertMessage] = useState("");
 
   const [formData, setFormData] = useState({
     username: "",
@@ -28,8 +33,12 @@ const Home = () => {
       },
     });
     if (res.ok) {
-      alert("user registered success");
+      setAlertState("Success");
+      setAlertMessage("You have successfully signed up.");
       router.push("/signin");
+    } else {
+      setAlertState("Error");
+      setAlertMessage("Invalid username or password. Please try again.");
     }
   };
 
@@ -191,6 +200,12 @@ const Home = () => {
             </div>
           </form>
         </div>
+
+        <Alerts
+          message={alertMessage}
+          type={alertState}
+          setAlertState={setAlertState}
+        />
       </section>
     </>
   );

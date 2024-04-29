@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import Alerts from "../components/alerts";
 
 export default function SignIn() {
   const router = useRouter();
@@ -12,6 +13,10 @@ export default function SignIn() {
     username: "",
     password: "",
   });
+
+  const [alertState, setAlertState] = useState("");
+
+  const [alertMessage, setAlertMessage] = useState("");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -39,9 +44,12 @@ export default function SignIn() {
         path: "/",
       });
 
+      setAlertState("Success");
+      setAlertMessage("You have successfully signed in.");
       router.push("/home");
     } else {
-      alert("Bad credentials");
+      setAlertState("Error");
+      setAlertMessage("Invalid username or password. Please try again.");
     }
   };
 
@@ -143,6 +151,11 @@ export default function SignIn() {
             </div>
           </form>
         </div>
+        <Alerts
+          message={alertMessage}
+          type={alertState}
+          setAlertState={setAlertState}
+        ></Alerts>
       </section>
     </>
     // <Layout>

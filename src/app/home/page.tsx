@@ -23,11 +23,13 @@ const UploadFileComp = () => {
 
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const [isError, setIsError] = React.useState(false);
-
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
   );
+
+  const [alertState, setAlertState] = React.useState("");
+
+  const [alertMessage, setAlertMessage] = React.useState("");
 
   const columnsData = {
     title: "",
@@ -47,22 +49,26 @@ const UploadFileComp = () => {
     setHeader(undefined);
     setRow([]);
     setHeaderMapping(new Map());
-    setIsError(false);
+    setAlertState("");
   }, [file]);
 
   useEffect(() => {
     if (file) {
       if (file?.type !== "text/csv") {
-        setIsError(true);
+        setAlertState("Error");
+        setAlertMessage("Invalid file type. Please upload a CSV file.");
         return console.log("Invalid file type");
       } else if (file.size > 10000000) {
         // Allow only files less than 10MB
-        setIsError(true);
+        setAlertState("Error");
+        setAlertMessage("File size too large");
         return console.log("File size too large");
       }
 
       (async () => {
         setIsLoading(true);
+        setAlertState("Success");
+        setAlertMessage("File uploaded successfully. Processing...");
         const dfd = await import("danfojs");
 
         dfd
@@ -111,14 +117,15 @@ const UploadFileComp = () => {
   };
 
   return (
-    <div>
+    <div className="fixed inset-0 bg-gray-100">
       <UploadFile handleChange={handleChange} />
       <br />
 
-      {isError ? (
+      {alertState ? (
         <Alerts
-          message="Invalid file type. Please upload a CSV file"
-          type="error"
+          message={alertMessage}
+          type={alertState}
+          setAlertState={setAlertState}
         />
       ) : isLoading ? (
         <LoadingSkeleton />
