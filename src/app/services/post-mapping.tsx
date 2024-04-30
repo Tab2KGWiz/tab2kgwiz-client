@@ -7,7 +7,7 @@ export async function postMapping(mappingData: {
   fileFormat: string;
   fileName: string;
   mainOntology: string;
-}): Promise<void> {
+}): Promise<number> {
   try {
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${Cookies.get("accessToken")}`;
@@ -16,10 +16,10 @@ export async function postMapping(mappingData: {
       mappingData,
     );
 
-    if (response.status === 200) {
-      console.log("Mapping successfully posted");
-    }
+    if (response.status === 201) {
+      return 0;
+    } else return -1;
   } catch (error) {
-    console.error(error);
+    return -1;
   }
 }

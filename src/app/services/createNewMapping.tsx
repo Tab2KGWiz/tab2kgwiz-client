@@ -3,8 +3,11 @@ import { toCSV } from "danfojs";
 import { DataFrame } from "danfojs/dist/danfojs-base";
 import { postMapping } from "./post-mapping";
 
-export async function createNewMapping(file: File, df: DataFrame) {
-  (async () => {
+export async function createNewMapping(
+  file: File,
+  df: DataFrame,
+): Promise<number> {
+  try {
     const mappingData = {
       title: file.name,
       fileContent: toCSV(df),
@@ -15,6 +18,10 @@ export async function createNewMapping(file: File, df: DataFrame) {
       //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
     };
 
-    const newMapping = await postMapping(mappingData);
-  })();
+    if ((await postMapping(mappingData)) === 0) {
+      return 0;
+    } else return -1;
+  } catch (error) {
+    return -1;
+  }
 }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-export async function postYarrrml(): Promise<void> {
+export async function postYarrrml(): Promise<number> {
   try {
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${Cookies.get("accessToken")}`;
@@ -10,9 +10,9 @@ export async function postYarrrml(): Promise<void> {
     );
 
     if (response.status === 200) {
-      console.log("Yarrrml successfully executed!");
-    }
+      return 0;
+    } else return -1;
   } catch (error) {
-    console.error(error);
+    return -1;
   }
 }

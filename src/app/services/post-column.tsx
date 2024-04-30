@@ -5,7 +5,7 @@ export async function postColumn(columnData: {
   title: string;
   dataType: string;
   ontologyType: string;
-}): Promise<void> {
+}): Promise<number> {
   try {
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${Cookies.get("accessToken")}`;
@@ -15,9 +15,9 @@ export async function postColumn(columnData: {
     );
 
     if (response.status === 200) {
-      console.log("Column successfully posted");
-    }
+      return 0;
+    } else return -1;
   } catch (error) {
-    console.error(error);
+    return -1;
   }
 }

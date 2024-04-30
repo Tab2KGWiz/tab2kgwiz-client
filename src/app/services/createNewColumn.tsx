@@ -5,8 +5,12 @@ export async function createNewColumn(columnData: {
   title: string;
   dataType: string;
   ontologyType: string;
-}) {
-  (async () => {
-    const newColumn = await postColumn(columnData);
-  })();
+}): Promise<number> {
+  try {
+    if ((await postColumn(columnData)) === 0) {
+      return 0;
+    } else return -1;
+  } catch (error) {
+    return -1;
+  }
 }

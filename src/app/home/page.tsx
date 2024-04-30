@@ -75,7 +75,14 @@ const UploadFileComp = () => {
           dynamicTyping: false,
         });
 
-        await createNewMapping(file, df);
+        if ((await createNewMapping(file, df)) === -1) {
+          setAlertState("Error");
+          setAlertMessage(
+            "Error occurred while creating the mapping. Please try again.",
+          );
+          setFile(null);
+          return;
+        }
 
         const headers = df.head().columns;
         // Replace all null (blank) ceil with a "-"
@@ -95,7 +102,14 @@ const UploadFileComp = () => {
           columnsData.dataType =
             "xsd:" + headerMapping.get(header) || "undefined";
 
-          await createNewColumn(columnsData);
+          if ((await createNewColumn(columnsData)) === -1) {
+            setAlertState("Error");
+            setAlertMessage(
+              "Error occurred while creating the column. Please try again.",
+            );
+            setFile(null);
+            return;
+          }
         });
         setHeaderMapping(headerMapping);
       } catch (error) {
