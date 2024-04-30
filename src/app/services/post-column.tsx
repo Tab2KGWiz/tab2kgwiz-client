@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const PostColumn = {
   postColumn: async (columnData: {
@@ -8,7 +9,7 @@ const PostColumn = {
   }): Promise<void> => {
     try {
       axios.defaults.headers.common["Authorization"] =
-        `Bearer ${localStorage.getItem("token")}`;
+        `Bearer ${Cookies.get("accessToken")}`;
       const response = await axios.post(
         "http://localhost:8080/columns",
         columnData,
