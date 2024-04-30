@@ -1,7 +1,7 @@
 "use client";
 import { toCSV } from "danfojs";
 import { DataFrame } from "danfojs/dist/danfojs-base";
-import PostMapping from "./post-mapping";
+import { postMapping } from "./post-mapping";
 
 export async function createNewMapping(file: File, df: DataFrame) {
   (async () => {
@@ -15,6 +15,6 @@ export async function createNewMapping(file: File, df: DataFrame) {
       //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
     };
 
-    const newMapping = await PostMapping.postMapping(mappingData);
+    const newMapping = await postMapping(mappingData);
   })();
 }

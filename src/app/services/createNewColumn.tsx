@@ -1,5 +1,5 @@
 "use client";
-import PostColumn from "./post-column";
+import { postColumn } from "./post-column";
 
 export async function createNewColumn(columnData: {
   title: string;
@@ -7,6 +7,6 @@ export async function createNewColumn(columnData: {
   ontologyType: string;
 }) {
   (async () => {
-    const newColumn = await PostColumn.postColumn(columnData);
+    const newColumn = await postColumn(columnData);
   })();
 }
