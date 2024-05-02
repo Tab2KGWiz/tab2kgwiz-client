@@ -17,11 +17,12 @@ interface Props {
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
   totalRows: number;
+  mappingName: string | undefined;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
   const handleGenerateYaml = () => {
-    postYaml("CEP-2021-S1-WEIGHT.csv");
+    postYaml(props.mappingName ? props.mappingName : "");
   };
 
   const handleYarrrmlParser = () => {

@@ -163,6 +163,7 @@ const UploadFileComp = () => {
               headerMapping={headerMapping}
               setHeaderMapping={setHeaderMapping}
               totalRows={row.length}
+              mappingName={file?.name}
             />
           )}
         </>
