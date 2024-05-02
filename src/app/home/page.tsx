@@ -101,7 +101,6 @@ const UploadFileComp = () => {
 
           if ((await createNewColumn(columnsData)) === -1) {
             showSnackBar("Error occurred while creating the column.", "error");
-
             setFile(null);
             return;
           }
