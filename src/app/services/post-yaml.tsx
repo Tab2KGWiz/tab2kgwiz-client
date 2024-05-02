@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-export async function postYaml(mappingName: string): Promise<void> {
+export async function postYaml(mappingName: string): Promise<number> {
   try {
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${Cookies.get("accessToken")}`;
@@ -11,9 +11,10 @@ export async function postYaml(mappingName: string): Promise<void> {
     );
 
     if (response.status === 200) {
-      console.log("Yaml successfully generated");
+      return 0;
     }
+    return -1;
   } catch (error) {
-    console.error(error);
+    return -1;
   }
 }
