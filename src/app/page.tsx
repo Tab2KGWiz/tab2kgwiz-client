@@ -4,14 +4,12 @@ import React from "react";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Alerts from "./components/alerts";
+import { useSnackBar } from "./components/snackbar-provider";
 
 const Home = () => {
   const router = useRouter();
 
-  const [alertState, setAlertState] = useState("");
-
-  const [alertMessage, setAlertMessage] = useState("");
+  const { showSnackBar } = useSnackBar();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -33,12 +31,11 @@ const Home = () => {
       },
     });
     if (res.ok) {
-      setAlertState("Success");
-      setAlertMessage("You have successfully signed up.");
+      showSnackBar("You have successfully signed up.", "success");
+
       router.push("/signin");
     } else {
-      setAlertState("Error");
-      setAlertMessage("Invalid username or password. Please try again.");
+      showSnackBar("Invalid username or password. Please try again.", "error");
     }
   };
 
@@ -200,12 +197,6 @@ const Home = () => {
             </div>
           </form>
         </div>
-
-        <Alerts
-          message={alertMessage}
-          type={alertState}
-          setAlertState={setAlertState}
-        />
       </section>
     </>
   );

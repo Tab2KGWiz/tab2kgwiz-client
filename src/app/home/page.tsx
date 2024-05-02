@@ -5,9 +5,9 @@ import UploadFile from "../ui/file-input/upload-file";
 import Table from "../components/table";
 import { formatAssigner } from "../lib/formatAssigner";
 import { LoadingSkeleton } from "../ui/loading-skeleton";
-import Alerts from "../components/alerts";
 import { createNewMapping } from "../services/createNewMapping";
 import { createNewColumn } from "../services/createNewColumn";
+import { useSnackBar } from "../components/snackbar-provider";
 
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
@@ -24,9 +24,7 @@ const UploadFileComp = () => {
     new Map(),
   );
 
-  const [alertState, setAlertState] = React.useState("");
-
-  const [alertMessage, setAlertMessage] = React.useState("");
+  const { showSnackBar } = useSnackBar();
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -40,27 +38,24 @@ const UploadFileComp = () => {
     setHeader(undefined);
     setRow([]);
     setHeaderMapping(new Map());
-    setAlertState("");
   }, [file]);
 
   useEffect(() => {
     if (!file) return;
 
     if (file.type !== "text/csv") {
-      setAlertState("Error");
-      setAlertMessage("Invalid file type. Please upload a CSV file.");
+      showSnackBar("Invalid file type. Please upload a CSV file.", "error");
       return;
     } else if (file.size > 10000000) {
       // Allow only files less than 10MB
-      setAlertState("Error");
-      setAlertMessage("File size too large");
+      showSnackBar("File size too large", "error");
       return;
     }
 
     const processFile = async () => {
       setIsLoading(true);
-      setAlertState("Success");
-      setAlertMessage("File uploaded successfully. Processing...");
+
+      showSnackBar("File uploaded successfully. Processing...", "info");
 
       const columnsData = {
         title: "",
@@ -76,13 +71,15 @@ const UploadFileComp = () => {
         });
 
         if ((await createNewMapping(file, df)) === -1) {
-          setAlertState("Error");
-          setAlertMessage(
+          showSnackBar(
             "Error occurred while creating the mapping. Please try again.",
+            "error",
           );
           setFile(null);
           return;
         }
+
+        showSnackBar("Mapping created successfully.", "success");
 
         const headers = df.head().columns;
         // Replace all null (blank) ceil with a "-"
@@ -103,20 +100,16 @@ const UploadFileComp = () => {
             "xsd:" + headerMapping.get(header) || "undefined";
 
           if ((await createNewColumn(columnsData)) === -1) {
-            setAlertState("Error");
-            setAlertMessage(
-              "Error occurred while creating the column. Please try again.",
-            );
+            showSnackBar("Error occurred while creating the column.", "error");
+
             setFile(null);
             return;
           }
+          showSnackBar("Column created successfully.", "success");
         });
         setHeaderMapping(headerMapping);
       } catch (error) {
-        setAlertState("Error");
-        setAlertMessage(
-          "An error occurred while processing the file. Please try again.",
-        );
+        showSnackBar("An error occurred while processing the file.", "error");
       } finally {
         setIsLoading(false);
       }
@@ -134,15 +127,6 @@ const UploadFileComp = () => {
     <div className="fixed inset-0 bg-gray-100">
       <UploadFile handleChange={handleChange} />
       <br />
-
-      {alertState && (
-        <Alerts
-          message={alertMessage}
-          type={alertState}
-          setAlertState={setAlertState}
-        />
-      )}
-
       {isLoading ? (
         <LoadingSkeleton />
       ) : (
