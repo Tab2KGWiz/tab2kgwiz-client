@@ -1,9 +1,9 @@
 import React from "react";
 import Pagination from "@/app/components/pagination";
 import TableUI from "../ui/file-input/table";
-import MeasureForm from "@/app/components/measure-form";
 import { postYaml } from "../services/post-yaml";
 import { postYarrrml } from "../services/post-yarrrml";
+import { useSnackBar } from "./snackbar-provider";
 
 interface Props {
   header: string[] | undefined;
@@ -21,12 +21,18 @@ interface Props {
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
-  const handleGenerateYaml = () => {
-    postYaml(props.mappingName ? props.mappingName : "");
+  const { showSnackBar } = useSnackBar();
+
+  const handleGenerateYaml = async () => {
+    if ((await postYaml(props.mappingName ? props.mappingName : "")) === -1) {
+      showSnackBar("Error generating yaml file", "error");
+    } else showSnackBar("Yaml file generated successfully", "success");
   };
 
-  const handleYarrrmlParser = () => {
-    postYarrrml();
+  const handleYarrrmlParser = async () => {
+    if ((await postYarrrml()) === -1) {
+      showSnackBar("Error parsing yarrrml", "error");
+    } else showSnackBar("Yarrrml parsed successfully", "success");
   };
 
   return (

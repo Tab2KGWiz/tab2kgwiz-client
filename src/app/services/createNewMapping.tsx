@@ -9,7 +9,7 @@ export async function createNewMapping(
 ): Promise<number> {
   try {
     const mappingData = {
-      title: file.name,
+      title: file.name.replace(/\s+/g, ""),
       fileContent: toCSV(df),
       fileFormat: file.type.split("/")[1],
       fileName: file.name,

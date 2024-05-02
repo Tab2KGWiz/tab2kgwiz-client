@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
-import Alerts from "../components/alerts";
+import { useSnackBar } from "../components/snackbar-provider";
 
 export default function SignIn() {
   const router = useRouter();
@@ -14,9 +14,7 @@ export default function SignIn() {
     password: "",
   });
 
-  const [alertState, setAlertState] = useState("");
-
-  const [alertMessage, setAlertMessage] = useState("");
+  const { showSnackBar } = useSnackBar();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -44,12 +42,10 @@ export default function SignIn() {
         path: "/",
       });
 
-      setAlertState("Success");
-      setAlertMessage("You have successfully signed in.");
+      showSnackBar("You have successfully signed in.", "success");
       router.push("/home");
     } else {
-      setAlertState("Error");
-      setAlertMessage("Invalid username or password. Please try again.");
+      showSnackBar("Invalid username or password. Please try again.", "error");
     }
   };
 
@@ -151,11 +147,6 @@ export default function SignIn() {
             </div>
           </form>
         </div>
-        <Alerts
-          message={alertMessage}
-          type={alertState}
-          setAlertState={setAlertState}
-        ></Alerts>
       </section>
     </>
     // <Layout>
