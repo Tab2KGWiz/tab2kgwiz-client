@@ -4,28 +4,27 @@ import AlertsUI from "../ui/alerts";
 interface Props {
   message: string;
   type: string;
+  setAlertState: (state: string) => void;
 }
 
 const Alerts: React.FC<Props> = (props): JSX.Element => {
-  const [showAlert, setShowAlert] = React.useState(true);
-
+  //const [showAlert, setShowAlert] = React.useState(props.showAlert);
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowAlert(false);
-    }, 6000);
+      props.setAlertState("");
+    }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [props]);
 
   const toggleAlert = () => {
-    setShowAlert(!showAlert);
+    props.setAlertState("");
   };
 
   return (
     <AlertsUI
       message={props.message}
       type={props.type}
-      showAlert={showAlert}
       toggleAlert={toggleAlert}
     />
   );

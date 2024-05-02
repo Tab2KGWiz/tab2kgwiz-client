@@ -6,11 +6,8 @@ import Table from "../components/table";
 import { formatAssigner } from "../lib/formatAssigner";
 import { LoadingSkeleton } from "../ui/loading-skeleton";
 import Alerts from "../components/alerts";
-import CreateMapping from "../services/post-mapping";
-import { toCSV, toJSON } from "danfojs";
-import { DataFrame } from "danfojs/dist/danfojs-base";
-import PostMapping from "../services/post-mapping";
-import PostColumn from "../services/post-column";
+import { createNewMapping } from "../services/createNewMapping";
+import { createNewColumn } from "../services/createNewColumn";
 
 const UploadFileComp = () => {
   const [file, setFile] = React.useState<File | null>(null);
@@ -23,17 +20,13 @@ const UploadFileComp = () => {
 
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const [isError, setIsError] = React.useState(false);
-
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
   );
 
-  const columnsData = {
-    title: "",
-    dataType: "",
-    ontologyType: "",
-  };
+  const [alertState, setAlertState] = React.useState("");
+
+  const [alertMessage, setAlertMessage] = React.useState("");
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -47,80 +40,110 @@ const UploadFileComp = () => {
     setHeader(undefined);
     setRow([]);
     setHeaderMapping(new Map());
-    setIsError(false);
+    setAlertState("");
   }, [file]);
 
   useEffect(() => {
-    if (file) {
-      if (file?.type !== "text/csv") {
-        setIsError(true);
-        return console.log("Invalid file type");
-      } else if (file.size > 10000000) {
-        // Allow only files less than 10MB
-        setIsError(true);
-        return console.log("File size too large");
-      }
+    if (!file) return;
 
-      (async () => {
-        setIsLoading(true);
-        const dfd = await import("danfojs");
-
-        dfd
-          .readCSV(file, {
-            // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
-            dynamicTyping: false,
-          })
-          .then((df) => {
-            createNewMapping(file, df);
-
-            const headers = df.head().columns;
-            // Replace all null (blank) ceil with a "-"
-            const rowsWithoutNull = df.fillNa("-").values as string[][];
-            setHeader(headers);
-            setRow(rowsWithoutNull);
-
-            const headerMapping = new Map<string, string>();
-            headers.forEach((header, index) => {
-              // Remove all blank spaces and convert to lowercase
-              const ontologyType = header.split(" ").join("").toLowerCase();
-              columnsData.title = header;
-              columnsData.ontologyType = ontologyType;
-
-              // Check and assign the format of the data and set the format to the Map
-              formatAssigner(rowsWithoutNull, index, headerMapping, header);
-              columnsData.dataType =
-                "xsd:" + headerMapping.get(header) || "undefined";
-              createNewColumn(columnsData);
-            });
-            setHeaderMapping(headerMapping);
-          })
-          .catch((error) => {
-            console.log(error);
-          })
-          .finally(() => {
-            setIsLoading(false);
-          });
-      })();
+    if (file.type !== "text/csv") {
+      setAlertState("Error");
+      setAlertMessage("Invalid file type. Please upload a CSV file.");
+      return;
+    } else if (file.size > 10000000) {
+      // Allow only files less than 10MB
+      setAlertState("Error");
+      setAlertMessage("File size too large");
+      return;
     }
+
+    const processFile = async () => {
+      setIsLoading(true);
+      setAlertState("Success");
+      setAlertMessage("File uploaded successfully. Processing...");
+
+      const columnsData = {
+        title: "",
+        dataType: "",
+        ontologyType: "",
+      };
+
+      try {
+        const dfd = await import("danfojs");
+        const df = await dfd.readCSV(file, {
+          // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
+          dynamicTyping: false,
+        });
+
+        if ((await createNewMapping(file, df)) === -1) {
+          setAlertState("Error");
+          setAlertMessage(
+            "Error occurred while creating the mapping. Please try again.",
+          );
+          setFile(null);
+          return;
+        }
+
+        const headers = df.head().columns;
+        // Replace all null (blank) ceil with a "-"
+        const rowsWithoutNull = df.fillNa("-").values as string[][];
+        setHeader(headers);
+        setRow(rowsWithoutNull);
+
+        const headerMapping = new Map<string, string>();
+        headers.forEach(async (header, index) => {
+          // Remove all blank spaces and convert to lowercase
+          const ontologyType = header.split(" ").join("").toLowerCase();
+          columnsData.title = header;
+          columnsData.ontologyType = ontologyType;
+
+          // Check and assign the format of the data and set the format to the Map
+          formatAssigner(rowsWithoutNull, index, headerMapping, header);
+          columnsData.dataType =
+            "xsd:" + headerMapping.get(header) || "undefined";
+
+          if ((await createNewColumn(columnsData)) === -1) {
+            setAlertState("Error");
+            setAlertMessage(
+              "Error occurred while creating the column. Please try again.",
+            );
+            setFile(null);
+            return;
+          }
+        });
+        setHeaderMapping(headerMapping);
+      } catch (error) {
+        setAlertState("Error");
+        setAlertMessage(
+          "An error occurred while processing the file. Please try again.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    processFile();
   }, [file]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFile = event.target.files && event.target.files[0];
-
     setFile(newFile);
   };
 
   return (
-    <div>
+    <div className="fixed inset-0 bg-gray-100">
       <UploadFile handleChange={handleChange} />
       <br />
 
-      {isError ? (
+      {alertState && (
         <Alerts
-          message="Invalid file type. Please upload a CSV file"
-          type="error"
+          message={alertMessage}
+          type={alertState}
+          setAlertState={setAlertState}
         />
-      ) : isLoading ? (
+      )}
+
+      {isLoading ? (
         <LoadingSkeleton />
       ) : (
         <>
@@ -140,6 +163,7 @@ const UploadFileComp = () => {
               headerMapping={headerMapping}
               setHeaderMapping={setHeaderMapping}
               totalRows={row.length}
+              mappingName={file?.name}
             />
           )}
         </>
@@ -149,41 +173,3 @@ const UploadFileComp = () => {
 };
 
 export default UploadFileComp;
-
-function createNewMapping(file: File, df: DataFrame) {
-  (async () => {
-    try {
-      const mappingData = {
-        title: file.name,
-        fileContent: toCSV(df),
-        fileFormat: file.type.split("/")[1],
-        fileName: file.name,
-        mainOntology: "schema:Pork",
-        // prefixesURIS:
-        //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
-      };
-
-      const newMapping = await PostMapping.postMapping(mappingData);
-
-      console.log("Mapping created: ", newMapping);
-    } catch (error) {
-      console.error("Error creating mapping: ", error);
-    }
-  })();
-}
-
-function createNewColumn(columnData: {
-  title: string;
-  dataType: string;
-  ontologyType: string;
-}) {
-  (async () => {
-    try {
-      const newColumn = await PostColumn.postColumn(columnData);
-
-      console.log("Column created: ", newColumn);
-    } catch (error) {
-      console.error("Error creating column: ", error);
-    }
-  })();
-}

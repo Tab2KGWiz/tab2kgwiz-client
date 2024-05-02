@@ -2,6 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
+import Cookies from "js-cookie";
+import Alerts from "../components/alerts";
 
 export default function SignIn() {
   const router = useRouter();
@@ -10,6 +13,10 @@ export default function SignIn() {
     username: "",
     password: "",
   });
+
+  const [alertState, setAlertState] = useState("");
+
+  const [alertMessage, setAlertMessage] = useState("");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -26,10 +33,23 @@ export default function SignIn() {
     });
     if (res.ok) {
       const json = await res.json();
-      localStorage.setItem("token", json.token);
+      //localStorage.setItem("token", json.token);
+
+      const expirationTime = new Date(
+        new Date().getTime() + 24 * 60 * 60 * 1000, // 24 hours
+      );
+
+      Cookies.set("accessToken", json.token, {
+        expires: expirationTime,
+        path: "/",
+      });
+
+      setAlertState("Success");
+      setAlertMessage("You have successfully signed in.");
       router.push("/home");
     } else {
-      alert("Bad credentials");
+      setAlertState("Error");
+      setAlertMessage("Invalid username or password. Please try again.");
     }
   };
 
@@ -39,11 +59,13 @@ export default function SignIn() {
         <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
           <form className="w-full max-w-md">
             <div className="flex justify-center mx-auto">
-              <img
+              <Image
                 className="w-auto h-7 sm:h-8"
                 src="https://merakiui.com/images/logo.svg"
                 alt=""
-              />
+                width={200}
+                height={50}
+              ></Image>
             </div>
 
             <div className="flex items-center justify-center mt-6">
@@ -129,6 +151,11 @@ export default function SignIn() {
             </div>
           </form>
         </div>
+        <Alerts
+          message={alertMessage}
+          type={alertState}
+          setAlertState={setAlertState}
+        ></Alerts>
       </section>
     </>
     // <Layout>

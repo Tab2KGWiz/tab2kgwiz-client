@@ -2,8 +2,8 @@ import React from "react";
 import Pagination from "@/app/components/pagination";
 import TableUI from "../ui/file-input/table";
 import MeasureForm from "@/app/components/measure-form";
-import PostYaml from "../services/post-yaml";
-import PostYarrrml from "../services/post-yarrrml";
+import { postYaml } from "../services/post-yaml";
+import { postYarrrml } from "../services/post-yarrrml";
 
 interface Props {
   header: string[] | undefined;
@@ -17,15 +17,16 @@ interface Props {
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
   totalRows: number;
+  mappingName: string | undefined;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
   const handleGenerateYaml = () => {
-    PostYaml.postYaml("CEP-2021-S1-WEIGHT.csv");
+    postYaml(props.mappingName ? props.mappingName : "");
   };
 
   const handleYarrrmlParser = () => {
-    PostYarrrml.postYarrrml();
+    postYarrrml();
   };
 
   return (
