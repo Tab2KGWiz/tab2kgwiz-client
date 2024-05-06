@@ -12,7 +12,7 @@ export async function createNewMapping(
       title: file.name.replace(/\s+/g, ""),
       fileContent: toCSV(df),
       fileFormat: file.type.split("/")[1],
-      fileName: file.name,
+      fileName: file.name.replace(/\s+/g, ""),
       mainOntology: "schema:Pork",
       // prefixesURIS:
       //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
