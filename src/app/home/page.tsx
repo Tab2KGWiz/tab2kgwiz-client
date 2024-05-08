@@ -24,6 +24,8 @@ const UploadFileComp = () => {
     new Map(),
   );
 
+  const [mappingId, setMappingId] = React.useState<number>(-1);
+
   const { showSnackBar } = useSnackBar();
 
   const handlePageChange = (newPage: number) => {
@@ -70,7 +72,9 @@ const UploadFileComp = () => {
           dynamicTyping: false,
         });
 
-        if ((await createNewMapping(file, df)) === -1) {
+        const id = await createNewMapping(file, df);
+
+        if (id === -1) {
           showSnackBar(
             "Error occurred while creating the mapping. Please try again.",
             "error",
@@ -78,6 +82,7 @@ const UploadFileComp = () => {
           setFile(null);
           return;
         }
+        setMappingId(id);
 
         showSnackBar("Mapping created successfully.", "success");
 
@@ -147,6 +152,8 @@ const UploadFileComp = () => {
               setHeaderMapping={setHeaderMapping}
               totalRows={row.length}
               mappingName={file?.name.replace(/\s+/g, "")}
+              mappingFile={file}
+              mappingId={mappingId}
             />
           )}
         </>

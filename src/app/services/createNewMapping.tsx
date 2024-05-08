@@ -1,7 +1,14 @@
 "use client";
 import { toCSV } from "danfojs";
 import { DataFrame } from "danfojs/dist/danfojs-base";
-import { postMapping } from "./post-mapping";
+import axios from "axios";
+import Cookies from "js-cookie";
+
+interface MappingResponseData {
+  uri: string;
+  title: string;
+  fileContent: string;
+}
 
 export async function createNewMapping(
   file: File,
@@ -18,8 +25,18 @@ export async function createNewMapping(
       //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
     };
 
-    if ((await postMapping(mappingData)) === 0) {
-      return 0;
+    axios.defaults.headers.common["Authorization"] =
+      `Bearer ${Cookies.get("accessToken")}`;
+    const response = await axios.post(
+      "http://localhost:8080/mappings",
+      mappingData,
+    );
+
+    if (response.status === 201) {
+      const data: MappingResponseData = response.data;
+
+      // Obtain the ID of the mapping by extracting the last number from the URI
+      return parseInt(data.uri.match(/\d+$/)?.[0] || "-1");
     } else return -1;
   } catch (error) {
     return -1;

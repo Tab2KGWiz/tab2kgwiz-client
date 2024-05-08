@@ -18,6 +18,8 @@ interface Props {
   headerMapping: Map<string, string>;
   totalRows: number;
   mappingName: string | undefined;
+  mappingFile: File | null;
+  mappingId: number;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -30,7 +32,13 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   };
 
   const handleYarrrmlParser = async () => {
-    if ((await postYarrrml()) === -1) {
+    if (
+      (await postYarrrml(
+        props.mappingName ? props.mappingName : "",
+        props.mappingFile,
+        props.mappingId,
+      )) === -1
+    ) {
       showSnackBar("Error parsing yarrrml", "error");
     } else showSnackBar("Yarrrml parsed successfully", "success");
   };
