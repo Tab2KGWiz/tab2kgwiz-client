@@ -93,6 +93,7 @@ const UploadFileComp = () => {
         setRow(rowsWithoutNull);
 
         const headerMapping = new Map<string, string>();
+
         headers.forEach(async (header, index) => {
           // Remove all blank spaces and convert to lowercase
           const ontologyType = header.split(" ").join("").toLowerCase();
@@ -104,7 +105,7 @@ const UploadFileComp = () => {
           columnsData.dataType =
             "xsd:" + headerMapping.get(header) || "undefined";
 
-          if ((await createNewColumn(columnsData)) === -1) {
+          if ((await createNewColumn(id, columnsData)) === -1) {
             showSnackBar("Error occurred while creating the column.", "error");
             setFile(null);
             return;

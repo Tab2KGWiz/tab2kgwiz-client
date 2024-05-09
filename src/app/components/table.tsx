@@ -26,7 +26,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const { showSnackBar } = useSnackBar();
 
   const handleGenerateYaml = async () => {
-    if ((await postYaml(props.mappingName ? props.mappingName : "")) === -1) {
+    if ((await postYaml(props.mappingId)) === -1) {
       showSnackBar("Error generating yaml file", "error");
     } else showSnackBar("Yaml file generated successfully", "success");
   };
