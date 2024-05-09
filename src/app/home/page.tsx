@@ -72,7 +72,12 @@ const UploadFileComp = () => {
           dynamicTyping: false,
         });
 
-        const id = await createNewMapping(file, df);
+        const headers = df.head().columns;
+
+        // Replace all null (blank) ceil with a "-" and get the first 20 rows
+        const reformatedDf = df.head(20).fillNa("-");
+
+        const id = await createNewMapping(file, reformatedDf);
 
         if (id === -1) {
           showSnackBar(
@@ -86,9 +91,7 @@ const UploadFileComp = () => {
 
         showSnackBar("Mapping created successfully.", "success");
 
-        const headers = df.head().columns;
-        // Replace all null (blank) ceil with a "-"
-        const rowsWithoutNull = df.fillNa("-").values as string[][];
+        const rowsWithoutNull = reformatedDf.values as string[][];
         setHeader(headers);
         setRow(rowsWithoutNull);
 
