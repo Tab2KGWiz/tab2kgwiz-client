@@ -42,7 +42,6 @@ const useProcessFile = () => {
     file: File,
     setFile: React.Dispatch<React.SetStateAction<File | null>>,
   ) => {
-    console.log("UploadFilePage");
     try {
       if (!file) return;
 

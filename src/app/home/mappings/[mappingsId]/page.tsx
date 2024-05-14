@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 import { useSnackBar } from "@/app/components/snackbar-provider";
 import { LoadingSkeleton } from "@/app/ui/loading-skeleton";
 import Table from "@/app/components/table";
+import useSWR from "swr";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   params,
@@ -29,7 +32,6 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   const router = useRouter();
 
   const { mappingsId } = params;
-  console.log("param " + mappingsId);
 
   const [mappingIdHook, setMappingIdHook] = React.useState<number>(
     Number(mappingsId),
@@ -51,68 +53,17 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     setHeaderMapping(new Map());
   }, [file]);
 
-  useEffect(() => {
-    if (!file) return;
-    console.log("i fire once");
-
-    const processFile = async () => {
-      setIsLoading(true);
-
-      //showSnackBar("File uploaded successfully. Processing...", "info");
-
-      const columnsData = {
-        title: "",
-        dataType: "",
-        ontologyType: "",
-      };
-
-      try {
-        const dfd = await import("danfojs");
-        const df = await dfd.readCSV(file, {
-          // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
-          dynamicTyping: false,
-        });
-
-        const headers = df.head().columns;
-
-        // Replace all null (blank) ceil with a "-" and get the first 20 rows
-        const reformatedDf = df.head(20).fillNa("-");
-
-        const rowsWithoutNull = reformatedDf.values as string[][];
-        setHeader(headers);
-        setRow(rowsWithoutNull);
-
-        const headerMapping = new Map<string, string>();
-
-        headers.forEach(async (header, index) => {
-          // Remove all blank spaces and convert to lowercase
-          const ontologyType = header.split(" ").join("").toLowerCase();
-          columnsData.title = header;
-          columnsData.ontologyType = ontologyType;
-
-          // Check and assign the format of the data and set the format to the Map
-          formatAssigner(rowsWithoutNull, index, headerMapping, header);
-          columnsData.dataType =
-            "xsd:" + headerMapping.get(header) || "undefined";
-
-          if ((await createNewColumn(mappingIdHook, columnsData)) === -1) {
-            showSnackBar("Error occurred while creating the column.", "error");
-            setFile(null);
-            router.push("/home/upload");
-            return;
-          }
-          showSnackBar("Column created successfully.", "success");
-        });
-        setHeaderMapping(headerMapping);
-      } catch (error) {
-        showSnackBar("An error occurred while processing the file.", "error");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    processFile();
-  }, [file]);
+  useCreateMappingSWR(
+    file,
+    setIsLoading,
+    setHeader,
+    setRow,
+    mappingIdHook,
+    showSnackBar,
+    setFile,
+    router,
+    setHeaderMapping,
+  );
 
   return (
     <>
@@ -149,3 +100,95 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
 };
 
 export default MappingsPage;
+
+const useCreateMappingSWR = (
+  file: File | null,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setHeader: React.Dispatch<React.SetStateAction<string[] | undefined>>,
+  setRow: React.Dispatch<React.SetStateAction<string[][]>>,
+  mappingIdHook: number,
+  showSnackBar: (message: string, type: "success" | "error") => void,
+  setFile: React.Dispatch<React.SetStateAction<File | null>>,
+  router: ReturnType<typeof useRouter>,
+  setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>,
+) => {
+  const shouldFetch = !!file; // Only fetch if file available
+
+  const { data, error } = useSWR(
+    shouldFetch ? ` ` : null,
+    async () => {
+      if (!file) return;
+
+      setIsLoading(true);
+      const columnsData = {
+        title: "",
+        dataType: "",
+        ontologyType: "",
+      };
+
+      try {
+        const dfd = await import("danfojs");
+        const df = await dfd.readCSV(file, {
+          // @ts-ignore - Property 'dynamicTyping' does not exist on type 'CsvOptions', error happens in Next.js app but not in Node.js app
+          dynamicTyping: false,
+        });
+
+        const headers = df.head().columns;
+
+        // Replace all null (blank) ceil with a "-" and get the first 20 rows
+        const reformatedDf = df.head(20).fillNa("-");
+
+        const rowsWithoutNull = reformatedDf.values as string[][];
+        setHeader(headers);
+        setRow(rowsWithoutNull);
+
+        const headerMapping = new Map<string, string>();
+
+        headers.forEach(async (header, index) => {
+          // Remove all blank spaces and convert to lowercase
+          const ontologyType = header.split(" ").join("").toLowerCase();
+          columnsData.title = header;
+          columnsData.ontologyType = ontologyType;
+
+          // Check and assign the format of the data and set the format to the Map
+          formatAssigner(rowsWithoutNull, index, headerMapping, header);
+          columnsData.dataType =
+            "xsd:" + headerMapping.get(header) || "undefined";
+
+          try {
+            axios.defaults.headers.common["Authorization"] =
+              `Bearer ${Cookies.get("accessToken")}`;
+            const response = await axios.post(
+              `http://localhost:8080/mappings/${mappingIdHook}/columns`,
+              columnsData,
+            );
+
+            if (response.status === 200) {
+              showSnackBar("Column created successfully.", "success");
+            } else {
+              showSnackBar(
+                "Error occurred while creating the column.",
+                "error",
+              );
+              setFile(null);
+              router.push("/home/upload");
+              return;
+            }
+          } catch (error) {
+            return -1;
+          }
+        });
+        setHeaderMapping(headerMapping);
+      } catch (error) {
+        showSnackBar("An error occurred while processing the file.", "error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    {
+      revalidateOnFocus: false, // Avoid unnecessary refetches on focus
+    },
+  );
+
+  return { data, error };
+};
