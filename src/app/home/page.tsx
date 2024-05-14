@@ -7,8 +7,17 @@ import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOu
 import Box from "@mui/material/Box";
 import { Container, Grid, Stack } from "@mui/material";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { useRouter } from "next/navigation";
 
 const UploadFileComp = () => {
+  const router = useRouter();
+
+  const handleCreateNewMapping = () => {
+    router.push("/home/upload");
+  };
+
+  const handleDashboard = () => {};
+
   return (
     <Container maxWidth="xl">
       <Box
@@ -22,6 +31,7 @@ const UploadFileComp = () => {
             variant="outlined"
             size="large"
             startIcon={<AddCircleOutlineOutlinedIcon />}
+            onClick={handleCreateNewMapping}
           >
             Create New Mapping
           </Button>
@@ -29,6 +39,7 @@ const UploadFileComp = () => {
             variant="outlined"
             size="large"
             startIcon={<DashboardOutlinedIcon />}
+            onClick={handleDashboard}
           >
             Dashboard
           </Button>
