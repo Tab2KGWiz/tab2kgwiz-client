@@ -12,6 +12,10 @@ import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+interface MappingResponseData {
+  fileContent: string;
+}
+
 const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   params,
 }): JSX.Element => {
@@ -54,7 +58,6 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   }, [file]);
 
   useCreateMappingSWR(
-    file,
     setIsLoading,
     setHeader,
     setRow,
@@ -102,7 +105,6 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
 export default MappingsPage;
 
 const useCreateMappingSWR = (
-  file: File | null,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setHeader: React.Dispatch<React.SetStateAction<string[] | undefined>>,
   setRow: React.Dispatch<React.SetStateAction<string[][]>>,
@@ -112,14 +114,29 @@ const useCreateMappingSWR = (
   router: ReturnType<typeof useRouter>,
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>,
 ) => {
-  const shouldFetch = !!file; // Only fetch if file available
-
   const { data, error } = useSWR(
-    shouldFetch ? ` ` : null,
+    ` `,
     async () => {
-      if (!file) return;
-
       setIsLoading(true);
+
+      axios.defaults.headers.common["Authorization"] =
+        `Bearer ${Cookies.get("accessToken")}`;
+      const response = await axios.get(
+        `http://localhost:8080/mappings/${mappingIdHook}`,
+      );
+
+      if (response.status !== 200) {
+        showSnackBar(
+          `Error occurred while fetching the mapping with ID ${mappingIdHook}.`,
+          "error",
+        );
+        router.push("/home/upload");
+        return;
+      }
+      const responseData: MappingResponseData = response.data;
+
+      const file: File = new File([responseData.fileContent], "temp.csv");
+
       const columnsData = {
         title: "",
         dataType: "",
