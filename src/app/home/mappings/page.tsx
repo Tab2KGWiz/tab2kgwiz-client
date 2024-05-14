@@ -1,73 +1,61 @@
 "use client";
 
 import React, { useEffect } from "react";
-import UploadFile from "../../ui/file-input/upload-file";
-import Table from "../../components/table";
-import { formatAssigner } from "../../lib/formatAssigner";
-import { LoadingSkeleton } from "../../ui/loading-skeleton";
 import { createNewMapping } from "../../services/createNewMapping";
-import { createNewColumn } from "../../services/createNewColumn";
 import { useSnackBar } from "../../components/snackbar-provider";
 import { useFile } from "../../components/file-provider";
-import PageAppBar from "../../components/app-bar";
-import Button from "@mui/material/Button";
-import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
-import Box from "@mui/material/Box";
-import { Container, Grid, Stack } from "@mui/material";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import useSWR from "swr";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { DataFrame, toCSV } from "danfojs";
+import router from "next/router";
 
 interface Props {}
 
+interface MappingResponseData {
+  uri: string;
+  title: string;
+  fileContent: string;
+}
+
 const MappingPage: React.FC<Props> = (props): JSX.Element => {
   const { file, setFile } = useFile();
-  // const [header, setHeader] = React.useState<string[] | undefined>();
-  // const [row, setRow] = React.useState<string[][]>([]);
-
-  //const [currentPage, setCurrentPage] = React.useState(0);
-  //const [totalPages, setTotalPages] = React.useState(0);
-  //const [pageSize, setPageSize] = React.useState(10);
-
-  //const [isLoading, setIsLoading] = React.useState(false);
-
-  // const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
-  //   new Map(),
-  // );
-
   const router = useRouter();
-
-  //const [mappingId, setMappingId] = React.useState<number>(-1);
-
   const { showSnackBar } = useSnackBar();
 
-  // const handlePageChange = (newPage: number) => {
-  //   setCurrentPage(newPage);
-  // };
-
-  // useEffect(() => {
-  //   setTotalPages(Math.ceil(row.length / pageSize));
-  // }, [row, pageSize]);
-
-  // useEffect(() => {
-  //   setHeader(undefined);
-  //   setRow([]);
-  //   setHeaderMapping(new Map());
-  // }, [file]);
+  const { data, error } = useCreateMappingSWR(file);
 
   useEffect(() => {
-    if (!file) return;
+    if (data === -1 || error) {
+      showSnackBar(
+        "Error occurred while creating the mapping. Please try again.",
+        "error",
+      );
+      setFile(null);
+      router.push("/home/upload");
+    }
 
-    const processFile = async () => {
-      //setIsLoading(true);
+    if (data && data !== -1) {
+      const mappingsId = data;
+      showSnackBar(`Mapping ID ${mappingsId} created successfully.`, "success");
+      router.push(`/home/mappings/${mappingsId}`);
+    }
+  }, [data]);
 
-      //showSnackBar("File uploaded successfully. Processing...", "info");
+  return <>{/* <Link href={`/home/mappings/${mappingsId}`}>dawdaw</Link> */}</>;
+};
 
-      // const columnsData = {
-      //   title: "",
-      //   dataType: "",
-      //   ontologyType: "",
-      // };
+const useCreateMappingSWR = (file: File | null) => {
+  const url = "http://localhost:8080/mappings";
+  const shouldFetch = !!file; // Only fetch if file available
+  const { showSnackBar } = useSnackBar();
+
+  const { data, error } = useSWR(
+    shouldFetch ? url : null,
+    async () => {
+      if (!file) return;
 
       try {
         const dfd = await import("danfojs");
@@ -76,100 +64,45 @@ const MappingPage: React.FC<Props> = (props): JSX.Element => {
           dynamicTyping: false,
         });
 
-        //const headers = df.head().columns;
-
         // Replace all null (blank) ceil with a "-" and get the first 20 rows
         const reformatedDf = df.head(20).fillNa("-");
+        const mappingData = {
+          title: file.name.replace(/\s+/g, ""),
+          fileContent: reformatedDf ? toCSV(reformatedDf) : "",
+          fileFormat: file.type.split("/")[1],
+          fileName: file.name.replace(/\s+/g, ""),
+          mainOntology: "schema:Pork",
+          // prefixesURIS:
+          //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
+        };
 
-        const id = await createNewMapping(file, reformatedDf);
+        axios.defaults.headers.common["Authorization"] =
+          `Bearer ${Cookies.get("accessToken")}`;
 
-        if (id === -1) {
-          showSnackBar(
-            "Error occurred while creating the mapping. Please try again.",
-            "error",
-          );
-          setFile(null);
-          router.push("/home/upload");
-          return;
+        const response = await axios.post(
+          "http://localhost:8080/mappings",
+          mappingData,
+        );
+
+        if (response.status === 201) {
+          const data: MappingResponseData = response.data;
+
+          // Obtain the ID of the mapping by extracting the last number from the URI
+          return parseInt(data.uri.match(/\d+$/)?.[0] || "-1");
         }
-        //setMappingId(id);
 
-        showSnackBar("Mapping created successfully.", "success");
-
-        const mappingsId = id;
-
-        console.log("mappingsId: ", mappingsId);
-
-        router.push(`/home/mappings/${mappingsId}`);
-
-        // const rowsWithoutNull = reformatedDf.values as string[][];
-        // setHeader(headers);
-        // setRow(rowsWithoutNull);
-
-        // const headerMapping = new Map<string, string>();
-
-        // headers.forEach(async (header, index) => {
-        //   // Remove all blank spaces and convert to lowercase
-        //   const ontologyType = header.split(" ").join("").toLowerCase();
-        //   columnsData.title = header;
-        //   columnsData.ontologyType = ontologyType;
-
-        //   // Check and assign the format of the data and set the format to the Map
-        //   formatAssigner(rowsWithoutNull, index, headerMapping, header);
-        //   columnsData.dataType =
-        //     "xsd:" + headerMapping.get(header) || "undefined";
-
-        //   if ((await createNewColumn(id, columnsData)) === -1) {
-        //     showSnackBar("Error occurred while creating the column.", "error");
-        //     setFile(null);
-        //     router.push("/home/upload");
-        //     return;
-        //   }
-        //   showSnackBar("Column created successfully.", "success");
-        // });
-        // setHeaderMapping(headerMapping);
+        return -1;
       } catch (error) {
         showSnackBar("An error occurred while processing the file.", "error");
-      } finally {
-        //setIsLoading(false);
+        return -1;
       }
-    };
-
-    processFile();
-  }, [file]);
-
-  return (
-    <>
-      {/* <br />
-      {isLoading ? (
-        <LoadingSkeleton />
-      ) : (
-        <>
-          {header && (
-            <Table
-              header={header}
-              body={row.slice(
-                currentPage * pageSize,
-                (currentPage + 1) * pageSize,
-              )}
-              page={currentPage}
-              pages={totalPages}
-              pageSize={pageSize}
-              onPageChange={handlePageChange}
-              previousText="Previous"
-              nextText="Next"
-              headerMapping={headerMapping}
-              setHeaderMapping={setHeaderMapping}
-              totalRows={row.length}
-              mappingName={file?.name.replace(/\s+/g, "")}
-              mappingFile={file}
-              mappingId={mappingId}
-            />
-          )}
-        </>
-      )} */}
-    </>
+    },
+    {
+      revalidateOnFocus: false, // Avoid unnecessary refetches on focus
+    },
   );
+
+  return { data, error };
 };
 
 export default MappingPage;
