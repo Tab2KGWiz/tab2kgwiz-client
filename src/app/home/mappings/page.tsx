@@ -44,7 +44,7 @@ const MappingPage: React.FC<Props> = (props): JSX.Element => {
     }
   }, [data]);
 
-  return <>{/* <Link href={`/home/mappings/${mappingsId}`}>dawdaw</Link> */}</>;
+  return <></>;
 };
 
 const useCreateMappingSWR = (file: File | null) => {

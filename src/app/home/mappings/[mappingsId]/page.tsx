@@ -11,6 +11,7 @@ import Table from "@/app/components/table";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { title } from "process";
 
 interface MappingResponseData {
   fileContent: string;
@@ -63,7 +64,6 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     setRow,
     mappingIdHook,
     showSnackBar,
-    setFile,
     router,
     setHeaderMapping,
   );
@@ -110,7 +110,6 @@ const useCreateMappingSWR = (
   setRow: React.Dispatch<React.SetStateAction<string[][]>>,
   mappingIdHook: number,
   showSnackBar: (message: string, type: "success" | "error") => void,
-  setFile: React.Dispatch<React.SetStateAction<File | null>>,
   router: ReturnType<typeof useRouter>,
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>,
 ) => {
@@ -137,12 +136,6 @@ const useCreateMappingSWR = (
 
       const file: File = new File([responseData.fileContent], "temp.csv");
 
-      const columnsData = {
-        title: "",
-        dataType: "",
-        ontologyType: "",
-      };
-
       try {
         const dfd = await import("danfojs");
         const df = await dfd.readCSV(file, {
@@ -162,38 +155,8 @@ const useCreateMappingSWR = (
         const headerMapping = new Map<string, string>();
 
         headers.forEach(async (header, index) => {
-          // Remove all blank spaces and convert to lowercase
-          const ontologyType = header.split(" ").join("").toLowerCase();
-          columnsData.title = header;
-          columnsData.ontologyType = ontologyType;
-
           // Check and assign the format of the data and set the format to the Map
           formatAssigner(rowsWithoutNull, index, headerMapping, header);
-          columnsData.dataType =
-            "xsd:" + headerMapping.get(header) || "undefined";
-
-          try {
-            axios.defaults.headers.common["Authorization"] =
-              `Bearer ${Cookies.get("accessToken")}`;
-            const response = await axios.post(
-              `http://localhost:8080/mappings/${mappingIdHook}/columns`,
-              columnsData,
-            );
-
-            if (response.status === 200) {
-              showSnackBar("Column created successfully.", "success");
-            } else {
-              showSnackBar(
-                "Error occurred while creating the column.",
-                "error",
-              );
-              setFile(null);
-              router.push("/home/upload");
-              return;
-            }
-          } catch (error) {
-            return -1;
-          }
         });
         setHeaderMapping(headerMapping);
       } catch (error) {
