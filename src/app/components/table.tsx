@@ -45,6 +45,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const [columnsId, setColumnsId] = React.useState<Map<string, string>>(
     new Map(),
   );
+  const [isTableChanged, setIsTableChanged] = React.useState(true);
 
   const handleSave = async () => {
     setLoadingSave(true);
@@ -62,6 +63,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
         showSnackBar("Columns created successfully.", "success");
         setLoadingSave(false);
         setColumnsCreated(true);
+        setIsTableChanged(false);
       } catch (error) {
         showSnackBar(
           `Error occurred while creating columns: ${error}`,
@@ -140,6 +142,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
                 header={props.header}
                 setHeaderMapping={props.setHeaderMapping}
                 headerMapping={props.headerMapping}
+                setIsTableChanged={setIsTableChanged}
               />
             </div>
             <Pagination
@@ -163,6 +166,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             loadingPosition="start"
             startIcon={<SaveIcon />}
             variant="contained"
+            disabled={!isTableChanged}
           >
             <span>Save</span>
           </LoadingButton>
