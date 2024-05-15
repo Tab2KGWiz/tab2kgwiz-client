@@ -30,6 +30,11 @@ interface Props {
   mappingId: number;
 }
 
+interface ColumnResponseData {
+  uri: string;
+  title: string;
+}
+
 const Table: React.FC<Props> = (props): JSX.Element => {
   const { showSnackBar } = useSnackBar();
   const [loadingSave, setLoadingSave] = React.useState(false);
@@ -37,6 +42,9 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const { file, setFile } = useFile();
   const router = useRouter();
   const [columnsCreated, setColumnsCreated] = React.useState(false);
+  const [columnsId, setColumnsId] = React.useState<Map<string, string>>(
+    new Map(),
+  );
 
   const handleSave = async () => {
     setLoadingSave(true);
@@ -50,7 +58,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       };
 
       try {
-        await createColumn(data);
+        await createColumn(data, columnsId, setColumnsId);
         showSnackBar("Columns created successfully.", "success");
         setLoadingSave(false);
         setColumnsCreated(true);
@@ -67,16 +75,20 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     });
   };
 
-  const createColumn = async (data: {
-    title: string;
-    ontologyType: string;
-    dataType: string;
-  }) => {
+  const createColumn = async (
+    data: {
+      title: string;
+      ontologyType: string;
+      dataType: string;
+    },
+    columnsId: Map<string, string>,
+    setColumnsId: React.Dispatch<React.SetStateAction<Map<string, string>>>,
+  ) => {
     const accessToken = Cookies.get("accessToken");
 
     try {
-      const response = await axios.post(
-        `http://localhost:8080/mappings/${props.mappingId}/columns`,
+      const response = await axios.put(
+        `http://localhost:8080/mappings/${props.mappingId}/columns/${columnsId.get(data.title) ? columnsId.get(data.title) : "-1"}`,
         data,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
@@ -84,6 +96,10 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       if (response.status !== 200) {
         throw new Error("Error creating column: " + response.status);
       }
+      const responseData: ColumnResponseData = response.data;
+
+      columnsId.set(data.title, responseData.uri.match(/\d+$/)?.[0] || "");
+      setColumnsId(columnsId);
     } catch (error) {
       throw new Error("Error creating column: " + error);
     }
