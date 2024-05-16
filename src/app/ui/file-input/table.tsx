@@ -8,6 +8,7 @@ interface Props {
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
   setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const TableUI: React.FC<Props> = (props): JSX.Element => {
@@ -29,6 +30,7 @@ const TableUI: React.FC<Props> = (props): JSX.Element => {
                 title={item.toString()}
                 headerMapping={props.headerMapping}
                 setIsTableChanged={props.setIsTableChanged}
+                setIsRDFGenerated={props.setIsRDFGenerated}
               />
             </th>
           ))}
