@@ -12,6 +12,8 @@ import Cookies from "js-cookie";
 import Box from "@mui/material/Box";
 import { useFile } from "./file-provider";
 import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
+import { Button } from "@mui/material";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 
 interface Props {
   header: string[] | undefined;
@@ -46,6 +48,8 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     new Map(),
   );
   const [isTableChanged, setIsTableChanged] = React.useState(true);
+  const [fileContent, setFileContent] = React.useState<String>("");
+  const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
 
   const handleSave = async () => {
     setLoadingSave(true);
@@ -115,20 +119,30 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       setLoadingRDF(false);
     } else {
       showSnackBar("Yaml file generated successfully", "success");
-      if (
-        (await postYarrrml(
-          props.mappingName ? props.mappingName : "",
-          props.mappingFile,
-          props.mappingId,
-        )) === -1
-      ) {
+      const response = await postYarrrml(
+        props.mappingName ? props.mappingName : "",
+        props.mappingFile,
+        props.mappingId,
+      );
+      if (response === "-1") {
         showSnackBar("Error parsing yarrrml", "error");
         setLoadingRDF(false);
       } else {
         showSnackBar("Yarrrml parsed successfully", "success");
+        setFileContent(response);
         setLoadingRDF(false);
+        setIsRDFGenerated(true);
       }
     }
+  };
+
+  const handleDownloadRDF = () => {
+    const element = document.createElement("a");
+    const file = new Blob([fileContent as BlobPart], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = "rdf.txt";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
   };
 
   return (
@@ -143,6 +157,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
                 setHeaderMapping={props.setHeaderMapping}
                 headerMapping={props.headerMapping}
                 setIsTableChanged={setIsTableChanged}
+                setIsRDFGenerated={setIsRDFGenerated}
               />
             </div>
             <Pagination
@@ -178,10 +193,19 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             loading={loadingRDF}
             loadingPosition="end"
             variant="contained"
-            disabled={!columnsCreated}
+            disabled={!columnsCreated || isTableChanged}
           >
             <span>Generate RDF</span>
           </LoadingButton>
+
+          <Button
+            variant="outlined"
+            startIcon={<DownloadRoundedIcon />}
+            onClick={handleDownloadRDF}
+            hidden={!isRDFGenerated || isTableChanged}
+          >
+            <span>RDF file</span>
+          </Button>
         </Box>
       </section>
     </>

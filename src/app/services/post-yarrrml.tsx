@@ -9,7 +9,7 @@ export async function postYarrrml(
   mappingName: string,
   mappingFile: File | null,
   mappingId: number,
-): Promise<number> {
+): Promise<String> {
   try {
     // axios.defaults.headers.common["Authorization"] =
     //   `Bearer ${Cookies.get("accessToken")}`;
@@ -19,7 +19,7 @@ export async function postYarrrml(
 
     if (!mappingFile) {
       console.error("No se ha seleccionado ningún archivo.");
-      return -1;
+      return "-1";
     }
 
     const formData = new FormData();
@@ -36,10 +36,10 @@ export async function postYarrrml(
     );
 
     if (response.status === 200) {
-      return 0;
+      return response.data;
     }
-    return -1;
+    return "-1";
   } catch (error) {
-    return -1;
+    return "-1";
   }
 }
