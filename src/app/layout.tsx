@@ -3,14 +3,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SnackBarProvider } from "./components/snackbar-provider";
 import { FileProvider } from "./components/file-provider";
-import AppLayout from "./components/Layout/app-layout";
+import { ThemeProvider } from "@mui/material/styles";
+import { CustomTheme } from "./theme";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Tab2KGWiz",
-  description: "Tabular Data to Knowledge Graph Wizard",
-};
 
 export default function RootLayout({
   children,
@@ -19,13 +15,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <SnackBarProvider>
-        <FileProvider>
-          <body className={`${inter.className} fixed inset-0 bg-gray-100`}>
-            {children}
-          </body>
-        </FileProvider>
-      </SnackBarProvider>
+      <ThemeProvider theme={CustomTheme}>
+        <SnackBarProvider>
+          <FileProvider>
+            <body className={`${inter.className} fixed inset-0 bg-gray-100`}>
+              {children}
+            </body>
+          </FileProvider>
+        </SnackBarProvider>
+      </ThemeProvider>
     </html>
   );
 }
