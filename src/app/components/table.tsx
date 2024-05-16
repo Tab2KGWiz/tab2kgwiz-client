@@ -14,6 +14,8 @@ import { useFile } from "./file-provider";
 import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
 import { Button } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { List } from "@mui/material";
+import { ListItem } from "@mui/material";
 
 interface Props {
   header: string[] | undefined;
@@ -148,6 +150,17 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+        <List
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            padding: 0,
+            marginLeft: "5%",
+            color: "#3C3C3C",
+          }}
+        >
+          <ListItem>Mapping ID: {props.mappingId}</ListItem>
+        </List>
         <div className="mx-auto max-w-full px-6 lg:px-12">
           <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
