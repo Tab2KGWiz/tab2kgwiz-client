@@ -16,7 +16,9 @@ const UploadFileComp = () => {
     router.push("/home/upload");
   };
 
-  const handleDashboard = () => {};
+  const handleDashboard = () => {
+    router.push("/home/board");
+  };
 
   return (
     <Container maxWidth="xl">

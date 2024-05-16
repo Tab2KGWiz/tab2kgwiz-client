@@ -12,11 +12,12 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
+import { Link } from "@mui/material";
 
 const pages: any[] = [
   /*"Products", "Pricing", "Blog"*/
 ];
-const settings = ["Profile", "Dashboard", "Logout"];
+const settings = ["Profile", "Board", "Logout"];
 
 interface Props {}
 
@@ -161,7 +162,14 @@ const PageAppBar: React.FC<Props> = (): JSX.Element => {
             >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
+                  <Link
+                    href={"/home/" + setting.toLowerCase()}
+                    underline="none"
+                    color="inherit"
+                    sx={{ paddingX: "1vh" }}
+                  >
+                    <Typography textAlign="center">{setting}</Typography>
+                  </Link>
                 </MenuItem>
               ))}
             </Menu>
