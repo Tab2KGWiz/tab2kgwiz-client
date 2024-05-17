@@ -7,6 +7,8 @@ interface Props {
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
   dropDownId: number;
+  setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DropDown: React.FC<Props> = (props): JSX.Element => {
@@ -22,6 +24,8 @@ const DropDown: React.FC<Props> = (props): JSX.Element => {
     newheaderMapping.set(props.title, event.currentTarget.value);
     props.setHeaderMapping(newheaderMapping);
     setSelectedDataType(event.currentTarget.value);
+    props.setIsTableChanged(true);
+    props.setIsRDFGenerated(false);
   };
 
   const toggleDropDown = () => {
