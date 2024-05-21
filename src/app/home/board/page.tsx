@@ -60,7 +60,7 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
                 <>
                   {mappingsIds.map((mappingId) => (
                     <li key={mappingId}>
-                      <Link href={`/home/mappings/${mappingId}`}>
+                      <Link href={`/home/mappings/${mappingId}/details`}>
                         <a>Mapping ID: {mappingId}</a>
                       </Link>
                     </li>
