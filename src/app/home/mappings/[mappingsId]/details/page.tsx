@@ -204,6 +204,8 @@ const MappingDetailsPage: React.FC<{
   useEffect(() => {
     if (data?.yamlFile) {
       setYamlFile(data?.yamlFile);
+      const yamlData = new File([data?.yamlFile], "original.yml");
+      setCustomYamlFile(yamlData);
     }
   }, [data?.yamlFile]);
 
@@ -284,7 +286,7 @@ const MappingDetailsPage: React.FC<{
 
         <Grid container>
           <Grid item xs={12} marginBottom={1}>
-            <Card sx={{ maxWidth: 1300, height: 390 }}>
+            <Card sx={{ maxWidth: 1300, height: 300 }}>
               <CardHeader title="Yaml File and CSV" />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
@@ -343,12 +345,13 @@ const MappingDetailsPage: React.FC<{
             </Card>
           </Grid>
           <Grid item xs={12}>
-            <Card sx={{ maxWidth: 1300, height: 400 }}>
+            <Card sx={{ maxWidth: 1300, height: 490 }}>
               <CardHeader title="RDF" />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
                   Generate RDF with direct endpoint post request.
                 </Typography>
+                <br />
                 <br />
 
                 <Stack

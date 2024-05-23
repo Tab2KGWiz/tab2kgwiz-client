@@ -1,16 +1,11 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { createNewMapping } from "../../services/createNewMapping";
-import { useSnackBar } from "../../components/snackbar-provider";
-import { useFile } from "../../components/file-provider";
-import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Box from "@mui/material/Box";
 import { Container, Link, Stack, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
 
 interface Props {}
 
@@ -21,9 +16,6 @@ interface MappingResponseData {
 }
 
 const UserBoard: React.FC<Props> = (props): JSX.Element => {
-  const { file, setFile } = useFile();
-  const router = useRouter();
-  const { showSnackBar } = useSnackBar();
   const [mappingsIds, setMappingsIds] = React.useState<number[]>([]);
   const { data, error } = useGetAllMappingsSWR();
 

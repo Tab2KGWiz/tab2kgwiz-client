@@ -11,10 +11,10 @@ import Table from "@/app/components/table";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { title } from "process";
 
 interface MappingResponseData {
   fileContent: string;
+  fileName: string;
 }
 
 const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
@@ -33,6 +33,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
   );
+  const [CSVFile, setCSVFile] = React.useState<File | null>(null);
 
   const router = useRouter();
 
@@ -66,6 +67,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     showSnackBar,
     router,
     setHeaderMapping,
+    setCSVFile,
   );
 
   return (
@@ -91,8 +93,8 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
               headerMapping={headerMapping}
               setHeaderMapping={setHeaderMapping}
               totalRows={row.length}
-              mappingName={file?.name.replace(/\s+/g, "")}
-              mappingFile={file}
+              mappingName={CSVFile?.name}
+              mappingFile={CSVFile}
               mappingId={mappingIdHook}
             />
           )}
@@ -112,6 +114,7 @@ const useCreateMappingSWR = (
   showSnackBar: (message: string, type: "success" | "error") => void,
   router: ReturnType<typeof useRouter>,
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>,
+  setCSVFile: React.Dispatch<React.SetStateAction<File | null>>,
 ) => {
   const { data, error } = useSWR(
     ` `,
@@ -134,7 +137,12 @@ const useCreateMappingSWR = (
       }
       const responseData: MappingResponseData = response.data;
 
-      const file: File = new File([responseData.fileContent], "temp.csv");
+      const file: File = new File(
+        [responseData.fileContent],
+        `${responseData.fileName}`,
+      );
+
+      setCSVFile(file);
 
       try {
         const dfd = await import("danfojs");
