@@ -1,5 +1,5 @@
 import React from "react";
-import PaginationUi from "../ui/file-input/pagination-ui";
+import PaginationUi from "../../ui/file-input/pagination-ui";
 
 interface Props {
   pages: number;

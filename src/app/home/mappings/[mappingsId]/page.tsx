@@ -7,7 +7,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSnackBar } from "@/app/components/snackbar-provider";
 import { LoadingSkeleton } from "@/app/ui/loading-skeleton";
-import Table from "@/app/components/table";
+import Table from "@/app/components/table/table";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
