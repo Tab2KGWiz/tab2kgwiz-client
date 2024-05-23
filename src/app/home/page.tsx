@@ -43,7 +43,7 @@ const UploadFileComp = () => {
             startIcon={<DashboardOutlinedIcon />}
             onClick={handleDashboard}
           >
-            Dashboard
+            Board
           </Button>
         </Stack>
       </Box>

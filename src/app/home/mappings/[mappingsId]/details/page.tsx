@@ -1,18 +1,13 @@
 "use client";
 
-import { useFile } from "@/app/components/file-provider";
-import { formatAssigner } from "@/app/lib/formatAssigner";
-import { createNewColumn } from "@/app/services/createNewColumn";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSnackBar } from "@/app/components/snackbar-provider";
-import { LoadingSkeleton } from "@/app/ui/loading-skeleton";
-import Table from "@/app/components/table";
+
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { title } from "process";
-import FavoriteIcon from "@mui/icons-material/Favorite";
+
 import List from "@mui/material/List";
 import { Button } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
@@ -20,23 +15,35 @@ import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
 import Divider from "@mui/material/Divider";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { styled } from "@mui/material/styles";
+import SendIcon from "@mui/icons-material/Send";
 
 import {
   Card,
-  CardActions,
   CardContent,
   CardHeader,
   Collapse,
   Grid,
-  IconButton,
   ListItem,
-  ListItemButton,
   ListItemText,
   Stack,
   Typography,
-  ListItemIcon,
   Chip,
 } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 interface MappingResponseData {
   fileContent: string;
@@ -62,6 +69,11 @@ const MappingDetailsPage: React.FC<{
   const { showSnackBar } = useSnackBar();
   const [isOpen, setIsOpen] = React.useState(false);
   const [yamlFile, setYamlFile] = React.useState<string>();
+  const [csvFile, setCsvFile] = React.useState<File | null>(null);
+  const [customYamlFile, setCustomYamlFile] = React.useState<File | null>(null);
+  const [loadingRDF, setLoadingRDF] = React.useState(false);
+  const [rdfFile, setRdfFile] = React.useState("");
+  const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
 
   const { data, error } = useCreateMappingSWR(
     showSnackBar,
@@ -99,6 +111,96 @@ const MappingDetailsPage: React.FC<{
     element.click();
   };
 
+  const handleDownloadRDF = () => {
+    const element = document.createElement("a");
+    const file = new Blob([rdfFile as BlobPart], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = "rdf.txt";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
+
+  const handleUploadCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newFile = event.target.files && event.target.files[0];
+    setCsvFile(newFile);
+    if (newFile) {
+      if (newFile.type !== "text/csv") {
+        showSnackBar("Invalid file type. Please upload a CSV file.", "error");
+        setCsvFile(null);
+        return;
+      } else if (newFile.size > 10000000) {
+        // Allow only files less than 10MB
+        showSnackBar("CSV file size too large", "error");
+        setCsvFile(null);
+        return;
+      }
+      showSnackBar("CSV file uploaded successfully.", "info");
+    }
+  };
+
+  const handleUploadYAML = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newFile = event.target.files && event.target.files[0];
+
+    setCustomYamlFile(newFile);
+    if (newFile) {
+      if (newFile.name.split(".").pop() !== "yml") {
+        showSnackBar("Invalid file type. Please upload a YAML file.", "error");
+        setCustomYamlFile(null);
+        return;
+      } else if (newFile.size > 10000000) {
+        // Allow only files less than 10MB
+        showSnackBar("YAML file size too large", "error");
+        setCustomYamlFile(null);
+        return;
+      }
+      showSnackBar("YAML file uploaded successfully.", "info");
+    }
+  };
+
+  const handleDeleteCSV = () => {
+    setCsvFile(null);
+    showSnackBar("CSV file deleted.", "info");
+  };
+
+  const handleDeleteYAMl = () => {
+    setCustomYamlFile(null);
+    showSnackBar("YAML file deleted.", "info");
+  };
+
+  const handlePostRDF = async () => {
+    setLoadingRDF(true);
+
+    if (csvFile !== null && customYamlFile !== null) {
+      const data: { csvFile: File; yamlFile: File } = {
+        csvFile: csvFile,
+        yamlFile: customYamlFile,
+      };
+
+      try {
+        const response = await axios.post(
+          "http://165.232.127.94:8081/generateLinkedData",
+          data,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
+
+        if (response.status === 200) {
+          setRdfFile(response.data);
+          setIsRDFGenerated(true);
+          setLoadingRDF(false);
+          showSnackBar("RDF generated successfully.", "success");
+        } else {
+          showSnackBar("Error occurred while generating RDF.", "error");
+        }
+      } catch {
+        showSnackBar("Error occurred while generating RDF.", "error");
+      }
+    }
+  };
+
   useEffect(() => {
     if (data?.yamlFile) {
       setYamlFile(data?.yamlFile);
@@ -121,7 +223,7 @@ const MappingDetailsPage: React.FC<{
       <br />
       <Stack
         direction="row"
-        spacing={2}
+        spacing={1}
         sx={{
           marginLeft: "10vh",
           marginRight: "5vh",
@@ -183,7 +285,7 @@ const MappingDetailsPage: React.FC<{
         <Grid container>
           <Grid item xs={12} marginBottom={1}>
             <Card sx={{ maxWidth: 1300, height: 390 }}>
-              <CardHeader title="Mapping details" />
+              <CardHeader title="Yaml File and CSV" />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
                   Indicate the details of the mapping, including the generated
@@ -244,13 +346,112 @@ const MappingDetailsPage: React.FC<{
             <Card sx={{ maxWidth: 1300, height: 400 }}>
               <CardHeader title="RDF" />
               <CardContent>
-                <Typography variant="body2" color="text.secondary"></Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Generate RDF with direct endpoint post request.
+                </Typography>
+                <br />
+
+                <Stack
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  spacing={2}
+                  direction="row"
+                  divider={<Divider orientation="vertical" flexItem />}
+                >
+                  <Stack spacing={2}>
+                    <Button
+                      component="label"
+                      variant="contained"
+                      tabIndex={-1}
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload CSV
+                      <VisuallyHiddenInput
+                        type="file"
+                        onChange={handleUploadCSV}
+                      />
+                    </Button>
+
+                    <Chip
+                      label={csvFile ? csvFile.name : "Empty"}
+                      variant="outlined"
+                      onDelete={handleDeleteCSV}
+                      disabled={!csvFile}
+                    ></Chip>
+                  </Stack>
+
+                  <Stack spacing={2}>
+                    <Button
+                      component="label"
+                      variant="contained"
+                      tabIndex={-1}
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload YAML
+                      <VisuallyHiddenInput
+                        type="file"
+                        onChange={handleUploadYAML}
+                      />
+                    </Button>
+
+                    <Chip
+                      label={customYamlFile ? customYamlFile.name : "Empty"}
+                      variant="outlined"
+                      onDelete={handleDeleteYAMl}
+                      disabled={!customYamlFile}
+                    />
+                  </Stack>
+                </Stack>
+                <br />
+
+                <Stack
+                  spacing={2}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Card
+                    sx={{
+                      height: 50,
+                      width: 400,
+                      // marginTop: "2vh",
+                      // marginLeft: "17vh",
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      color="text.primary"
+                      sx={{ marginTop: "1.5vh", marginLeft: "2vh" }}
+                    >
+                      http://165.232.127.94:8081/generateLinkedData
+                    </Typography>
+                  </Card>
+
+                  <Stack direction="row" spacing={2}>
+                    <LoadingButton
+                      onClick={handlePostRDF}
+                      className="bg-blue-600"
+                      endIcon={<SendIcon />}
+                      loading={loadingRDF}
+                      loadingPosition="end"
+                      variant="contained"
+                      disabled={!csvFile || !customYamlFile}
+                    >
+                      <span>POST</span>
+                    </LoadingButton>
+
+                    <Button
+                      variant="outlined"
+                      startIcon={<DownloadRoundedIcon />}
+                      onClick={handleDownloadRDF}
+                      disabled={!isRDFGenerated}
+                    >
+                      <span>RDF file</span>
+                    </Button>
+                  </Stack>
+                </Stack>
               </CardContent>
-              <CardActions disableSpacing>
-                <IconButton aria-label="share">
-                  <FavoriteIcon />
-                </IconButton>
-              </CardActions>
             </Card>
           </Grid>
         </Grid>

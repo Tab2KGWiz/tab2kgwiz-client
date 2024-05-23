@@ -215,7 +215,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             variant="outlined"
             startIcon={<DownloadRoundedIcon />}
             onClick={handleDownloadRDF}
-            hidden={!isRDFGenerated || isTableChanged}
+            disabled={!isRDFGenerated || isTableChanged}
           >
             <span>RDF file</span>
           </Button>
