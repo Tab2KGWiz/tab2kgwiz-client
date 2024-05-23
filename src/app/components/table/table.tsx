@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import Pagination from "./pagination";
-import TableUI from "../../ui/file-input/table";
+import TableUI from "@/app/ui/table/table";
 import { postYaml } from "../../services/post-yaml";
 import { postYarrrml } from "../../services/post-yarrrml";
 import { useSnackBar } from "../snackbar-provider";

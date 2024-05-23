@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import MeasureFormUI from "../../ui/file-input/measure-form-ui";
+import MeasureFormUI from "@/app/ui/table/measure-form-ui";
 
 interface Props {
   headerMapping: Map<string, string>;
