@@ -1,6 +1,6 @@
 import React from "react";
-import DropDown from "@/app/components/drop-down";
-import MeasureForm from "@/app/components/measure-form";
+import DropDown from "@/app/components/table/drop-down";
+import MeasureForm from "@/app/components/table/measure-form";
 
 interface Props {
   body: string[][] | undefined;

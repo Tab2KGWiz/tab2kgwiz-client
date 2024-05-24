@@ -1,5 +1,5 @@
 import React, { use, useEffect, useReducer } from "react";
-import DropDownUI from "../../ui/file-input/drop-down";
+import DropDownUI from "@/app/ui/table/drop-down";
 import useOutsideClick from "../../hooks/useOutsideClick";
 
 interface Props {

@@ -126,6 +126,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
         props.mappingFile,
         props.mappingId,
       );
+
       if (response === "-1") {
         showSnackBar("Error parsing yarrrml", "error");
         setLoadingRDF(false);

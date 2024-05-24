@@ -2,7 +2,6 @@
 
 import { useFile } from "@/app/components/file-provider";
 import { formatAssigner } from "@/app/lib/formatAssigner";
-import { createNewColumn } from "@/app/services/createNewColumn";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSnackBar } from "@/app/components/snackbar-provider";
@@ -59,7 +58,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     setHeaderMapping(new Map());
   }, [file]);
 
-  useCreateMappingSWR(
+  useGetMappingSWR(
     setIsLoading,
     setHeader,
     setRow,
@@ -106,7 +105,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
 
 export default MappingsPage;
 
-const useCreateMappingSWR = (
+const useGetMappingSWR = (
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setHeader: React.Dispatch<React.SetStateAction<string[] | undefined>>,
   setRow: React.Dispatch<React.SetStateAction<string[][]>>,

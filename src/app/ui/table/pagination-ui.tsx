@@ -1,4 +1,4 @@
-import PaginationButton from "@/app/ui/file-input/pagination-button";
+import PaginationButton from "./pagination-button";
 import React from "react";
 
 interface Props {
