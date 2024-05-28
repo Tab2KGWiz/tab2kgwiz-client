@@ -1,15 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import Cookies from "js-cookie";
 import { useSnackBar } from "../../components/snackbar-provider";
 import UploadFile from "../../ui/upload-file";
 import React from "react";
 import { useFile } from "../../components/file-provider";
-import Link from "next/link";
-import { createNewMapping } from "@/app/services/createNewMapping";
 
 interface Props {}
 

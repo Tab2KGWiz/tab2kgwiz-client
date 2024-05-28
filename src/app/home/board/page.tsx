@@ -5,10 +5,10 @@ import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Box from "@mui/material/Box";
-import { Container, Link, Stack, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
+import TableCell, { SortDirection } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
@@ -26,6 +26,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import PropTypes from "prop-types";
 import { alpha } from "@mui/material/styles";
+import { useRouter } from "next/navigation";
 
 interface Props {}
 
@@ -37,7 +38,14 @@ interface MappingResponseData {
   providedBy: string;
 }
 
-function createData(id, mappingId, title, fileName, createdBy, LastModified) {
+function createData(
+  id: string,
+  mappingId: string,
+  title: string,
+  fileName: string,
+  createdBy: string,
+  LastModified: string,
+) {
   return {
     id,
     mappingId,
@@ -48,7 +56,11 @@ function createData(id, mappingId, title, fileName, createdBy, LastModified) {
   };
 }
 
-function descendingComparator(a, b, orderBy) {
+function descendingComparator(
+  a: { [x: string]: number },
+  b: { [x: string]: number },
+  orderBy: string | number,
+) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
@@ -58,13 +70,21 @@ function descendingComparator(a, b, orderBy) {
   return 0;
 }
 
-function getComparator(order, orderBy) {
+function getComparator(order: string | boolean, orderBy: string) {
   return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    ? (a: { [x: string]: number }, b: { [x: string]: number }) =>
+        descendingComparator(a, b, orderBy)
+    : (a: { [x: string]: number }, b: { [x: string]: number }) =>
+        -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array, comparator) {
+function stableSort(
+  array: any[],
+  comparator: {
+    (a: { [x: string]: number }, b: { [x: string]: number }): number;
+    (arg0: any, arg1: any): any;
+  },
+) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -109,7 +129,14 @@ const headCells = [
   },
 ];
 
-function EnhancedTableHead(props) {
+function EnhancedTableHead(props: {
+  onSelectAllClick: any;
+  order: SortDirection;
+  orderBy: string;
+  numSelected: number;
+  rowCount: number;
+  onRequestSort: (event: React.MouseEvent, property: string) => void;
+}) {
   const {
     onSelectAllClick,
     order,
@@ -118,7 +145,7 @@ function EnhancedTableHead(props) {
     rowCount,
     onRequestSort,
   } = props;
-  const createSortHandler = (property) => (event) => {
+  const createSortHandler = (property: string) => (event: React.MouseEvent) => {
     onRequestSort(event, property);
   };
 
@@ -145,6 +172,7 @@ function EnhancedTableHead(props) {
           >
             <TableSortLabel
               active={orderBy === headCell.id}
+              // @ts-ignore
               direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
             >
@@ -171,7 +199,7 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-function EnhancedTableToolbar(props) {
+function EnhancedTableToolbar(props: { numSelected: number }) {
   const { numSelected } = props;
 
   return (
@@ -231,42 +259,46 @@ EnhancedTableToolbar.propTypes = {
 
 const UserBoard: React.FC<Props> = (props): JSX.Element => {
   const { data, error } = useGetAllMappingsSWR();
+  const router = useRouter();
   const [rows, setRows] = React.useState<
     {
-      id: any;
-      mappingId: any;
-      title: any;
-      fileName: any;
-      createdBy: any;
-      LastModified: any;
+      id: string;
+      mappingId: string;
+      title: string;
+      fileName: string;
+      createdBy: string;
+      LastModified: string;
     }[]
   >([]);
 
-  const [order, setOrder] = React.useState("asc");
+  const [order, setOrder] = React.useState<SortDirection>("asc");
   const [orderBy, setOrderBy] = React.useState("mappingId");
-  const [selected, setSelected] = React.useState([]);
+  const [selected, setSelected] = React.useState<string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  const handleRequestSort = (event, property) => {
+  const handleRequestSort = (event: React.MouseEvent, property: string) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event) => {
+  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
+      const newSelected: string[] = rows.map((n) => n.id);
       setSelected(newSelected);
       return;
     }
     setSelected([]);
   };
 
-  const handleClick = (event, id) => {
+  const handleClick = (
+    event: React.MouseEvent<HTMLTableCellElement, MouseEvent>,
+    id: string,
+  ) => {
     const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
+    let newSelected: any[] = [];
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id);
@@ -283,20 +315,29 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
     setSelected(newSelected);
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handleRowClick = (event: React.MouseEvent, id: string) => {
+    router.push(`/home/mappings/${id}/details`);
+  };
+
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null,
+    newPage: number,
+  ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const handleChangeDense = (event) => {
+  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDense(event.target.checked);
   };
 
-  const isSelected = (id) => selected.indexOf(id) !== -1;
+  const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -320,7 +361,7 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
           data.title,
           data.fileName,
           data.providedBy.split("/")[2],
-          4.3,
+          "4.3",
         );
       });
 
@@ -329,132 +370,119 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
   }, [data]);
 
   return (
-    <>
-      <Box sx={{ width: "100%" }}>
-        <Paper sx={{ width: "100%", mb: 2 }}>
-          <EnhancedTableToolbar numSelected={selected.length} />
-          <TableContainer>
-            <Table
-              sx={{ minWidth: 750 }}
-              aria-labelledby="tableTitle"
-              size={dense ? "small" : "medium"}
-            >
-              <EnhancedTableHead
-                numSelected={selected.length}
-                order={order}
-                orderBy={orderBy}
-                onSelectAllClick={handleSelectAllClick}
-                onRequestSort={handleRequestSort}
-                rowCount={rows.length}
-              />
-              <TableBody>
-                {visibleRows.map((row, index) => {
-                  const isItemSelected = isSelected(row.id);
-                  const labelId = `enhanced-table-checkbox-${index}`;
+    <Box sx={{ width: "100%" }}>
+      <Paper sx={{ width: "100%", mb: 2 }}>
+        <EnhancedTableToolbar numSelected={selected.length} />
+        <TableContainer>
+          <Table
+            sx={{ minWidth: 750 }}
+            aria-labelledby="tableTitle"
+            size={dense ? "small" : "medium"}
+          >
+            <EnhancedTableHead
+              numSelected={selected.length}
+              order={order}
+              orderBy={orderBy}
+              onSelectAllClick={handleSelectAllClick}
+              onRequestSort={handleRequestSort}
+              rowCount={rows.length}
+            />
+            <TableBody>
+              {visibleRows.map((row, index) => {
+                const isItemSelected = isSelected(row.mappingId);
+                const labelId = `enhanced-table-checkbox-${index}`;
 
-                  return (
-                    <TableRow
-                      hover
-                      onClick={(event) => handleClick(event, row.id)}
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={row.id}
-                      selected={isItemSelected}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          color="primary"
-                          checked={isItemSelected}
-                          inputProps={{
-                            "aria-labelledby": labelId,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        padding="none"
-                      >
-                        {row.mappingId}
-                      </TableCell>
-                      <TableCell align="right">{row.title}</TableCell>
-                      <TableCell align="right">{row.fileName}</TableCell>
-                      <TableCell align="right">{row.createdBy}</TableCell>
-                      <TableCell align="right">{row.LastModified}</TableCell>
-                    </TableRow>
-                  );
-                })}
-                {emptyRows > 0 && (
+                return (
                   <TableRow
-                    style={{
-                      height: (dense ? 33 : 53) * emptyRows,
-                    }}
+                    hover
+                    role="checkbox"
+                    aria-checked={isItemSelected}
+                    tabIndex={-1}
+                    key={row.id}
+                    selected={isItemSelected}
+                    sx={{ cursor: "pointer" }}
                   >
-                    <TableCell colSpan={6} />
+                    <TableCell
+                      onClick={(event) => handleClick(event, row.mappingId)}
+                      padding="checkbox"
+                    >
+                      <Checkbox
+                        color="primary"
+                        checked={isItemSelected}
+                        inputProps={{
+                          "aria-labelledby": labelId,
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell
+                      onClick={(event) => handleRowClick(event, row.mappingId)}
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      padding="none"
+                    >
+                      {row.mappingId}
+                    </TableCell>
+                    <TableCell
+                      onClick={(event) => handleRowClick(event, row.mappingId)}
+                      align="left"
+                    >
+                      {row.title}
+                    </TableCell>
+                    <TableCell
+                      onClick={(event) => handleRowClick(event, row.mappingId)}
+                      align="left"
+                    >
+                      {row.fileName}
+                    </TableCell>
+                    <TableCell
+                      onClick={(event) => handleRowClick(event, row.mappingId)}
+                      align="left"
+                    >
+                      {row.createdBy}
+                    </TableCell>
+                    <TableCell
+                      onClick={(event) => handleRowClick(event, row.mappingId)}
+                      align="left"
+                    >
+                      {row.LastModified}
+                    </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={rows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Paper>
-        <FormControlLabel
-          control={<Switch checked={dense} onChange={handleChangeDense} />}
-          label="Dense padding"
-        />
-      </Box>
-
-      {/* <Container maxWidth="xl">
-        <Box
-          display="flex"
-          sx={{
-            height: "90vh",
-            bgcolor: "#f3f4f6",
-            marginTop: "2vh",
-            borderRadius: "10px",
-            boxShadow: 1,
-          }}
-        >
-          <Stack spacing={2} sx={{ marginTop: "2vh", marginLeft: "2vh" }}>
-            <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              Mapping List
-            </h2>
-            <ul className="max-w-md space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-              {mappingsIds.length === 0 ? (
-                <li>There are no mappings available.</li>
-              ) : (
-                <>
-                  {mappingsIds.map((mappingId) => (
-                    <li key={mappingId}>
-                      <Link href={`/home/mappings/${mappingId}/details`}>
-                        <a>Mapping ID: {mappingId}</a>
-                      </Link>
-                    </li>
-                  ))}
-                </>
+                );
+              })}
+              {emptyRows > 0 && (
+                <TableRow
+                  style={{
+                    height: (dense ? 33 : 53) * emptyRows,
+                  }}
+                >
+                  <TableCell colSpan={6} />
+                </TableRow>
               )}
-            </ul>
-          </Stack>
-        </Box>
-      </Container> */}
-    </>
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
+      <FormControlLabel
+        control={<Switch checked={dense} onChange={handleChangeDense} />}
+        label="Dense padding"
+      />
+    </Box>
   );
 };
 
 const useGetAllMappingsSWR = () => {
   const { data, error } = useSWR(
-    " ",
+    "http://localhost:8080/mappings",
     async () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;
