@@ -172,7 +172,7 @@ function EnhancedTableHead(props: {
           >
             <TableSortLabel
               active={orderBy === headCell.id}
-              // @ts-ignore
+              // @ts-ignore - TS doesn't like the ternary operator here
               direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
             >

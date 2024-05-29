@@ -116,8 +116,9 @@ const useGetMappingSWR = (
   setCSVFile: React.Dispatch<React.SetStateAction<File | null>>,
 ) => {
   const { data, error } = useSWR(
-    `http://localhost:8080/mappings/${mappingIdHook}`,
+    " ",
     async () => {
+      console.log("!!!", mappingIdHook);
       setIsLoading(true);
 
       axios.defaults.headers.common["Authorization"] =

@@ -470,7 +470,7 @@ const useCreateMappingSWR = (
 ) => {
   const { data, error } = useSWR(
     // If URL is blank with space, sometimes it will not enter the fetch function
-    `http://localhost:8080/mappings/${mappingIdHook}`,
+    " ",
     async () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;
