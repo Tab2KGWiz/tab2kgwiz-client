@@ -57,6 +57,7 @@ interface MappingResponseData {
     ontologyURI: string;
   }[];
 }
+
 interface Props {}
 
 const MappingDetailsPage: React.FC<{
@@ -75,11 +76,7 @@ const MappingDetailsPage: React.FC<{
   const [rdfFile, setRdfFile] = React.useState("");
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
 
-  const { data, error } = useCreateMappingSWR(
-    showSnackBar,
-    router,
-    mappingIdHook,
-  );
+  const { data, error } = useGetMappingSWR(showSnackBar, router, mappingIdHook);
 
   const handleIsOpen = () => {
     setIsOpen((prev) => !prev);
@@ -463,14 +460,14 @@ const MappingDetailsPage: React.FC<{
   );
 };
 
-const useCreateMappingSWR = (
+const useGetMappingSWR = (
   showSnackBar: (message: string, type: "success" | "error") => void,
   router: ReturnType<typeof useRouter>,
   mappingIdHook: number,
 ) => {
   const { data, error } = useSWR(
     // If URL is blank with space, sometimes it will not enter the fetch function
-    " ",
+    "http://localhost:8080/mappings/",
     async () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;

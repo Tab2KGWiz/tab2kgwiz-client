@@ -1,16 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { createNewMapping } from "../../services/createNewMapping";
 import { useSnackBar } from "../../components/snackbar-provider";
 import { useFile } from "../../components/file-provider";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { DataFrame, toCSV } from "danfojs";
-import router from "next/router";
+import { toCSV } from "danfojs";
 
 interface Props {}
 
