@@ -14,6 +14,10 @@ import Cookies from "js-cookie";
 interface MappingResponseData {
   fileContent: string;
   fileName: string;
+  columns: {
+    title: string;
+    dataType: string;
+  }[];
 }
 
 const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
@@ -161,11 +165,18 @@ const useGetMappingSWR = (
 
         const headerMapping = new Map<string, string>();
 
-        headers.forEach(async (header, index) => {
-          // Check and assign the format of the data and set the format to the Map
-          formatAssigner(rowsWithoutNull, index, headerMapping, header);
-        });
-        setHeaderMapping(headerMapping);
+        if (responseData.columns.length === 0) {
+          headers.forEach(async (header, index) => {
+            // Check and assign the format of the data and set the format to the Map
+            formatAssigner(rowsWithoutNull, index, headerMapping, header);
+          });
+          setHeaderMapping(headerMapping);
+        } else {
+          responseData.columns.forEach((column) => {
+            headerMapping.set(column.title, column.dataType.split(":")[1]);
+          });
+          setHeaderMapping(headerMapping);
+        }
       } catch (error) {
         showSnackBar("An error occurred while processing the file.", "error");
       } finally {
