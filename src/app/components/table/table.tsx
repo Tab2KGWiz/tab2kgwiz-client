@@ -36,6 +36,7 @@ interface Props {
 
 interface ColumnResponseData {
   uri: string;
+  id: string;
   title: string;
 }
 
@@ -46,15 +47,13 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const { file, setFile } = useFile();
   const router = useRouter();
   const [columnsCreated, setColumnsCreated] = React.useState(false);
-  const [columnsId, setColumnsId] = React.useState<Map<string, string>>(
-    new Map(),
-  );
   const [isTableChanged, setIsTableChanged] = React.useState(true);
   const [fileContent, setFileContent] = React.useState<String>("");
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
 
   const handleSave = async () => {
     setLoadingSave(true);
+
     props.headerMapping.forEach(async (type, title) => {
       // Remove all blank spaces and convert to lowercase
       const ontologyType = title.split(" ").join("").toLowerCase();
@@ -65,7 +64,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       };
 
       try {
-        await createColumn(data, columnsId, setColumnsId);
+        await createColumn(data);
         showSnackBar("Columns created successfully.", "success");
         setLoadingSave(false);
         setColumnsCreated(true);
@@ -83,31 +82,48 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     });
   };
 
-  const createColumn = async (
-    data: {
-      title: string;
-      ontologyType: string;
-      dataType: string;
-    },
-    columnsId: Map<string, string>,
-    setColumnsId: React.Dispatch<React.SetStateAction<Map<string, string>>>,
-  ) => {
+  const createColumn = async (data: {
+    title: string;
+    ontologyType: string;
+    dataType: string;
+  }) => {
     const accessToken = Cookies.get("accessToken");
 
     try {
-      const response = await axios.put(
-        `http://localhost:8080/mappings/${props.mappingId}/columns/${columnsId.get(data.title) ? columnsId.get(data.title) : "-1"}`,
-        data,
+      const response2 = await axios.get(
+        `http://localhost:8080/mappings/${props.mappingId}/columns`,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
 
-      if (response.status !== 200) {
-        throw new Error("Error creating column: " + response.status);
+      if (response2.status !== 200) {
+        throw new Error("Error creating column: " + response2.status);
       }
-      const responseData: ColumnResponseData = response.data;
 
-      columnsId.set(data.title, responseData.uri.match(/\d+$/)?.[0] || "");
-      setColumnsId(columnsId);
+      if (response2.data.length === 0) {
+        const response = await axios.put(
+          `http://localhost:8080/mappings/${props.mappingId}/columns/-1`,
+          data,
+          { headers: { Authorization: `Bearer ${accessToken}` } },
+        );
+
+        if (response.status !== 200) {
+          throw new Error("Error creating column: " + response.status);
+        }
+      } else {
+        response2.data.forEach(async (column: ColumnResponseData) => {
+          if (column.title === data.title) {
+            const response = await axios.put(
+              `http://localhost:8080/mappings/${props.mappingId}/columns/${column.id}`,
+              data,
+              { headers: { Authorization: `Bearer ${accessToken}` } },
+            );
+
+            if (response.status !== 200) {
+              throw new Error("Error creating column: " + response.status);
+            }
+          }
+        });
+      }
     } catch (error) {
       throw new Error("Error creating column: " + error);
     }

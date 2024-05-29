@@ -118,7 +118,6 @@ const useGetMappingSWR = (
   const { data, error } = useSWR(
     " ",
     async () => {
-      console.log("!!!", mappingIdHook);
       setIsLoading(true);
 
       axios.defaults.headers.common["Authorization"] =
