@@ -16,7 +16,7 @@ import { Button, Stack } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import { TextField } from "@mui/material";
+import { TextField, Paper } from "@mui/material";
 
 interface Props {
   header: string[] | undefined;
@@ -209,12 +209,24 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+      {/* <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5"> */}
+      <Paper
+        sx={{
+          maxHeight: "100vh",
+          overflow: "auto",
+          backgroundColor: "#F9FAFB",
+          padding: "12px",
+          "@media (min-width: 640px)": {
+            padding: "20px",
+          },
+        }}
+      >
         <Stack
           spacing={2}
           direction="row"
           sx={{
-            marginLeft: "5%",
+            marginLeft: "4.5%",
+            marginBottom: "1%",
             color: "#3C3C3C",
           }}
         >
@@ -301,7 +313,8 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             <span>RDF file</span>
           </Button>
         </Box>
-      </section>
+      </Paper>
+      {/* </section> */}
     </>
   );
 };
