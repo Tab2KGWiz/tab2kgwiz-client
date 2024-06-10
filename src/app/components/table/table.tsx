@@ -12,7 +12,7 @@ import Cookies from "js-cookie";
 import Box from "@mui/material/Box";
 import { useFile } from "../file-provider";
 import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Switch, Typography } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
@@ -240,19 +240,18 @@ const Table: React.FC<Props> = (props): JSX.Element => {
               setIsTableChanged(true);
             }}
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                defaultChecked={props.isAccessible}
-                color="success"
-                onChange={(e) => {
-                  props.setIsAccessible(e.target.checked);
-                  setIsTableChanged(true);
-                }}
-              />
-            }
-            label="Public"
-          />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography>Public</Typography>
+            <Switch
+              defaultChecked={props.isAccessible}
+              color="warning"
+              onChange={(e) => {
+                props.setIsAccessible(e.target.checked);
+                setIsTableChanged(true);
+              }}
+            />
+            <Typography>Private</Typography>
+          </Stack>
         </Stack>
         <div className="mx-auto max-w-full px-6 lg:px-12">
           <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
