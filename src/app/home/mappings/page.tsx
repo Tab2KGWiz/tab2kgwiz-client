@@ -69,6 +69,7 @@ const useCreateMappingSWR = (file: File | null) => {
           fileFormat: file.type.split("/")[1],
           fileName: file.name.replace(/\s+/g, ""),
           mainOntology: "schema:Pork",
+          isAccessible: false,
           // prefixesURIS:
           //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
         };

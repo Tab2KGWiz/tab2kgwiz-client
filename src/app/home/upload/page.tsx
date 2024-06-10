@@ -9,8 +9,6 @@ import { useFile } from "../../components/file-provider";
 interface Props {}
 
 const UploadFilePage: React.FC<Props> = (props): JSX.Element => {
-  const { showSnackBar } = useSnackBar();
-  const router = useRouter();
   const { file, setFile } = useFile();
   const { processUploadedFile } = useProcessFile();
 

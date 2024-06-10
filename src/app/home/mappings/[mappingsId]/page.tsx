@@ -14,6 +14,8 @@ import Cookies from "js-cookie";
 interface MappingResponseData {
   fileContent: string;
   fileName: string;
+  accessible: boolean;
+  title: string;
   columns: {
     title: string;
     dataType: string;
@@ -37,6 +39,8 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     new Map(),
   );
   const [CSVFile, setCSVFile] = React.useState<File | null>(null);
+  const [isAccessible, setIsAccessible] = React.useState(false);
+  const [mappingTitle, setMappingTitle] = React.useState<string>("");
 
   const router = useRouter();
 
@@ -71,6 +75,8 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     router,
     setHeaderMapping,
     setCSVFile,
+    setIsAccessible,
+    setMappingTitle,
   );
 
   return (
@@ -99,6 +105,9 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
               mappingName={CSVFile?.name}
               mappingFile={CSVFile}
               mappingId={mappingIdHook}
+              isAccessible={isAccessible}
+              setIsAccessible={setIsAccessible}
+              mappingTitle={mappingTitle}
             />
           )}
         </>
@@ -118,6 +127,8 @@ const useGetMappingSWR = (
   router: ReturnType<typeof useRouter>,
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>,
   setCSVFile: React.Dispatch<React.SetStateAction<File | null>>,
+  setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>,
+  setMappingTitle: React.Dispatch<React.SetStateAction<string>>,
 ) => {
   const { data, error } = useSWR(
     " ",
@@ -144,6 +155,9 @@ const useGetMappingSWR = (
         [responseData.fileContent],
         `${responseData.fileName}`,
       );
+
+      setIsAccessible(responseData.accessible);
+      setMappingTitle(responseData.title);
 
       setCSVFile(file);
 

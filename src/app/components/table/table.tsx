@@ -12,10 +12,11 @@ import Cookies from "js-cookie";
 import Box from "@mui/material/Box";
 import { useFile } from "../file-provider";
 import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
-import { Button } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import { List } from "@mui/material";
-import { ListItem } from "@mui/material";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import { TextField } from "@mui/material";
 
 interface Props {
   header: string[] | undefined;
@@ -32,6 +33,9 @@ interface Props {
   mappingName: string | undefined;
   mappingFile: File | null;
   mappingId: number;
+  isAccessible: boolean;
+  setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>;
+  mappingTitle: string;
 }
 
 interface ColumnResponseData {
@@ -53,6 +57,11 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
   const handleSave = async () => {
     setLoadingSave(true);
+
+    await updateMapping({
+      title: props.mappingTitle,
+      accessible: props.isAccessible,
+    });
 
     props.headerMapping.forEach(async (type, title) => {
       // Remove all blank spaces and convert to lowercase
@@ -129,6 +138,27 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     }
   };
 
+  const updateMapping = async (data: {
+    title: string;
+    accessible: boolean;
+  }) => {
+    const accessToken = Cookies.get("accessToken");
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:8080/mappings/${props.mappingId}`,
+        data,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Error updating mapping: " + response.status);
+      }
+    } catch (error) {
+      throw new Error("Error updating mapping: " + error);
+    }
+  };
+
   const handleGenerateRDF = async () => {
     setLoadingRDF(true);
 
@@ -167,17 +197,34 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
-        <List
+        <Stack
+          spacing={2}
+          direction="row"
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            padding: 0,
             marginLeft: "5%",
             color: "#3C3C3C",
           }}
         >
-          <ListItem>Mapping ID: {props.mappingId}</ListItem>
-        </List>
+          {/* <ListItem>Mapping ID: {props.mappingId}</ListItem> */}
+          <TextField
+            id="standard-basic"
+            label="Mapping Title"
+            variant="standard"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                defaultChecked={props.isAccessible}
+                color="success"
+                onChange={(e) => {
+                  props.setIsAccessible(e.target.checked);
+                  setIsTableChanged(true);
+                }}
+              />
+            }
+            label="Public"
+          />
+        </Stack>
         <div className="mx-auto max-w-full px-6 lg:px-12">
           <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
             <div className="overflow-x-auto">

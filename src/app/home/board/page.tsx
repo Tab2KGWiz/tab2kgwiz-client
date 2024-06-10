@@ -5,7 +5,7 @@ import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Box from "@mui/material/Box";
-import { Typography } from "@mui/material";
+import { Chip, Typography } from "@mui/material";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell, { SortDirection } from "@mui/material/TableCell";
@@ -36,6 +36,7 @@ interface MappingResponseData {
   title: string;
   fileName: string;
   providedBy: string;
+  accessible: boolean;
 }
 
 function createData(
@@ -44,7 +45,7 @@ function createData(
   title: string,
   fileName: string,
   createdBy: string,
-  LastModified: string,
+  accessible: boolean,
 ) {
   return {
     id,
@@ -52,7 +53,7 @@ function createData(
     title,
     fileName,
     createdBy,
-    LastModified,
+    accessible,
   };
 }
 
@@ -122,10 +123,10 @@ const headCells = [
     label: "Created by",
   },
   {
-    id: "LastModified",
+    id: "accessible",
     numeric: false,
     disablePadding: false,
-    label: "Last modified",
+    label: "Availability",
   },
 ];
 
@@ -267,7 +268,7 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
       title: string;
       fileName: string;
       createdBy: string;
-      LastModified: string;
+      accessible: boolean;
     }[]
   >([]);
 
@@ -361,7 +362,7 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
           data.title,
           data.fileName,
           data.providedBy.split("/")[2],
-          "4.3",
+          data.accessible,
         );
       });
 
@@ -445,7 +446,10 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
                       onClick={(event) => handleRowClick(event, row.mappingId)}
                       align="left"
                     >
-                      {row.LastModified}
+                      <Chip
+                        label={row.accessible ? "Public" : "Private"}
+                        color={row.accessible ? "info" : "warning"}
+                      />
                     </TableCell>
                   </TableRow>
                 );
