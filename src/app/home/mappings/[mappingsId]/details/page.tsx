@@ -30,6 +30,7 @@ import {
   Stack,
   Typography,
   Chip,
+  Box,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 
@@ -50,6 +51,10 @@ interface MappingResponseData {
   fileName: string;
   id: number;
   yamlFile: string;
+  title: string;
+  fileFormat: string;
+  providedBy: string;
+  accessible: boolean;
   columns: {
     id: number;
     title: string;
@@ -229,16 +234,61 @@ const MappingDetailsPage: React.FC<{
         }}
       >
         <Stack spacing={1}>
-          <Card>
-            <CardHeader title="Mapping" />
-            <CardContent>
-              <Typography variant="body2" color="text.secondary">
-                Show details of the mapping.
-              </Typography>
-            </CardContent>
+          <Card sx={{ width: "30vw", height: "34.2vh" }}>
+            <CardHeader title="Mapping info" />
+
+            <List
+              sx={{
+                width: "100%",
+                maxWidth: 360,
+                bgcolor: "background.paper",
+              }}
+              aria-label="mailbox folders"
+            >
+              <ListItem>
+                <Typography variant="subtitle2" gutterBottom>
+                  <Box fontWeight="fontWeightBold" display="inline">
+                    ID: &nbsp;&nbsp;
+                  </Box>
+                  {data?.id}
+                </Typography>
+              </ListItem>
+              <ListItem>
+                <Typography variant="subtitle2" gutterBottom>
+                  <Box fontWeight="fontWeightBold" display="inline">
+                    Title: &nbsp;&nbsp;
+                  </Box>
+                  {data?.title}
+                </Typography>
+              </ListItem>
+              <ListItem>
+                <Typography variant="subtitle2" gutterBottom>
+                  <Box fontWeight="fontWeightBold" display="inline">
+                    File format: &nbsp;&nbsp;
+                  </Box>
+                  {data?.fileFormat}
+                </Typography>
+              </ListItem>
+              <ListItem>
+                <Typography variant="subtitle2" gutterBottom>
+                  <Box fontWeight="fontWeightBold" display="inline">
+                    Created by: &nbsp;&nbsp;
+                  </Box>
+                  {data?.providedBy.split("/")[2]}
+                </Typography>
+              </ListItem>
+              <ListItem>
+                <Typography variant="subtitle2" gutterBottom>
+                  <Box fontWeight="fontWeightBold" display="inline">
+                    Availability: &nbsp;&nbsp;
+                  </Box>
+                  {data?.accessible ? "Public" : "Private"}
+                </Typography>
+              </ListItem>
+            </List>
           </Card>
 
-          <Card>
+          <Card sx={{ width: "30vw", height: "48vh" }}>
             <CardHeader title="Columns" />
             <CardContent>
               <Typography variant="body2" color="text.secondary">
@@ -297,7 +347,7 @@ const MappingDetailsPage: React.FC<{
 
         <Grid container>
           <Grid item xs={12} marginBottom={1}>
-            <Card sx={{ maxWidth: 1300, height: 300 }}>
+            <Card sx={{ width: "59vw", height: "32.2vh" }}>
               <CardHeader title="Yaml File and CSV" />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
@@ -356,7 +406,7 @@ const MappingDetailsPage: React.FC<{
             </Card>
           </Grid>
           <Grid item xs={12}>
-            <Card sx={{ maxWidth: 1300, height: 490 }}>
+            <Card sx={{ width: "59vw", height: "50vh" }}>
               <CardHeader title="RDF" />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
