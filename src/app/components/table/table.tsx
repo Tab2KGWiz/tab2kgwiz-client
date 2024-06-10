@@ -64,63 +64,55 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       accessible: props.isAccessible,
     });
 
-    props.headerMapping.forEach(async (type, title) => {
-      // Remove all blank spaces and convert to lowercase
-      const ontologyType = title.split(" ").join("").toLowerCase();
-      const data = {
-        title: title,
-        ontologyType,
-        dataType: "xsd:" + type,
-      };
-
-      try {
-        await createColumn(data);
-        showSnackBar("Columns created successfully.", "success");
-        setLoadingSave(false);
-        setColumnsCreated(true);
-        setIsTableChanged(false);
-      } catch (error) {
-        showSnackBar(
-          `Error occurred while creating columns: ${error}`,
-          "error",
-        );
-        setLoadingSave(false);
-        setFile(null);
-        router.push("/home/upload");
-        return;
-      }
-    });
-  };
-
-  const createColumn = async (data: {
-    title: string;
-    ontologyType: string;
-    dataType: string;
-  }) => {
     const accessToken = Cookies.get("accessToken");
 
-    try {
-      const response2 = await axios.get(
-        `http://localhost:8080/mappings/${props.mappingId}/columns`,
-        { headers: { Authorization: `Bearer ${accessToken}` } },
-      );
+    const response = await axios.get(
+      `http://localhost:8080/mappings/${props.mappingId}/columns`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
 
-      if (response2.status !== 200) {
-        throw new Error("Error creating column: " + response2.status);
-      }
+    if (response.status !== 200) {
+      throw new Error("Error creating column: " + response.status);
+    }
 
-      if (response2.data.length === 0) {
-        const response = await axios.put(
-          `http://localhost:8080/mappings/${props.mappingId}/columns/-1`,
-          data,
-          { headers: { Authorization: `Bearer ${accessToken}` } },
-        );
+    if (response.data.length === 0) {
+      props.headerMapping.forEach(async (type, title) => {
+        // Remove all blank spaces and convert to lowercase
+        const ontologyType = title.split(" ").join("").toLowerCase();
+        const data = {
+          title: title,
+          ontologyType,
+          dataType: "xsd:" + type,
+        };
 
-        if (response.status !== 200) {
-          throw new Error("Error creating column: " + response.status);
+        try {
+          await createColumn(data);
+          showSnackBar("Columns created successfully.", "success");
+          setLoadingSave(false);
+          setColumnsCreated(true);
+          setIsTableChanged(false);
+        } catch (error) {
+          showSnackBar(
+            `Error occurred while creating columns: ${error}`,
+            "error",
+          );
+          setLoadingSave(false);
+          setFile(null);
+          router.push("/home/upload");
+          return;
         }
-      } else {
-        response2.data.forEach(async (column: ColumnResponseData) => {
+      });
+    } else {
+      response.data.forEach(async (column: ColumnResponseData) => {
+        props.headerMapping.forEach(async (type, title) => {
+          // Remove all blank spaces and convert to lowercase
+          const ontologyType = title.split(" ").join("").toLowerCase();
+          const data = {
+            title: title,
+            ontologyType,
+            dataType: "xsd:" + type,
+          };
+
           if (column.title === data.title) {
             const response = await axios.put(
               `http://localhost:8080/mappings/${props.mappingId}/columns/${column.id}`,
@@ -133,6 +125,26 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             }
           }
         });
+      });
+    }
+  };
+
+  const createColumn = async (data: {
+    title: string;
+    ontologyType: string;
+    dataType: string;
+  }) => {
+    const accessToken = Cookies.get("accessToken");
+
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/mappings/${props.mappingId}/columns/-1`,
+        data,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Error creating column: " + response.status);
       }
     } catch (error) {
       throw new Error("Error creating column: " + error);
