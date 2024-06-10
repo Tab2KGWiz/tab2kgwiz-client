@@ -228,58 +228,72 @@ const MappingDetailsPage: React.FC<{
           marginRight: "5vh",
         }}
       >
-        <Card sx={{ width: 345, height: 800 }}>
-          <CardHeader title="Columns" />
-          <CardContent>
-            <Typography variant="body2" color="text.secondary">
-              Show list of columns in the mapping.
-            </Typography>
-          </CardContent>
+        <Stack spacing={1}>
+          <Card>
+            <CardHeader title="Mapping" />
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                Show details of the mapping.
+              </Typography>
+            </CardContent>
+          </Card>
 
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<EditNoteOutlinedIcon />}
-            onClick={handleEdit}
-            sx={{
-              marginLeft: 2,
-            }}
-          >
-            <span>Edit</span>
-          </Button>
+          <Card>
+            <CardHeader title="Columns" />
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                Show list of columns in the mapping.
+              </Typography>
+            </CardContent>
 
-          <List
-            sx={{
-              width: "100%",
-              maxWidth: 400,
-              bgcolor: "background.paper",
-              position: "relative",
-              overflow: "auto",
-              maxHeight: 700,
-              "& ul": { padding: 0 },
-            }}
-          >
-            {data?.columns.map(({ id, title, dataType, ontologyURI }) => (
-              <li key={`section-${id}`}>
-                <ul>
-                  <ListItem key={`item-${id}-${title}`} onClick={handleIsOpen}>
-                    <ListItemText primary={`${title}`} />
-                  </ListItem>
-                  <Collapse in={isOpen}>
-                    <List>
-                      <ListItem>
-                        <ListItemText primary={" • " + `${dataType}`} />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemText primary={" • " + `${ontologyURI}`} />
-                      </ListItem>
-                    </List>
-                  </Collapse>
-                </ul>
-              </li>
-            ))}
-          </List>
-        </Card>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<EditNoteOutlinedIcon />}
+              onClick={handleEdit}
+              sx={{
+                marginLeft: 2,
+              }}
+            >
+              <span>Edit</span>
+            </Button>
+
+            <List
+              sx={{
+                width: "100%",
+                maxWidth: 400,
+                bgcolor: "background.paper",
+                position: "relative",
+                overflow: "auto",
+                maxHeight: 700,
+                "& ul": { padding: 0 },
+              }}
+            >
+              {data?.columns.map(({ id, title, dataType, ontologyURI }) => (
+                <li key={`section-${id}`}>
+                  <ul>
+                    <ListItem
+                      key={`item-${id}-${title}`}
+                      onClick={handleIsOpen}
+                    >
+                      <ListItemText primary={`${title}`} />
+                    </ListItem>
+                    <Collapse in={isOpen}>
+                      <List>
+                        <ListItem>
+                          <ListItemText primary={" • " + `${dataType}`} />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText primary={" • " + `${ontologyURI}`} />
+                        </ListItem>
+                      </List>
+                    </Collapse>
+                  </ul>
+                </li>
+              ))}
+            </List>
+          </Card>
+        </Stack>
 
         <Grid container>
           <Grid item xs={12} marginBottom={1}>

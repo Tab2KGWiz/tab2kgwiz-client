@@ -108,6 +108,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
               isAccessible={isAccessible}
               setIsAccessible={setIsAccessible}
               mappingTitle={mappingTitle}
+              setMappingTitle={setMappingTitle}
             />
           )}
         </>

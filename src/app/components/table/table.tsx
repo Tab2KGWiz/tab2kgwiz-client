@@ -36,6 +36,7 @@ interface Props {
   isAccessible: boolean;
   setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>;
   mappingTitle: string;
+  setMappingTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface ColumnResponseData {
@@ -207,9 +208,13 @@ const Table: React.FC<Props> = (props): JSX.Element => {
         >
           {/* <ListItem>Mapping ID: {props.mappingId}</ListItem> */}
           <TextField
-            id="standard-basic"
-            label="Mapping Title"
-            variant="standard"
+            id="mapping-title-field"
+            label={props.mappingTitle}
+            variant="outlined"
+            onChange={(e) => {
+              props.setMappingTitle(e.target.value);
+              setIsTableChanged(true);
+            }}
           />
           <FormControlLabel
             control={
