@@ -222,7 +222,7 @@ const MappingDetailsPage: React.FC<{
           color: "#000000",
         }}
       >
-        Mapping Details
+        Details
       </Typography>
       <br />
       <Stack
@@ -315,7 +315,7 @@ const MappingDetailsPage: React.FC<{
                 bgcolor: "background.paper",
                 position: "relative",
                 overflow: "auto",
-                maxHeight: 700,
+                maxHeight: 300,
                 "& ul": { padding: 0 },
               }}
             >
