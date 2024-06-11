@@ -361,7 +361,7 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
           data.id,
           data.title,
           data.fileName,
-          data.providedBy.split("/")[2],
+          data.providedBy?.split("/")[2],
           data.accessible,
         );
       });

@@ -16,6 +16,7 @@ interface MappingResponseData {
   fileName: string;
   accessible: boolean;
   title: string;
+  providedBy: string;
   columns: {
     title: string;
     dataType: string;
@@ -159,6 +160,14 @@ const useGetMappingSWR = (
 
       setIsAccessible(responseData.accessible);
       setMappingTitle(responseData.title);
+
+      const username = Cookies.get("username");
+      const mappingUser = responseData.providedBy.split("/")[2];
+
+      if (username !== mappingUser) {
+        showSnackBar("You do not have access to edit this mapping.", "error");
+        router.push("/home/board");
+      }
 
       setCSVFile(file);
 

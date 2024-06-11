@@ -42,6 +42,11 @@ export default function SignIn() {
         path: "/",
       });
 
+      Cookies.set("username", formData.username, {
+        expires: expirationTime,
+        path: "/",
+      });
+
       showSnackBar("You have successfully signed in.", "success");
       router.push("/home");
     } else {

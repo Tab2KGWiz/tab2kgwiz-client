@@ -55,6 +55,7 @@ interface MappingResponseData {
   fileFormat: string;
   providedBy: string;
   accessible: boolean;
+  supplier: string;
   columns: {
     id: number;
     title: string;
@@ -80,8 +81,14 @@ const MappingDetailsPage: React.FC<{
   const [loadingRDF, setLoadingRDF] = React.useState(false);
   const [rdfFile, setRdfFile] = React.useState("");
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
+  const [mappingUser, setMappingUser] = React.useState<string>("");
 
-  const { data, error } = useGetMappingSWR(showSnackBar, router, mappingIdHook);
+  const { data, error } = useGetMappingSWR(
+    showSnackBar,
+    router,
+    mappingIdHook,
+    setMappingUser,
+  );
 
   const handleIsOpen = () => {
     setIsOpen((prev) => !prev);
@@ -300,6 +307,7 @@ const MappingDetailsPage: React.FC<{
               size="small"
               variant="outlined"
               startIcon={<EditNoteOutlinedIcon />}
+              disabled={mappingUser !== Cookies.get("username")}
               onClick={handleEdit}
               sx={{
                 marginLeft: 2,
@@ -528,6 +536,7 @@ const useGetMappingSWR = (
   showSnackBar: (message: string, type: "success" | "error") => void,
   router: ReturnType<typeof useRouter>,
   mappingIdHook: number,
+  setMappingUser: React.Dispatch<React.SetStateAction<string>>,
 ) => {
   const { data, error } = useSWR(
     // If URL is blank with space, sometimes it will not enter the fetch function
@@ -549,6 +558,7 @@ const useGetMappingSWR = (
       }
 
       const data = response.data as MappingResponseData;
+      setMappingUser(data.providedBy.split("/")[2]);
 
       return data;
     },

@@ -87,7 +87,6 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
         try {
           await createColumn(data);
-          showSnackBar("Columns created successfully.", "success");
           setLoadingSave(false);
           setColumnsCreated(true);
           setIsTableChanged(false);
@@ -126,7 +125,11 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           }
         });
       });
+      setLoadingSave(false);
+      setColumnsCreated(true);
+      setIsTableChanged(false);
     }
+    showSnackBar("Columns created successfully.", "success");
   };
 
   const createColumn = async (data: {
@@ -241,7 +244,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             }}
           />
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography>Public</Typography>
+            <Typography>Private</Typography>
             <Switch
               defaultChecked={props.isAccessible}
               color="warning"
@@ -250,7 +253,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
                 setIsTableChanged(true);
               }}
             />
-            <Typography>Private</Typography>
+            <Typography>Public</Typography>
           </Stack>
         </Stack>
         <div className="mx-auto max-w-full px-6 lg:px-12">
