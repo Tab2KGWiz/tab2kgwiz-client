@@ -2,19 +2,25 @@
 
 import { useFile } from "@/app/components/file-provider";
 import { formatAssigner } from "@/app/lib/formatAssigner";
-import { createNewColumn } from "@/app/services/createNewColumn";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSnackBar } from "@/app/components/snackbar-provider";
 import { LoadingSkeleton } from "@/app/ui/loading-skeleton";
-import Table from "@/app/components/table";
+import Table from "@/app/components/table/table";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { title } from "process";
 
 interface MappingResponseData {
   fileContent: string;
+  fileName: string;
+  accessible: boolean;
+  title: string;
+  providedBy: string;
+  columns: {
+    title: string;
+    dataType: string;
+  }[];
 }
 
 const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
@@ -33,6 +39,9 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   const [headerMapping, setHeaderMapping] = React.useState<Map<string, string>>(
     new Map(),
   );
+  const [CSVFile, setCSVFile] = React.useState<File | null>(null);
+  const [isAccessible, setIsAccessible] = React.useState(false);
+  const [mappingTitle, setMappingTitle] = React.useState<string>("");
 
   const router = useRouter();
 
@@ -58,7 +67,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     setHeaderMapping(new Map());
   }, [file]);
 
-  useCreateMappingSWR(
+  useGetMappingSWR(
     setIsLoading,
     setHeader,
     setRow,
@@ -66,6 +75,9 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     showSnackBar,
     router,
     setHeaderMapping,
+    setCSVFile,
+    setIsAccessible,
+    setMappingTitle,
   );
 
   return (
@@ -91,9 +103,13 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
               headerMapping={headerMapping}
               setHeaderMapping={setHeaderMapping}
               totalRows={row.length}
-              mappingName={file?.name.replace(/\s+/g, "")}
-              mappingFile={file}
+              mappingName={CSVFile?.name}
+              mappingFile={CSVFile}
               mappingId={mappingIdHook}
+              isAccessible={isAccessible}
+              setIsAccessible={setIsAccessible}
+              mappingTitle={mappingTitle}
+              setMappingTitle={setMappingTitle}
             />
           )}
         </>
@@ -104,7 +120,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
 
 export default MappingsPage;
 
-const useCreateMappingSWR = (
+const useGetMappingSWR = (
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setHeader: React.Dispatch<React.SetStateAction<string[] | undefined>>,
   setRow: React.Dispatch<React.SetStateAction<string[][]>>,
@@ -112,9 +128,12 @@ const useCreateMappingSWR = (
   showSnackBar: (message: string, type: "success" | "error") => void,
   router: ReturnType<typeof useRouter>,
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>,
+  setCSVFile: React.Dispatch<React.SetStateAction<File | null>>,
+  setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>,
+  setMappingTitle: React.Dispatch<React.SetStateAction<string>>,
 ) => {
   const { data, error } = useSWR(
-    ` `,
+    " ",
     async () => {
       setIsLoading(true);
 
@@ -134,7 +153,23 @@ const useCreateMappingSWR = (
       }
       const responseData: MappingResponseData = response.data;
 
-      const file: File = new File([responseData.fileContent], "temp.csv");
+      const file: File = new File(
+        [responseData.fileContent],
+        `${responseData.fileName}`,
+      );
+
+      setIsAccessible(responseData.accessible);
+      setMappingTitle(responseData.title);
+
+      const username = Cookies.get("username");
+      const mappingUser = responseData.providedBy.split("/")[2];
+
+      if (username !== mappingUser) {
+        showSnackBar("You do not have access to edit this mapping.", "error");
+        router.push("/home/board");
+      }
+
+      setCSVFile(file);
 
       try {
         const dfd = await import("danfojs");
@@ -154,11 +189,18 @@ const useCreateMappingSWR = (
 
         const headerMapping = new Map<string, string>();
 
-        headers.forEach(async (header, index) => {
-          // Check and assign the format of the data and set the format to the Map
-          formatAssigner(rowsWithoutNull, index, headerMapping, header);
-        });
-        setHeaderMapping(headerMapping);
+        if (responseData.columns.length === 0) {
+          headers.forEach(async (header, index) => {
+            // Check and assign the format of the data and set the format to the Map
+            formatAssigner(rowsWithoutNull, index, headerMapping, header);
+          });
+          setHeaderMapping(headerMapping);
+        } else {
+          responseData.columns.forEach((column) => {
+            headerMapping.set(column.title, column.dataType.split(":")[1]);
+          });
+          setHeaderMapping(headerMapping);
+        }
       } catch (error) {
         showSnackBar("An error occurred while processing the file.", "error");
       } finally {

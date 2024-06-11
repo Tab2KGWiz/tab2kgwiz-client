@@ -1,21 +1,22 @@
 import React, { useEffect } from "react";
-import Pagination from "@/app/components/pagination";
-import TableUI from "../ui/file-input/table";
-import { postYaml } from "../services/post-yaml";
-import { postYarrrml } from "../services/post-yarrrml";
-import { useSnackBar } from "./snackbar-provider";
+import Pagination from "./pagination";
+import TableUI from "@/app/ui/table/table";
+import { postYaml } from "../../services/post-yaml";
+import { postYarrrml } from "../../services/post-yarrrml";
+import { useSnackBar } from "../snackbar-provider";
 import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from "@mui/icons-material/Save";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import Box from "@mui/material/Box";
-import { useFile } from "./file-provider";
+import { useFile } from "../file-provider";
 import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
-import { Button } from "@mui/material";
+import { Button, Stack, Switch, Typography } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import { List } from "@mui/material";
-import { ListItem } from "@mui/material";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import { TextField, Paper } from "@mui/material";
 
 interface Props {
   header: string[] | undefined;
@@ -32,10 +33,15 @@ interface Props {
   mappingName: string | undefined;
   mappingFile: File | null;
   mappingId: number;
+  isAccessible: boolean;
+  setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>;
+  mappingTitle: string;
+  setMappingTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface ColumnResponseData {
   uri: string;
+  id: string;
   title: string;
 }
 
@@ -46,57 +52,96 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const { file, setFile } = useFile();
   const router = useRouter();
   const [columnsCreated, setColumnsCreated] = React.useState(false);
-  const [columnsId, setColumnsId] = React.useState<Map<string, string>>(
-    new Map(),
-  );
   const [isTableChanged, setIsTableChanged] = React.useState(true);
   const [fileContent, setFileContent] = React.useState<String>("");
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
 
   const handleSave = async () => {
     setLoadingSave(true);
-    props.headerMapping.forEach(async (type, title) => {
-      // Remove all blank spaces and convert to lowercase
-      const ontologyType = title.split(" ").join("").toLowerCase();
-      const data = {
-        title: title,
-        ontologyType,
-        dataType: "xsd:" + type,
-      };
 
-      try {
-        await createColumn(data, columnsId, setColumnsId);
-        showSnackBar("Columns created successfully.", "success");
-        setLoadingSave(false);
-        setColumnsCreated(true);
-        setIsTableChanged(false);
-      } catch (error) {
-        showSnackBar(
-          `Error occurred while creating columns: ${error}`,
-          "error",
-        );
-        setLoadingSave(false);
-        setFile(null);
-        router.push("/home/upload");
-        return;
-      }
+    await updateMapping({
+      title: props.mappingTitle,
+      accessible: props.isAccessible,
     });
+
+    const accessToken = Cookies.get("accessToken");
+
+    const response = await axios.get(
+      `http://localhost:8080/mappings/${props.mappingId}/columns`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+
+    if (response.status !== 200) {
+      throw new Error("Error creating column: " + response.status);
+    }
+
+    if (response.data.length === 0) {
+      props.headerMapping.forEach(async (type, title) => {
+        // Remove all blank spaces and convert to lowercase
+        const ontologyType = title.split(" ").join("").toLowerCase();
+        const data = {
+          title: title,
+          ontologyType,
+          dataType: "xsd:" + type,
+        };
+
+        try {
+          await createColumn(data);
+          setLoadingSave(false);
+          setColumnsCreated(true);
+          setIsTableChanged(false);
+        } catch (error) {
+          showSnackBar(
+            `Error occurred while creating columns: ${error}`,
+            "error",
+          );
+          setLoadingSave(false);
+          setFile(null);
+          router.push("/home/upload");
+          return;
+        }
+      });
+    } else {
+      response.data.forEach(async (column: ColumnResponseData) => {
+        props.headerMapping.forEach(async (type, title) => {
+          // Remove all blank spaces and convert to lowercase
+          const ontologyType = title.split(" ").join("").toLowerCase();
+          const data = {
+            title: title,
+            ontologyType,
+            dataType: "xsd:" + type,
+          };
+
+          if (column.title === data.title) {
+            const response = await axios.put(
+              `http://localhost:8080/mappings/${props.mappingId}/columns/${column.id}`,
+              data,
+              { headers: { Authorization: `Bearer ${accessToken}` } },
+            );
+
+            if (response.status !== 200) {
+              throw new Error("Error creating column: " + response.status);
+            }
+          }
+        });
+      });
+      setLoadingSave(false);
+      setColumnsCreated(true);
+      setIsTableChanged(false);
+    }
+    showSnackBar("Columns created successfully.", "success");
   };
 
-  const createColumn = async (
-    data: {
-      title: string;
-      ontologyType: string;
-      dataType: string;
-    },
-    columnsId: Map<string, string>,
-    setColumnsId: React.Dispatch<React.SetStateAction<Map<string, string>>>,
-  ) => {
+  const createColumn = async (data: {
+    title: string;
+    ontologyType: string;
+    dataType: string;
+  }) => {
     const accessToken = Cookies.get("accessToken");
 
     try {
       const response = await axios.put(
-        `http://localhost:8080/mappings/${props.mappingId}/columns/${columnsId.get(data.title) ? columnsId.get(data.title) : "-1"}`,
+        `http://localhost:8080/mappings/${props.mappingId}/columns/-1`,
         data,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
@@ -104,12 +149,29 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       if (response.status !== 200) {
         throw new Error("Error creating column: " + response.status);
       }
-      const responseData: ColumnResponseData = response.data;
-
-      columnsId.set(data.title, responseData.uri.match(/\d+$/)?.[0] || "");
-      setColumnsId(columnsId);
     } catch (error) {
       throw new Error("Error creating column: " + error);
+    }
+  };
+
+  const updateMapping = async (data: {
+    title: string;
+    accessible: boolean;
+  }) => {
+    const accessToken = Cookies.get("accessToken");
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:8080/mappings/${props.mappingId}`,
+        data,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Error updating mapping: " + response.status);
+      }
+    } catch (error) {
+      throw new Error("Error updating mapping: " + error);
     }
   };
 
@@ -126,6 +188,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
         props.mappingFile,
         props.mappingId,
       );
+
       if (response === "-1") {
         showSnackBar("Error parsing yarrrml", "error");
         setLoadingRDF(false);
@@ -149,18 +212,50 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
-        <List
+      {/* <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5"> */}
+      <Paper
+        sx={{
+          maxHeight: "100vh",
+          overflow: "auto",
+          backgroundColor: "#F9FAFB",
+          padding: "12px",
+          "@media (min-width: 640px)": {
+            padding: "20px",
+          },
+        }}
+      >
+        <Stack
+          spacing={2}
+          direction="row"
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            padding: 0,
-            marginLeft: "5%",
+            marginLeft: "4.5%",
+            marginBottom: "1%",
             color: "#3C3C3C",
           }}
         >
-          <ListItem>Mapping ID: {props.mappingId}</ListItem>
-        </List>
+          {/* <ListItem>Mapping ID: {props.mappingId}</ListItem> */}
+          <TextField
+            id="mapping-title-field"
+            label={props.mappingTitle}
+            variant="outlined"
+            onChange={(e) => {
+              props.setMappingTitle(e.target.value);
+              setIsTableChanged(true);
+            }}
+          />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography>Private</Typography>
+            <Switch
+              defaultChecked={props.isAccessible}
+              color="warning"
+              onChange={(e) => {
+                props.setIsAccessible(e.target.checked);
+                setIsTableChanged(true);
+              }}
+            />
+            <Typography>Public</Typography>
+          </Stack>
+        </Stack>
         <div className="mx-auto max-w-full px-6 lg:px-12">
           <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
@@ -215,12 +310,13 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             variant="outlined"
             startIcon={<DownloadRoundedIcon />}
             onClick={handleDownloadRDF}
-            hidden={!isRDFGenerated || isTableChanged}
+            disabled={!isRDFGenerated || isTableChanged}
           >
             <span>RDF file</span>
           </Button>
         </Box>
-      </section>
+      </Paper>
+      {/* </section> */}
     </>
   );
 };

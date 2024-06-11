@@ -1,16 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { createNewMapping } from "../../services/createNewMapping";
 import { useSnackBar } from "../../components/snackbar-provider";
 import { useFile } from "../../components/file-provider";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { DataFrame, toCSV } from "danfojs";
-import router from "next/router";
+import { toCSV } from "danfojs";
 
 interface Props {}
 
@@ -72,6 +69,7 @@ const useCreateMappingSWR = (file: File | null) => {
           fileFormat: file.type.split("/")[1],
           fileName: file.name.replace(/\s+/g, ""),
           mainOntology: "schema:Pork",
+          isAccessible: false,
           // prefixesURIS:
           //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
         };
