@@ -14,9 +14,8 @@ import { useFile } from "../file-provider";
 import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
 import { Button, Stack, Switch, Typography } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import { TextField, Paper } from "@mui/material";
+import OntologyDialog from "./ontology-dialog";
 
 interface Props {
   header: string[] | undefined;
@@ -55,14 +54,23 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const [isTableChanged, setIsTableChanged] = React.useState(true);
   const [fileContent, setFileContent] = React.useState<String>("");
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
+  const [ontologySelected, setOntologySelected] = React.useState<string>("");
 
   const handleSave = async () => {
     setLoadingSave(true);
 
-    await updateMapping({
-      title: props.mappingTitle,
-      accessible: props.isAccessible,
-    });
+    if (ontologySelected !== "") {
+      await updateMapping({
+        title: props.mappingTitle,
+        accessible: props.isAccessible,
+        mainOntology: ontologySelected,
+      });
+    } else {
+      await updateMapping({
+        title: props.mappingTitle,
+        accessible: props.isAccessible,
+      });
+    }
 
     const accessToken = Cookies.get("accessToken");
 
@@ -157,6 +165,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const updateMapping = async (data: {
     title: string;
     accessible: boolean;
+    mainOntology?: string;
   }) => {
     const accessToken = Cookies.get("accessToken");
 
@@ -212,7 +221,6 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      {/* <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5"> */}
       <Paper
         sx={{
           maxHeight: "100vh",
@@ -233,16 +241,20 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             color: "#3C3C3C",
           }}
         >
-          {/* <ListItem>Mapping ID: {props.mappingId}</ListItem> */}
           <TextField
             id="mapping-title-field"
             label={props.mappingTitle}
             variant="outlined"
+            size="small"
             onChange={(e) => {
               props.setMappingTitle(e.target.value);
               setIsTableChanged(true);
             }}
           />
+
+          <OntologyDialog
+            setOntologySelected={setOntologySelected}
+          ></OntologyDialog>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography>Private</Typography>
             <Switch
@@ -316,7 +328,6 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           </Button>
         </Box>
       </Paper>
-      {/* </section> */}
     </>
   );
 };
