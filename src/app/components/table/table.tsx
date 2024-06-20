@@ -44,6 +44,20 @@ interface ColumnResponseData {
   title: string;
 }
 
+interface measurementColumnData {
+  column: string;
+  ontology: string;
+  property: string;
+  value: string;
+  unit: string;
+  timestamp: string;
+  madeBy: string;
+  ontologyPrefix: string;
+  measurement: string;
+  recommendation: string[];
+  selectedRecommendation: string;
+}
+
 const Table: React.FC<Props> = (props): JSX.Element => {
   const { showSnackBar } = useSnackBar();
   const [loadingSave, setLoadingSave] = React.useState(false);
@@ -56,14 +70,22 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
   const [ontologySelected, setOntologySelected] = React.useState<string>("");
 
+  const [selectedOntology, setSelectedOntology] = React.useState<string>("");
+  const [measurementColumnData, setMeasurementColumnData] = React.useState<
+    measurementColumnData[]
+  >([]);
+  const [mainColumnSelected, setMainColumnSelected] =
+    React.useState<string>("");
+
   const handleSave = async () => {
     setLoadingSave(true);
 
-    if (ontologySelected !== "") {
+    if (selectedOntology !== "" && mainColumnSelected !== "") {
       await updateMapping({
         title: props.mappingTitle,
         accessible: props.isAccessible,
-        mainOntology: ontologySelected,
+        mainOntology: selectedOntology,
+        mainColumn: mainColumnSelected,
       });
     } else {
       await updateMapping({
@@ -91,6 +113,27 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           title: title,
           ontologyType,
           dataType: "xsd:" + type,
+          subjectOntology: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.selectedRecommendation,
+
+          relatesToProperty: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.property,
+
+          hasUnit: measurementColumnData.find((data) => data.column === title)
+            ?.unit,
+
+          hasValue: measurementColumnData.find((data) => data.column === title)
+            ?.value,
+
+          hasTimestamp: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.timestamp,
+
+          measurementMadeBy: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.madeBy,
         };
 
         try {
@@ -118,6 +161,28 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             title: title,
             ontologyType,
             dataType: "xsd:" + type,
+            subjectOntology: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.selectedRecommendation,
+
+            relatesToProperty: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.property,
+
+            hasUnit: measurementColumnData.find((data) => data.column === title)
+              ?.unit,
+
+            hasValue: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.value,
+
+            hasTimestamp: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.timestamp,
+
+            measurementMadeBy: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.madeBy,
           };
 
           if (column.title === data.title) {
@@ -166,6 +231,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     title: string;
     accessible: boolean;
     mainOntology?: string;
+    mainColumn?: string;
   }) => {
     const accessToken = Cookies.get("accessToken");
 
@@ -254,7 +320,14 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
           <OntologyDialog
             setOntologySelected={setOntologySelected}
+            ontologySelected={ontologySelected}
             headerMapping={props.headerMapping}
+            selectedOntology={selectedOntology}
+            setSelectedOntology={setSelectedOntology}
+            measurementColumnData={measurementColumnData}
+            setMeasurementColumnData={setMeasurementColumnData}
+            mainColumnSelected={mainColumnSelected}
+            setMainColumnSelected={setMainColumnSelected}
           ></OntologyDialog>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography>Private</Typography>

@@ -26,7 +26,16 @@ import Checkbox from "@mui/material/Checkbox";
 
 interface Props {
   setOntologySelected: React.Dispatch<React.SetStateAction<string>>;
+  ontologySelected: string;
   headerMapping: Map<string, string>;
+  selectedOntology: string;
+  setSelectedOntology: React.Dispatch<React.SetStateAction<string>>;
+  measurementColumnData: measurementColumnData[];
+  setMeasurementColumnData: React.Dispatch<
+    React.SetStateAction<measurementColumnData[]>
+  >;
+  mainColumnSelected: string;
+  setMainColumnSelected: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface Prefix {
@@ -58,7 +67,6 @@ const Transition = React.forwardRef(function Transition(
 const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   const [open, setOpen] = React.useState(false);
   const [prefixesData, setPrefixesData] = React.useState<Prefix[]>([]);
-  const [prefixSelected, setPrefixSelected] = React.useState<String>("");
   const [prefixMeasurement, setPrefixMeasurement] = React.useState<String>("");
 
   const [prefixRecommendationData, setPrefixRecommendationData] =
@@ -70,11 +78,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   const [measurementColumns, setMeasurementColumns] = React.useState<string[]>(
     [],
   );
-
-  const [selectedOntology, setSelectedOntology] = React.useState<string>("");
-  const [measurementColumnData, setMeasurementColumnData] = React.useState<
-    measurementColumnData[]
-  >([]);
+  const [prefixSelected, setPrefixSelected] = React.useState<String>("");
 
   const { showSnackBar } = useSnackBar();
 
@@ -86,12 +90,10 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
 
   const handleSave = () => {
     setOpen(false);
-    props.setOntologySelected(selectedOntology);
   };
 
   const handleDiscard = () => {
     setOpen(false);
-    props.setOntologySelected("");
   };
 
   const handlePrefixSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +101,13 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   };
 
   const handleOntologySelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedOntology(event.target.value);
+    props.setSelectedOntology(event.target.value);
+  };
+
+  const handleMainColumnSelect = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    props.setMainColumnSelected(event.target.value);
   };
 
   const handlePrefixMeasurement = (
@@ -129,7 +137,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     event: React.MouseEvent<HTMLButtonElement>,
     column: string,
   ) => {
-    const columnData = measurementColumnData.find(
+    const columnData = props.measurementColumnData.find(
       (data) => data.column === column,
     );
     if (!columnData) return;
@@ -145,7 +153,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     showSnackBar("Ontology fetched successfully.", "success");
 
     const recommendation = response.data;
-    setMeasurementColumnData((prev) =>
+    props.setMeasurementColumnData((prev) =>
       prev.map((data) =>
         data.column === column ? { ...data, recommendation } : data,
       ),
@@ -157,7 +165,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     field: keyof measurementColumnData,
     value: string,
   ) => {
-    setMeasurementColumnData((prev) => {
+    props.setMeasurementColumnData((prev) => {
       const existingColumn = prev.find((data) => data.column === column);
       if (existingColumn) {
         return prev.map((data) =>
@@ -182,7 +190,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
       }
     });
 
-    console.log(measurementColumnData);
+    console.log(props.measurementColumnData);
   };
 
   const handleMeasurementColumnSelect = (column: string) => {
@@ -194,7 +202,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   };
 
   const isSendButtonDisabled = (column: string) => {
-    const columnData = measurementColumnData.find(
+    const columnData = props.measurementColumnData.find(
       (data) => data.column === column,
     );
     if (!columnData) return true;
@@ -270,7 +278,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                 options={columns}
                 sx={{ width: 300, marginTop: 2 }}
                 getOptionLabel={(option) => option}
-                onSelect={handlePrefixSelect}
+                onSelect={handleMainColumnSelect}
                 renderInput={(params) => (
                   <TextField {...params} label="Select a main column" />
                 )}
@@ -348,8 +356,9 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                   id={`ontology-recommendation-${column}`}
                   disableClearable
                   options={
-                    measurementColumnData.find((data) => data.column === column)
-                      ?.recommendation || []
+                    props.measurementColumnData.find(
+                      (data) => data.column === column,
+                    )?.recommendation || []
                   }
                   sx={{ width: 300, marginTop: 2 }}
                   getOptionLabel={(option) => option}
