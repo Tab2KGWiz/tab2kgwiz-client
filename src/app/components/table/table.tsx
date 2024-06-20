@@ -254,6 +254,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
           <OntologyDialog
             setOntologySelected={setOntologySelected}
+            headerMapping={props.headerMapping}
           ></OntologyDialog>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography>Private</Typography>

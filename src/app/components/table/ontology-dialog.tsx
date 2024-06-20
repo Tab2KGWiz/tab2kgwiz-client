@@ -34,6 +34,20 @@ interface Prefix {
   uri: string;
 }
 
+interface measurementColumnData {
+  column: string;
+  ontology: string;
+  property: string;
+  value: string;
+  unit: string;
+  timestamp: string;
+  madeBy: string;
+  ontologyPrefix: string;
+  measurement: string;
+  recommendation: string[];
+  selectedRecommendation: string;
+}
+
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & { children: React.ReactElement<any, any> },
   ref: React.Ref<unknown>,
@@ -46,6 +60,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   const [prefixesData, setPrefixesData] = React.useState<Prefix[]>([]);
   const [prefixSelected, setPrefixSelected] = React.useState<String>("");
   const [prefixMeasurement, setPrefixMeasurement] = React.useState<String>("");
+
   const [prefixRecommendationData, setPrefixRecommendationData] =
     React.useState<[]>([]);
 
@@ -57,6 +72,9 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   );
 
   const [selectedOntology, setSelectedOntology] = React.useState<string>("");
+  const [measurementColumnData, setMeasurementColumnData] = React.useState<
+    measurementColumnData[]
+  >([]);
 
   const { showSnackBar } = useSnackBar();
 
@@ -105,6 +123,82 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     }
     showSnackBar("Ontology fetched successfully.", "success");
     setPrefixRecommendationData(response.data);
+  };
+
+  const handleDynamicPrefixSend = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    column: string,
+  ) => {
+    const columnData = measurementColumnData.find(
+      (data) => data.column === column,
+    );
+    if (!columnData) return;
+
+    const response = await axios.get(
+      `https://prefix.zazuko.com/api/v1/autocomplete?q=${columnData.ontology}:${columnData.measurement}`,
+    );
+
+    if (response.status !== 200) {
+      showSnackBar("Error occurred while fetching the ontology.", "error");
+      return;
+    }
+    showSnackBar("Ontology fetched successfully.", "success");
+
+    const recommendation = response.data;
+    setMeasurementColumnData((prev) =>
+      prev.map((data) =>
+        data.column === column ? { ...data, recommendation } : data,
+      ),
+    );
+  };
+
+  const handleDynamicSelectionChange = (
+    column: string,
+    field: keyof measurementColumnData,
+    value: string,
+  ) => {
+    setMeasurementColumnData((prev) => {
+      const existingColumn = prev.find((data) => data.column === column);
+      if (existingColumn) {
+        return prev.map((data) =>
+          data.column === column ? { ...data, [field]: value } : data,
+        );
+      } else {
+        const newEntry: measurementColumnData = {
+          column,
+          ontology: "",
+          property: "",
+          value: "",
+          unit: "",
+          timestamp: "",
+          madeBy: "",
+          ontologyPrefix: "",
+          measurement: "",
+          recommendation: [],
+          selectedRecommendation: "",
+          [field]: value,
+        };
+        return [...prev, newEntry];
+      }
+    });
+
+    console.log(measurementColumnData);
+  };
+
+  const handleMeasurementColumnSelect = (column: string) => {
+    setMeasurementColumns((prev) =>
+      prev.includes(column)
+        ? prev.filter((col) => col !== column)
+        : [...prev, column],
+    );
+  };
+
+  const isSendButtonDisabled = (column: string) => {
+    const columnData = measurementColumnData.find(
+      (data) => data.column === column,
+    );
+    if (!columnData) return true;
+    return !columnData.ontology || !columnData.measurement;
   };
 
   return (
@@ -192,18 +286,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                       key={key}
                       control={<Checkbox />}
                       label={key}
-                      onChange={(
-                        event: React.SyntheticEvent,
-                        checked: boolean,
-                      ) => {
-                        if (checked) {
-                          setMeasurementColumns((prev) => [...prev, key]);
-                        } else {
-                          setMeasurementColumns((prev) =>
-                            prev.filter((col) => col !== key),
-                          );
-                        }
-                      }}
+                      onChange={() => handleMeasurementColumnSelect(key)}
                     />
                   ),
                 )}
@@ -221,28 +304,40 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                 >{`${column} - Subject`}</Typography>
                 <Stack direction={"row"} spacing={3}>
                   <Autocomplete
-                    id="combo-box-demo"
+                    id={`autocomplete-${column}`}
                     options={prefixesData}
                     sx={{ width: 300, marginTop: 2 }}
                     getOptionLabel={(option) => option.prefix}
-                    onSelect={handlePrefixSelect}
+                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      handleDynamicSelectionChange(
+                        column,
+                        "ontology",
+                        event.target.value,
+                      );
+                    }}
                     renderInput={(params) => (
                       <TextField {...params} label="Ontology Prefix" />
                     )}
                   />
                   <TextField
-                    id="outlined-basic"
+                    id={`measurement-${column}`}
                     label="What are you measuring?"
                     variant="outlined"
-                    onChange={handlePrefixMeasurement}
+                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      handleDynamicSelectionChange(
+                        column,
+                        "measurement",
+                        event.target.value,
+                      );
+                    }}
                   />
 
                   <Button
                     variant="contained"
                     endIcon={<SendIcon />}
                     className="bg-blue-600"
-                    disabled={prefixMeasurement === "" || prefixSelected === ""}
-                    onClick={handlePrefixSend}
+                    disabled={isSendButtonDisabled(column)}
+                    onClick={(event) => handleDynamicPrefixSend(event, column)}
                   >
                     Send
                   </Button>
@@ -250,12 +345,21 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
 
                 <Autocomplete
                   freeSolo
-                  id="combo-box-demo"
+                  id={`ontology-recommendation-${column}`}
                   disableClearable
-                  options={prefixRecommendationData}
+                  options={
+                    measurementColumnData.find((data) => data.column === column)
+                      ?.recommendation || []
+                  }
                   sx={{ width: 300, marginTop: 2 }}
                   getOptionLabel={(option) => option}
-                  onSelect={handleOntologySelect}
+                  onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleDynamicSelectionChange(
+                      column,
+                      "selectedRecommendation",
+                      event.target.value,
+                    );
+                  }}
                   renderInput={(params) => (
                     <TextField {...params} label="Ontology recommendation" />
                   )}
@@ -263,25 +367,34 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                 <Typography variant="body2">Predicate-Object</Typography>
                 <Stack direction={"row"} spacing={3}>
                   <Autocomplete
-                    freeSolo
-                    id="combo-box-demo"
-                    disableClearable
-                    options={prefixRecommendationData}
+                    id={`autocomplete-property-${column}`}
+                    options={columns}
                     sx={{ width: 300 }}
                     getOptionLabel={(option) => option}
-                    //onSelect={handleOntologySelect}
+                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      handleDynamicSelectionChange(
+                        column,
+                        "property",
+                        event.target.value,
+                      );
+                    }}
                     renderInput={(params) => (
                       <TextField {...params} label="Relates to property" />
                     )}
                   />
+
                   <Autocomplete
-                    freeSolo
-                    id="combo-box-demo"
-                    disableClearable
-                    options={prefixRecommendationData}
+                    id={`autocomplete-value-${column}`}
+                    options={columns}
                     sx={{ width: 300 }}
                     getOptionLabel={(option) => option}
-                    //onSelect={handleOntologySelect}
+                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      handleDynamicSelectionChange(
+                        column,
+                        "value",
+                        event.target.value,
+                      );
+                    }}
                     renderInput={(params) => (
                       <TextField {...params} label="Has value" />
                     )}
@@ -290,24 +403,34 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                 <Stack direction={"row"} spacing={3}>
                   <Autocomplete
                     freeSolo
-                    id="combo-box-demo"
+                    id={`autocomplete-unit-${column}`}
                     disableClearable
-                    options={prefixRecommendationData}
+                    options={[]}
                     sx={{ width: 300 }}
                     getOptionLabel={(option) => option}
-                    //onSelect={handleOntologySelect}
+                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      handleDynamicSelectionChange(
+                        column,
+                        "unit",
+                        event.target.value,
+                      );
+                    }}
                     renderInput={(params) => (
                       <TextField {...params} label="Has unit" />
                     )}
                   />
                   <Autocomplete
-                    freeSolo
-                    id="combo-box-demo"
-                    disableClearable
-                    options={prefixRecommendationData}
+                    id={`autocomplete-timestamp-${column}`}
+                    options={columns}
                     sx={{ width: 300 }}
                     getOptionLabel={(option) => option}
-                    //onSelect={handleOntologySelect}
+                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      handleDynamicSelectionChange(
+                        column,
+                        "timestamp",
+                        event.target.value,
+                      );
+                    }}
                     renderInput={(params) => (
                       <TextField {...params} label="Has timestamp" />
                     )}
@@ -316,12 +439,18 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
 
                 <Autocomplete
                   freeSolo
-                  id="combo-box-demo"
+                  id={`autocomplete-made-by-${column}`}
                   disableClearable
-                  options={prefixRecommendationData}
+                  options={[]}
                   sx={{ width: 300 }}
                   getOptionLabel={(option) => option}
-                  //onSelect={handleOntologySelect}
+                  onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleDynamicSelectionChange(
+                      column,
+                      "madeBy",
+                      event.target.value,
+                    );
+                  }}
                   renderInput={(params) => (
                     <TextField {...params} label="Measurement made by" />
                   )}

@@ -19,6 +19,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { styled } from "@mui/material/styles";
 import SendIcon from "@mui/icons-material/Send";
 
+// text-overflow: ellipsis
 import {
   Card,
   CardContent,
