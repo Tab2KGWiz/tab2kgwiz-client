@@ -8,21 +8,17 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Slide from "@mui/material/Slide";
 import { TransitionProps } from "@mui/material/transitions";
 import Autocomplete from "@mui/material/Autocomplete";
-import {
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  Stack,
-  TextField,
-  Typography,
-  Grid,
-} from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import { Stack, TextField, Typography } from "@mui/material";
 import useSWR from "swr";
 import axios from "axios";
-import { useEffect } from "react";
-import SendIcon from "@mui/icons-material/Send";
 import { useSnackBar } from "../snackbar-provider";
-import Checkbox from "@mui/material/Checkbox";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { SyntheticEvent } from "react";
+import xsdDataType from "@/app/utils/xsdDataTypes";
 
 interface Props {
   setOntologySelected: React.Dispatch<React.SetStateAction<string>>;
@@ -36,6 +32,9 @@ interface Props {
   >;
   mainColumnSelected: string;
   setMainColumnSelected: React.Dispatch<React.SetStateAction<string>>;
+  setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+  setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface Prefix {
@@ -55,6 +54,10 @@ interface measurementColumnData {
   measurement: string;
   recommendation: string[];
   selectedRecommendation: string;
+  identifier: string;
+  ontologyType: string;
+  ontologyURI: string;
+  label: string;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -67,18 +70,22 @@ const Transition = React.forwardRef(function Transition(
 const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   const [open, setOpen] = React.useState(false);
   const [prefixesData, setPrefixesData] = React.useState<Prefix[]>([]);
-  const [prefixMeasurement, setPrefixMeasurement] = React.useState<String>("");
-
-  const [prefixRecommendationData, setPrefixRecommendationData] =
-    React.useState<[]>([]);
+  const [selectedColumns, setSelectedColumns] = React.useState<{
+    [key: string]: string;
+  }>({});
 
   const [columns, setColumns] = React.useState<string[]>(
     Array.from(props.headerMapping.keys()),
   );
-  const [measurementColumns, setMeasurementColumns] = React.useState<string[]>(
-    [],
-  );
-  const [prefixSelected, setPrefixSelected] = React.useState<String>("");
+
+  const [columnData, setColumnData] = React.useState<
+    {
+      itemText: string;
+      prefixed: string;
+      iri: { value: string };
+      label: string;
+    }[]
+  >();
 
   const { showSnackBar } = useSnackBar();
 
@@ -96,75 +103,14 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     setOpen(false);
   };
 
-  const handlePrefixSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPrefixSelected(event.target.value);
-  };
-
-  const handleOntologySelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    props.setSelectedOntology(event.target.value);
-  };
-
-  const handleMainColumnSelect = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    props.setMainColumnSelected(event.target.value);
-  };
-
-  const handlePrefixMeasurement = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setPrefixMeasurement(event.target.value);
-  };
-
-  const handlePrefixSend = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    const response = await axios.get(
-      `https://prefix.zazuko.com/api/v1/autocomplete?q=${prefixSelected}:${prefixMeasurement}`,
-    );
-
-    if (response.status !== 200) {
-      showSnackBar("Error occurred while fetching the ontology.", "error");
-      setPrefixMeasurement("");
-      setPrefixSelected("");
-      return;
-    }
-    showSnackBar("Ontology fetched successfully.", "success");
-    setPrefixRecommendationData(response.data);
-  };
-
-  const handleDynamicPrefixSend = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-    column: string,
-  ) => {
-    const columnData = props.measurementColumnData.find(
-      (data) => data.column === column,
-    );
-    if (!columnData) return;
-
-    const response = await axios.get(
-      `https://prefix.zazuko.com/api/v1/autocomplete?q=${columnData.ontology}:${columnData.measurement}`,
-    );
-
-    if (response.status !== 200) {
-      showSnackBar("Error occurred while fetching the ontology.", "error");
-      return;
-    }
-    showSnackBar("Ontology fetched successfully.", "success");
-
-    const recommendation = response.data;
-    props.setMeasurementColumnData((prev) =>
-      prev.map((data) =>
-        data.column === column ? { ...data, recommendation } : data,
-      ),
-    );
-  };
-
   const handleDynamicSelectionChange = (
     column: string,
     field: keyof measurementColumnData,
     value: string,
   ) => {
+    props.setIsTableChanged(true);
+    props.setIsRDFGenerated(false);
+
     props.setMeasurementColumnData((prev) => {
       const existingColumn = prev.find((data) => data.column === column);
       if (existingColumn) {
@@ -184,29 +130,75 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
           measurement: "",
           recommendation: [],
           selectedRecommendation: "",
+          identifier: "",
+          ontologyType: "",
+          ontologyURI: "",
+          label: "",
+
           [field]: value,
         };
         return [...prev, newEntry];
       }
     });
-
-    console.log(props.measurementColumnData);
   };
 
-  const handleMeasurementColumnSelect = (column: string) => {
-    setMeasurementColumns((prev) =>
-      prev.includes(column)
-        ? prev.filter((col) => col !== column)
-        : [...prev, column],
-    );
+  const handleMeasurementColumnSelect = (
+    event: SelectChangeEvent<string>,
+    key: string,
+  ) => {
+    setSelectedColumns({
+      ...selectedColumns,
+      [key]: event.target.value,
+    });
+
+    if (event.target.value === "Measurement") {
+      handleDynamicSelectionChange(key, "measurement", "true");
+    } else if (event.target.value === "Id") {
+      handleDynamicSelectionChange(key, "identifier", "true");
+    }
   };
 
-  const isSendButtonDisabled = (column: string) => {
-    const columnData = props.measurementColumnData.find(
-      (data) => data.column === column,
+  const handleSearchOntoForm = (
+    event: SyntheticEvent<Element, Event>,
+    value: string,
+    key: string,
+  ) => {
+    columnData?.forEach((item) => {
+      if (item.itemText === value) {
+        handleDynamicSelectionChange(key, "ontologyType", item.prefixed);
+        handleDynamicSelectionChange(key, "ontologyURI", item.iri.value);
+        handleDynamicSelectionChange(key, "label", item.label);
+      }
+    });
+  };
+
+  const handleSearchUnitForm = (
+    event: SyntheticEvent<Element, Event>,
+    value: string,
+    key: string,
+  ) => {
+    columnData?.forEach((item) => {
+      if (item.itemText === value) {
+        handleDynamicSelectionChange(key, "unit", item.prefixed);
+      }
+    });
+  };
+
+  const handleOntologySearch = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const response = await axios.get(
+      `https://prefix.zazuko.com/api/v1/search?q=${event.target.value}`,
     );
-    if (!columnData) return true;
-    return !columnData.ontology || !columnData.measurement;
+
+    const ontologyData: {
+      itemText: string;
+      prefixed: string;
+      iri: { value: string };
+      label: string;
+    }[] = response.data;
+
+    setColumnData(ontologyData);
   };
 
   return (
@@ -227,244 +219,173 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
         <DialogContent>
           <Stack spacing={2}>
             <DialogContentText id="alert-dialog-slide-description">
-              Feature of interest
+              For each column, select the column type and search for the
+              ontology
             </DialogContentText>
-            <Stack direction={"row"} spacing={3}>
-              <Autocomplete
-                id="combo-box-demo"
-                options={prefixesData}
-                sx={{ width: 300, marginTop: 2 }}
-                getOptionLabel={(option) => option.prefix}
-                onSelect={handlePrefixSelect}
-                renderInput={(params) => (
-                  <TextField {...params} label="Ontology Prefix" />
-                )}
-              />
-              <TextField
-                id="outlined-basic"
-                label="What are you measuring?"
-                variant="outlined"
-                onChange={handlePrefixMeasurement}
-              />
 
-              <Button
-                variant="contained"
-                endIcon={<SendIcon />}
-                className="bg-blue-600"
-                disabled={prefixMeasurement === "" || prefixSelected === ""}
-                onClick={handlePrefixSend}
-              >
-                Send
-              </Button>
-            </Stack>
-
-            <Stack direction={"row"} spacing={2}>
-              <Autocomplete
-                freeSolo
-                id="combo-box-demo"
-                disableClearable
-                options={prefixRecommendationData}
-                sx={{ width: 300, marginTop: 2 }}
-                getOptionLabel={(option) => option}
-                onSelect={handleOntologySelect}
-                disabled={prefixRecommendationData.length === 0}
-                renderInput={(params) => (
-                  <TextField {...params} label="Ontology recommendation" />
-                )}
-              />
-
-              <Autocomplete
-                id="AutoComplete2"
-                options={columns}
-                sx={{ width: 300, marginTop: 2 }}
-                getOptionLabel={(option) => option}
-                onSelect={handleMainColumnSelect}
-                renderInput={(params) => (
-                  <TextField {...params} label="Select a main column" />
-                )}
-              />
-            </Stack>
-
-            <Typography variant="h6">Measurement Columns</Typography>
-            <Stack direction={"row"} spacing={2}>
-              <FormGroup>
-                {Array.from(props.headerMapping.entries()).map(
-                  ([key, value]) => (
-                    <FormControlLabel
-                      key={key}
-                      control={<Checkbox />}
-                      label={key}
-                      onChange={() => handleMeasurementColumnSelect(key)}
-                    />
-                  ),
-                )}
-              </FormGroup>
-            </Stack>
-
-            {measurementColumns.length > 0 && (
-              <Typography variant="h6">Selected Measurement Columns</Typography>
-            )}
-            {measurementColumns.map((column) => (
-              <Stack key={column} spacing={2}>
+            {Array.from(props.headerMapping.entries()).map(([key, value]) => (
+              <>
                 <Typography
+                  key={key}
                   variant="body1"
                   fontWeight={"bold"}
-                >{`${column} - Subject`}</Typography>
-                <Stack direction={"row"} spacing={3}>
-                  <Autocomplete
-                    id={`autocomplete-${column}`}
-                    options={prefixesData}
-                    sx={{ width: 300, marginTop: 2 }}
-                    getOptionLabel={(option) => option.prefix}
-                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      handleDynamicSelectionChange(
-                        column,
-                        "ontology",
-                        event.target.value,
-                      );
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} label="Ontology Prefix" />
-                    )}
-                  />
-                  <TextField
-                    id={`measurement-${column}`}
-                    label="What are you measuring?"
-                    variant="outlined"
-                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      handleDynamicSelectionChange(
-                        column,
-                        "measurement",
-                        event.target.value,
-                      );
-                    }}
-                  />
-
-                  <Button
-                    variant="contained"
-                    endIcon={<SendIcon />}
-                    className="bg-blue-600"
-                    disabled={isSendButtonDisabled(column)}
-                    onClick={(event) => handleDynamicPrefixSend(event, column)}
-                  >
-                    Send
-                  </Button>
-                </Stack>
-
-                <Autocomplete
-                  freeSolo
-                  id={`ontology-recommendation-${column}`}
-                  disableClearable
-                  options={
-                    props.measurementColumnData.find(
-                      (data) => data.column === column,
-                    )?.recommendation || []
-                  }
-                  sx={{ width: 300, marginTop: 2 }}
-                  getOptionLabel={(option) => option}
-                  onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    handleDynamicSelectionChange(
-                      column,
-                      "selectedRecommendation",
-                      event.target.value,
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Ontology recommendation" />
-                  )}
-                />
-                <Typography variant="body2">Predicate-Object</Typography>
-                <Stack direction={"row"} spacing={3}>
-                  <Autocomplete
-                    id={`autocomplete-property-${column}`}
-                    options={columns}
-                    sx={{ width: 300 }}
-                    getOptionLabel={(option) => option}
-                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      handleDynamicSelectionChange(
-                        column,
-                        "property",
-                        event.target.value,
-                      );
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} label="Relates to property" />
-                    )}
-                  />
-
-                  <Autocomplete
-                    id={`autocomplete-value-${column}`}
-                    options={columns}
-                    sx={{ width: 300 }}
-                    getOptionLabel={(option) => option}
-                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      handleDynamicSelectionChange(
-                        column,
-                        "value",
-                        event.target.value,
-                      );
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} label="Has value" />
-                    )}
-                  />
-                </Stack>
-                <Stack direction={"row"} spacing={3}>
+                >{`${key}`}</Typography>
+                <Stack key={key} direction={"row"} spacing={2}>
+                  <FormControl sx={{ width: 300 }}>
+                    <InputLabel id={`${key}-input-label`}>
+                      Column Type
+                    </InputLabel>
+                    <Select
+                      labelId={`${key}-label`}
+                      id={`${key}-select-id`}
+                      label="Column Type"
+                      value={selectedColumns[key] || ""}
+                      onChange={(event: SelectChangeEvent<string>) =>
+                        handleMeasurementColumnSelect(event, key)
+                      }
+                    >
+                      <MenuItem value={"Id"}>Identifier</MenuItem>
+                      <MenuItem value={"Measurement"}>Measurement</MenuItem>
+                      <MenuItem value={"Other"}>Other</MenuItem>
+                    </Select>
+                  </FormControl>
                   <Autocomplete
                     freeSolo
-                    id={`autocomplete-unit-${column}`}
+                    id={`${key}-autocomplete`}
                     disableClearable
-                    options={[]}
+                    options={columnData?.map((item) => item.itemText) || []}
                     sx={{ width: 300 }}
-                    getOptionLabel={(option) => option}
-                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      handleDynamicSelectionChange(
-                        column,
-                        "unit",
-                        event.target.value,
-                      );
+                    filterOptions={(x) => x}
+                    onSelect={handleOntologySearch}
+                    onChange={(event, value) => {
+                      handleSearchOntoForm(event, value, key);
                     }}
                     renderInput={(params) => (
-                      <TextField {...params} label="Has unit" />
+                      <TextField {...params} label="Search Ontology" />
                     )}
                   />
                   <Autocomplete
-                    id={`autocomplete-timestamp-${column}`}
-                    options={columns}
+                    id={`xsd-autocomplete-${key}`}
+                    options={xsdDataType}
                     sx={{ width: 300 }}
                     getOptionLabel={(option) => option}
-                    onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      handleDynamicSelectionChange(
-                        column,
-                        "timestamp",
-                        event.target.value,
-                      );
+                    defaultValue={props.headerMapping.get(key)}
+                    onChange={(event, value) => {
+                      props.setIsTableChanged(true);
+                      props.setIsRDFGenerated(false);
+                      props.setHeaderMapping((prev) => {
+                        const newMap = new Map(prev);
+                        newMap.set(key, value ? value : "");
+                        return newMap;
+                      });
                     }}
                     renderInput={(params) => (
-                      <TextField {...params} label="Has timestamp" />
+                      <TextField {...params} label="XSD Data Type" />
                     )}
                   />
                 </Stack>
 
-                <Autocomplete
-                  freeSolo
-                  id={`autocomplete-made-by-${column}`}
-                  disableClearable
-                  options={[]}
-                  sx={{ width: 300 }}
-                  getOptionLabel={(option) => option}
-                  onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    handleDynamicSelectionChange(
-                      column,
-                      "madeBy",
-                      event.target.value,
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Measurement made by" />
-                  )}
-                />
-              </Stack>
+                {selectedColumns[key] === "Measurement" && (
+                  <>
+                    <Typography variant="body2">Predicate-Object</Typography>
+                    <Stack direction={"row"} spacing={3}>
+                      <Autocomplete
+                        id={`autocomplete-property-${key}`}
+                        options={columns}
+                        sx={{ width: 300 }}
+                        getOptionLabel={(option) => option}
+                        onSelect={(
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => {
+                          handleDynamicSelectionChange(
+                            key,
+                            "property",
+                            event.target.value,
+                          );
+                        }}
+                        renderInput={(params) => (
+                          <TextField {...params} label="Relates to property" />
+                        )}
+                      />
+
+                      <Autocomplete
+                        id={`autocomplete-value-${key}`}
+                        options={columns}
+                        sx={{ width: 300 }}
+                        getOptionLabel={(option) => option}
+                        onSelect={(
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => {
+                          handleDynamicSelectionChange(
+                            key,
+                            "value",
+                            event.target.value,
+                          );
+                        }}
+                        renderInput={(params) => (
+                          <TextField {...params} label="Has value" />
+                        )}
+                      />
+                    </Stack>
+                    <Stack direction={"row"} spacing={3}>
+                      <Autocomplete
+                        freeSolo
+                        id={`autocomplete-unit-${key}`}
+                        disableClearable
+                        options={columnData?.map((item) => item.itemText) || []}
+                        sx={{ width: 300 }}
+                        filterOptions={(x) => x}
+                        onSelect={handleOntologySearch}
+                        onChange={(event, value) => {
+                          handleSearchUnitForm(event, value, key);
+                        }}
+                        renderInput={(params) => (
+                          <TextField {...params} label="Has unit" />
+                        )}
+                      />
+                      <Autocomplete
+                        id={`autocomplete-timestamp-${key}`}
+                        options={columns}
+                        sx={{ width: 300 }}
+                        getOptionLabel={(option) => option}
+                        onSelect={(
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => {
+                          handleDynamicSelectionChange(
+                            key,
+                            "timestamp",
+                            event.target.value,
+                          );
+                        }}
+                        renderInput={(params) => (
+                          <TextField {...params} label="Has timestamp" />
+                        )}
+                      />
+                    </Stack>
+
+                    <Autocomplete
+                      freeSolo
+                      id={`autocomplete-made-by-${key}`}
+                      disableClearable
+                      options={[]}
+                      sx={{ width: 300 }}
+                      getOptionLabel={(option) => option}
+                      onSelect={(
+                        event: React.ChangeEvent<HTMLInputElement>,
+                      ) => {
+                        handleDynamicSelectionChange(
+                          key,
+                          "madeBy",
+                          event.target.value,
+                        );
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Measurement made by" />
+                      )}
+                    />
+                  </>
+                )}
+              </>
             ))}
           </Stack>
         </DialogContent>
@@ -485,8 +406,6 @@ const useGetPrefixes = (
   const { data, error } = useSWR(
     "https://prefix.zazuko.com/api/v1/prefixes",
     async () => {
-      console.log("Fetching prefixes");
-
       try {
         const response = await axios.get(
           "https://prefix.zazuko.com/api/v1/prefixes",

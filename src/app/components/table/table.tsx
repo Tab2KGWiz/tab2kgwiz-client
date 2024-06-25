@@ -56,6 +56,10 @@ interface measurementColumnData {
   measurement: string;
   recommendation: string[];
   selectedRecommendation: string;
+  identifier: string;
+  ontologyType: string;
+  ontologyURI: string;
+  label: string;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -108,10 +112,10 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     if (response.data.length === 0) {
       props.headerMapping.forEach(async (type, title) => {
         // Remove all blank spaces and convert to lowercase
-        const ontologyType = title.split(" ").join("").toLowerCase();
+        //const ontologyType = title.split(" ").join("").toLowerCase();
         const data = {
           title: title,
-          ontologyType,
+          //ontologyType,
           dataType: "xsd:" + type,
           subjectOntology: measurementColumnData.find(
             (data) => data.column === title,
@@ -134,6 +138,25 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           measurementMadeBy: measurementColumnData.find(
             (data) => data.column === title,
           )?.madeBy,
+
+          measurement: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.measurement,
+
+          identifier: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.identifier,
+
+          ontologyType: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.ontologyType,
+
+          ontologyURI: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.ontologyURI,
+
+          label: measurementColumnData.find((data) => data.column === title)
+            ?.label,
         };
 
         try {
@@ -155,11 +178,9 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     } else {
       response.data.forEach(async (column: ColumnResponseData) => {
         props.headerMapping.forEach(async (type, title) => {
-          // Remove all blank spaces and convert to lowercase
-          const ontologyType = title.split(" ").join("").toLowerCase();
           const data = {
             title: title,
-            ontologyType,
+            //ontologyType,
             dataType: "xsd:" + type,
             subjectOntology: measurementColumnData.find(
               (data) => data.column === title,
@@ -183,6 +204,25 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             measurementMadeBy: measurementColumnData.find(
               (data) => data.column === title,
             )?.madeBy,
+
+            measurement: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.measurement,
+
+            identifier: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.identifier,
+
+            ontologyType: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.ontologyType,
+
+            ontologyURI: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.ontologyURI,
+
+            label: measurementColumnData.find((data) => data.column === title)
+              ?.label,
           };
 
           if (column.title === data.title) {
@@ -205,11 +245,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     showSnackBar("Columns created successfully.", "success");
   };
 
-  const createColumn = async (data: {
-    title: string;
-    ontologyType: string;
-    dataType: string;
-  }) => {
+  const createColumn = async (data: { title: string; dataType: string }) => {
     const accessToken = Cookies.get("accessToken");
 
     try {
@@ -328,6 +364,9 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             setMeasurementColumnData={setMeasurementColumnData}
             mainColumnSelected={mainColumnSelected}
             setMainColumnSelected={setMainColumnSelected}
+            setHeaderMapping={props.setHeaderMapping}
+            setIsTableChanged={setIsTableChanged}
+            setIsRDFGenerated={setIsRDFGenerated}
           ></OntologyDialog>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography>Private</Typography>
@@ -348,10 +387,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
               <TableUI
                 body={props.body}
                 header={props.header}
-                setHeaderMapping={props.setHeaderMapping}
                 headerMapping={props.headerMapping}
-                setIsTableChanged={setIsTableChanged}
-                setIsRDFGenerated={setIsRDFGenerated}
               />
             </div>
             <Pagination
