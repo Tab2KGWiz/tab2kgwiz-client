@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { lazy, useEffect } from "react";
 import Pagination from "./pagination";
 import TableUI from "@/app/ui/table/table";
 import { postYaml } from "../../services/post-yaml";
@@ -60,6 +60,7 @@ interface measurementColumnData {
   ontologyType: string;
   ontologyURI: string;
   label: string;
+  prefix: string;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -81,22 +82,20 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const [mainColumnSelected, setMainColumnSelected] =
     React.useState<string>("");
 
+  const [prefixesURI, setPrefixesURI] = React.useState<Map<string, string>>();
+
   const handleSave = async () => {
     setLoadingSave(true);
 
-    if (selectedOntology !== "" && mainColumnSelected !== "") {
-      await updateMapping({
-        title: props.mappingTitle,
-        accessible: props.isAccessible,
-        mainOntology: selectedOntology,
-        mainColumn: mainColumnSelected,
-      });
-    } else {
-      await updateMapping({
-        title: props.mappingTitle,
-        accessible: props.isAccessible,
-      });
-    }
+    const concatenatedPrefixes = Array.from(prefixesURI?.values() ?? []).join(
+      ",",
+    );
+
+    await updateMapping({
+      title: props.mappingTitle,
+      accessible: props.isAccessible,
+      prefixesURIS: concatenatedPrefixes,
+    });
 
     const accessToken = Cookies.get("accessToken");
 
@@ -111,25 +110,15 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
     if (response.data.length === 0) {
       props.headerMapping.forEach(async (type, title) => {
-        // Remove all blank spaces and convert to lowercase
-        //const ontologyType = title.split(" ").join("").toLowerCase();
         const data = {
           title: title,
-          //ontologyType,
           dataType: "xsd:" + type,
           subjectOntology: measurementColumnData.find(
             (data) => data.column === title,
           )?.selectedRecommendation,
 
-          relatesToProperty: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.property,
-
           hasUnit: measurementColumnData.find((data) => data.column === title)
             ?.unit,
-
-          hasValue: measurementColumnData.find((data) => data.column === title)
-            ?.value,
 
           hasTimestamp: measurementColumnData.find(
             (data) => data.column === title,
@@ -157,6 +146,9 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
           label: measurementColumnData.find((data) => data.column === title)
             ?.label,
+
+          prefix: measurementColumnData.find((data) => data.column === title)
+            ?.prefix,
         };
 
         try {
@@ -180,22 +172,13 @@ const Table: React.FC<Props> = (props): JSX.Element => {
         props.headerMapping.forEach(async (type, title) => {
           const data = {
             title: title,
-            //ontologyType,
             dataType: "xsd:" + type,
             subjectOntology: measurementColumnData.find(
               (data) => data.column === title,
             )?.selectedRecommendation,
 
-            relatesToProperty: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.property,
-
             hasUnit: measurementColumnData.find((data) => data.column === title)
               ?.unit,
-
-            hasValue: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.value,
 
             hasTimestamp: measurementColumnData.find(
               (data) => data.column === title,
@@ -223,6 +206,9 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
             label: measurementColumnData.find((data) => data.column === title)
               ?.label,
+
+            prefix: measurementColumnData.find((data) => data.column === title)
+              ?.prefix,
           };
 
           if (column.title === data.title) {
@@ -266,8 +252,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const updateMapping = async (data: {
     title: string;
     accessible: boolean;
-    mainOntology?: string;
-    mainColumn?: string;
+    prefixesURIS: string;
   }) => {
     const accessToken = Cookies.get("accessToken");
 
@@ -367,6 +352,8 @@ const Table: React.FC<Props> = (props): JSX.Element => {
             setHeaderMapping={props.setHeaderMapping}
             setIsTableChanged={setIsTableChanged}
             setIsRDFGenerated={setIsRDFGenerated}
+            setPrefixesURI={setPrefixesURI}
+            prefixesURI={prefixesURI}
           ></OntologyDialog>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography>Private</Typography>

@@ -35,6 +35,10 @@ interface Props {
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>;
+  setPrefixesURI: React.Dispatch<
+    React.SetStateAction<Map<string, string> | undefined>
+  >;
+  prefixesURI: Map<string, string> | undefined;
 }
 
 interface Prefix {
@@ -58,6 +62,7 @@ interface measurementColumnData {
   ontologyType: string;
   ontologyURI: string;
   label: string;
+  prefix: string;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -84,30 +89,27 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
       prefixed: string;
       iri: { value: string };
       label: string;
+      iriSplitA: string;
+      prefixedSplitA: string;
     }[]
   >();
 
   const { showSnackBar } = useSnackBar();
 
-  useGetPrefixes(setPrefixesData);
-
   const handleClickOpen = () => {
     setOpen(true);
   };
 
-  const handleSave = () => {
-    setOpen(false);
-  };
-
-  const handleDiscard = () => {
+  const handleClose = () => {
     setOpen(false);
   };
 
   const handleDynamicSelectionChange = (
     column: string,
     field: keyof measurementColumnData,
-    value: string,
+    value: string | null,
   ) => {
+    console.log(value);
     props.setIsTableChanged(true);
     props.setIsRDFGenerated(false);
 
@@ -134,6 +136,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
           ontologyType: "",
           ontologyURI: "",
           label: "",
+          prefix: "",
 
           [field]: value,
         };
@@ -168,6 +171,12 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
         handleDynamicSelectionChange(key, "ontologyType", item.prefixed);
         handleDynamicSelectionChange(key, "ontologyURI", item.iri.value);
         handleDynamicSelectionChange(key, "label", item.label);
+        handleDynamicSelectionChange(key, "prefix", item.prefixedSplitA);
+
+        const tempPrefixsURI = new Map(props.prefixesURI);
+        tempPrefixsURI.set(key, item.prefixedSplitA + ";" + item.iriSplitA);
+        props.setPrefixesURI(tempPrefixsURI);
+        return;
       }
     });
   };
@@ -196,6 +205,8 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
       prefixed: string;
       iri: { value: string };
       label: string;
+      iriSplitA: string;
+      prefixedSplitA: string;
     }[] = response.data;
 
     setColumnData(ontologyData);
@@ -210,7 +221,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
         open={open}
         TransitionComponent={Transition}
         keepMounted
-        onClose={handleDiscard}
+        onClose={handleClose}
         fullScreen
         scroll="paper"
         aria-describedby="alert-dialog-slide-description"
@@ -287,47 +298,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
 
                 {selectedColumns[key] === "Measurement" && (
                   <>
-                    <Typography variant="body2">Predicate-Object</Typography>
-                    <Stack direction={"row"} spacing={3}>
-                      <Autocomplete
-                        id={`autocomplete-property-${key}`}
-                        options={columns}
-                        sx={{ width: 300 }}
-                        getOptionLabel={(option) => option}
-                        onSelect={(
-                          event: React.ChangeEvent<HTMLInputElement>,
-                        ) => {
-                          handleDynamicSelectionChange(
-                            key,
-                            "property",
-                            event.target.value,
-                          );
-                        }}
-                        renderInput={(params) => (
-                          <TextField {...params} label="Relates to property" />
-                        )}
-                      />
-
-                      <Autocomplete
-                        id={`autocomplete-value-${key}`}
-                        options={columns}
-                        sx={{ width: 300 }}
-                        getOptionLabel={(option) => option}
-                        onSelect={(
-                          event: React.ChangeEvent<HTMLInputElement>,
-                        ) => {
-                          handleDynamicSelectionChange(
-                            key,
-                            "value",
-                            event.target.value,
-                          );
-                        }}
-                        renderInput={(params) => (
-                          <TextField {...params} label="Has value" />
-                        )}
-                      />
-                    </Stack>
-                    <Stack direction={"row"} spacing={3}>
+                    <Stack direction={"row"} spacing={2}>
                       <Autocomplete
                         freeSolo
                         id={`autocomplete-unit-${key}`}
@@ -348,14 +319,11 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                         options={columns}
                         sx={{ width: 300 }}
                         getOptionLabel={(option) => option}
-                        onSelect={(
-                          event: React.ChangeEvent<HTMLInputElement>,
+                        onChange={(
+                          event: SyntheticEvent<Element, Event>,
+                          value: string | null,
                         ) => {
-                          handleDynamicSelectionChange(
-                            key,
-                            "timestamp",
-                            event.target.value,
-                          );
+                          handleDynamicSelectionChange(key, "timestamp", value);
                         }}
                         renderInput={(params) => (
                           <TextField {...params} label="Has timestamp" />
@@ -390,8 +358,9 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDiscard}>Discard</Button>
-          <Button onClick={handleSave}>Save</Button>
+          <Button sx={{ marginRight: 4 }} onClick={handleClose}>
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
