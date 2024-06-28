@@ -1,15 +1,10 @@
 import React from "react";
-import DropDown from "@/app/components/table/drop-down";
-import MeasureForm from "@/app/components/table/measure-form";
 import { Paper } from "@mui/material";
 
 interface Props {
   body: string[][] | undefined;
   header: string[] | undefined;
-  setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   headerMapping: Map<string, string>;
-  setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const TableUI: React.FC<Props> = (props): JSX.Element => {
@@ -26,19 +21,6 @@ const TableUI: React.FC<Props> = (props): JSX.Element => {
             {props.header?.map((item, index) => (
               <th key={index} scope="col" className="px-6 py-3">
                 {item.toString()}
-                <MeasureForm
-                  columnValue={item}
-                  headerMapping={props.headerMapping}
-                ></MeasureForm>
-                <DropDown
-                  // dataType={props.headerMapping.get(`${item.toString()}`)}
-                  dropDownId={index}
-                  setHeaderMapping={props.setHeaderMapping}
-                  title={item.toString()}
-                  headerMapping={props.headerMapping}
-                  setIsTableChanged={props.setIsTableChanged}
-                  setIsRDFGenerated={props.setIsRDFGenerated}
-                />
               </th>
             ))}
           </tr>
