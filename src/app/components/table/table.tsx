@@ -61,6 +61,7 @@ interface measurementColumnData {
   ontologyURI: string;
   label: string;
   prefix: string;
+  isMeasurementOf: string;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -87,9 +88,13 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const handleSave = async () => {
     setLoadingSave(true);
 
-    const concatenatedPrefixes = Array.from(prefixesURI?.values() ?? []).join(
-      ",",
-    );
+    let concatenatedPrefixes = "";
+
+    prefixesURI?.forEach((value, key) => {
+      concatenatedPrefixes += `${key};${value},`;
+    });
+
+    concatenatedPrefixes = concatenatedPrefixes.slice(0, -1);
 
     await updateMapping({
       title: props.mappingTitle,
@@ -149,6 +154,10 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
           prefix: measurementColumnData.find((data) => data.column === title)
             ?.prefix,
+
+          isMeasurementOf: measurementColumnData.find(
+            (data) => data.column === title,
+          )?.isMeasurementOf,
         };
 
         try {
@@ -209,6 +218,10 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
             prefix: measurementColumnData.find((data) => data.column === title)
               ?.prefix,
+
+            isMeasurementOf: measurementColumnData.find(
+              (data) => data.column === title,
+            )?.isMeasurementOf,
           };
 
           if (column.title === data.title) {
