@@ -28,7 +28,7 @@ export async function createNewMapping(
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${Cookies.get("accessToken")}`;
     const response = await axios.post(
-      "http://localhost:8080/mappings",
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`,
       mappingData,
     );
 

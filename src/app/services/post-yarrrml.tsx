@@ -26,7 +26,7 @@ export async function postYarrrml(
     formData.append("csvFile", mappingFile);
 
     const response = await axios.post(
-      `http://localhost:8080/mappings/${mappingId}/generate`,
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${mappingId}/generate`,
       formData,
       {
         headers: {

@@ -13,7 +13,7 @@ export async function createNewColumn(
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${Cookies.get("accessToken")}`;
     const response = await axios.post(
-      `http://localhost:8080/mappings/${mappingId}/columns`,
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${mappingId}/columns`,
       columnData,
     );
 

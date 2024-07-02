@@ -22,13 +22,16 @@ export default function SignIn() {
   };
 
   const handleSubmit = async () => {
-    const res = await fetch(`http://localhost:8080/signin`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/signin`,
+      {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
     if (res.ok) {
       const json = await res.json();
       //localStorage.setItem("token", json.token);

@@ -541,12 +541,12 @@ const useGetMappingSWR = (
 ) => {
   const { data, error } = useSWR(
     // If URL is blank with space, sometimes it will not enter the fetch function
-    "http://localhost:8080/mappings/",
+    `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/`,
     async () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;
       const response = await axios.get(
-        `http://localhost:8080/mappings/${mappingIdHook}`,
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${mappingIdHook}`,
       );
 
       if (response.status !== 200) {

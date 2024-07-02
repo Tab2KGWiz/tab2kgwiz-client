@@ -140,7 +140,7 @@ const useGetMappingSWR = (
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;
       const response = await axios.get(
-        `http://localhost:8080/mappings/${mappingIdHook}`,
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${mappingIdHook}`,
       );
 
       if (response.status !== 200) {

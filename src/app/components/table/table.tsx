@@ -105,7 +105,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     const accessToken = Cookies.get("accessToken");
 
     const response = await axios.get(
-      `http://localhost:8080/mappings/${props.mappingId}/columns`,
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
 
@@ -226,7 +226,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
           if (column.title === data.title) {
             const response = await axios.put(
-              `http://localhost:8080/mappings/${props.mappingId}/columns/${column.id}`,
+              `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns/${column.id}`,
               data,
               { headers: { Authorization: `Bearer ${accessToken}` } },
             );
@@ -249,7 +249,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
     try {
       const response = await axios.put(
-        `http://localhost:8080/mappings/${props.mappingId}/columns/-1`,
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns/-1`,
         data,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
@@ -271,7 +271,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:8080/mappings/${props.mappingId}`,
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}`,
         data,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );

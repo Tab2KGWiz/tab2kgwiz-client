@@ -23,13 +23,16 @@ const Home = () => {
   };
 
   const handleSubmit = async () => {
-    const res = await fetch(`http://localhost:8080/signup`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/signup`,
+      {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
     if (res.ok) {
       showSnackBar("You have successfully signed up.", "success");
 

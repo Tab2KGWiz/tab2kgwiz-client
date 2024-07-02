@@ -6,7 +6,7 @@ export async function postYaml(mappingId: number): Promise<number> {
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${Cookies.get("accessToken")}`;
     const response = await axios.post(
-      `http://localhost:8080/mappings/${mappingId}/yaml/generate`,
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${mappingId}/yaml/generate`,
     );
 
     if (response.status === 200) {

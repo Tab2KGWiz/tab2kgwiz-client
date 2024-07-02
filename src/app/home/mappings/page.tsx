@@ -45,7 +45,7 @@ const MappingPage: React.FC<Props> = (props): JSX.Element => {
 };
 
 const useCreateMappingSWR = (file: File | null) => {
-  const url = "http://localhost:8080/mappings";
+  const url = `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`;
   const shouldFetch = !!file; // Only fetch if file available
   const { showSnackBar } = useSnackBar();
 
@@ -78,7 +78,7 @@ const useCreateMappingSWR = (file: File | null) => {
           `Bearer ${Cookies.get("accessToken")}`;
 
         const response = await axios.post(
-          "http://localhost:8080/mappings",
+          `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`,
           mappingData,
         );
 

@@ -486,12 +486,14 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
 
 const useGetAllMappingsSWR = () => {
   const { data, error } = useSWR(
-    "http://localhost:8080/mappings",
+    `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`,
     async () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;
 
-      const response = await axios.get("http://localhost:8080/mappings");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`,
+      );
 
       if (response.status === 200) {
         const data: MappingResponseData[] = response.data;
