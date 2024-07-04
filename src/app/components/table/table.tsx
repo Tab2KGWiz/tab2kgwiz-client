@@ -16,6 +16,8 @@ import { Button, Stack, Switch, Typography } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { TextField, Paper } from "@mui/material";
 import OntologyDialog from "./ontology-dialog";
+import MappingResponseData from "@/app/utils/mappingResponseData";
+import MeasurementColumnData from "@/app/utils/measurementColumnData";
 
 interface Props {
   header: string[] | undefined;
@@ -36,32 +38,10 @@ interface Props {
   setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>;
   mappingTitle: string;
   setMappingTitle: React.Dispatch<React.SetStateAction<string>>;
-}
-
-interface ColumnResponseData {
-  uri: string;
-  id: string;
-  title: string;
-}
-
-interface measurementColumnData {
-  column: string;
-  ontology: string;
-  property: string;
-  value: string;
-  unit: string;
-  timestamp: string;
-  madeBy: string;
-  ontologyPrefix: string;
-  measurement: string;
-  recommendation: string[];
-  selectedRecommendation: string;
-  identifier: string;
-  ontologyType: string;
-  ontologyURI: string;
-  label: string;
-  prefix: string;
-  isMeasurementOf: string;
+  columnsData: MeasurementColumnData[];
+  setColumnsData: React.Dispatch<
+    React.SetStateAction<MappingResponseData["columns"]>
+  >;
 }
 
 const Table: React.FC<Props> = (props): JSX.Element => {
@@ -74,15 +54,6 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const [isTableChanged, setIsTableChanged] = React.useState(true);
   const [fileContent, setFileContent] = React.useState<String>("");
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
-  const [ontologySelected, setOntologySelected] = React.useState<string>("");
-
-  const [selectedOntology, setSelectedOntology] = React.useState<string>("");
-  const [measurementColumnData, setMeasurementColumnData] = React.useState<
-    measurementColumnData[]
-  >([]);
-  const [mainColumnSelected, setMainColumnSelected] =
-    React.useState<string>("");
-
   const [prefixesURI, setPrefixesURI] = React.useState<Map<string, string>>();
 
   const handleSave = async () => {
@@ -114,49 +85,41 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     }
 
     if (response.data.length === 0) {
-      props.headerMapping.forEach(async (type, title) => {
+      for (const [title, type] of Array.from(props.headerMapping.entries())) {
         const data = {
           title: title,
-          dataType: "xsd:" + type,
-          subjectOntology: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.selectedRecommendation,
+          dataType: props.columnsData.find((data) => data.title === title)
+            ?.dataType,
 
-          hasUnit: measurementColumnData.find((data) => data.column === title)
-            ?.unit,
+          hasUnit: props.columnsData.find((data) => data.title === title)
+            ?.hasUnit,
 
-          hasTimestamp: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.timestamp,
+          hasTimestamp: props.columnsData.find((data) => data.title === title)
+            ?.hasTimestamp,
 
-          measurementMadeBy: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.madeBy,
+          measurementMadeBy: props.columnsData.find(
+            (data) => data.title === title,
+          )?.measurementMadeBy,
 
-          measurement: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.measurement,
+          measurement: props.columnsData.find((data) => data.title === title)
+            ?.measurement,
 
-          identifier: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.identifier,
+          identifier: props.columnsData.find((data) => data.title === title)
+            ?.identifier,
 
-          ontologyType: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.ontologyType,
+          ontologyType: props.columnsData.find((data) => data.title === title)
+            ?.ontologyType,
 
-          ontologyURI: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.ontologyURI,
+          ontologyURI: props.columnsData.find((data) => data.title === title)
+            ?.ontologyURI,
 
-          label: measurementColumnData.find((data) => data.column === title)
-            ?.label,
+          label: props.columnsData.find((data) => data.title === title)?.label,
 
-          prefix: measurementColumnData.find((data) => data.column === title)
+          prefix: props.columnsData.find((data) => data.title === title)
             ?.prefix,
 
-          isMeasurementOf: measurementColumnData.find(
-            (data) => data.column === title,
+          isMeasurementOf: props.columnsData.find(
+            (data) => data.title === title,
           )?.isMeasurementOf,
         };
 
@@ -175,67 +138,64 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           router.push("/home/upload");
           return;
         }
-      });
+      }
     } else {
-      response.data.forEach(async (column: ColumnResponseData) => {
-        props.headerMapping.forEach(async (type, title) => {
-          const data = {
-            title: title,
-            dataType: "xsd:" + type,
-            subjectOntology: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.selectedRecommendation,
+      response.data.forEach(async (column: MeasurementColumnData) => {
+        const data = {
+          dataType: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.dataType,
+          subjectOntology: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.selectedRecommendation,
 
-            hasUnit: measurementColumnData.find((data) => data.column === title)
-              ?.unit,
+          hasUnit: props.columnsData.find((data) => data.title === column.title)
+            ?.hasUnit,
 
-            hasTimestamp: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.timestamp,
+          hasTimestamp: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.hasTimestamp,
 
-            measurementMadeBy: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.madeBy,
+          measurementMadeBy: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.measurementMadeBy,
 
-            measurement: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.measurement,
+          measurement: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.measurement,
 
-            identifier: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.identifier,
+          identifier: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.identifier,
 
-            ontologyType: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.ontologyType,
+          ontologyType: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.ontologyType,
 
-            ontologyURI: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.ontologyURI,
+          ontologyURI: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.ontologyURI,
 
-            label: measurementColumnData.find((data) => data.column === title)
-              ?.label,
+          label: props.columnsData.find((data) => data.title === column.title)
+            ?.label,
 
-            prefix: measurementColumnData.find((data) => data.column === title)
-              ?.prefix,
+          prefix: props.columnsData.find((data) => data.title === column.title)
+            ?.prefix,
 
-            isMeasurementOf: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.isMeasurementOf,
-          };
+          isMeasurementOf: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.isMeasurementOf,
+        };
 
-          if (column.title === data.title) {
-            const response = await axios.put(
-              `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns/${column.id}`,
-              data,
-              { headers: { Authorization: `Bearer ${accessToken}` } },
-            );
+        const response = await axios.put(
+          `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns/${column.id}`,
+          data,
+          { headers: { Authorization: `Bearer ${accessToken}` } },
+        );
 
-            if (response.status !== 200) {
-              throw new Error("Error creating column: " + response.status);
-            }
-          }
-        });
+        if (response.status !== 200) {
+          throw new Error("Error creating column: " + response.status);
+        }
       });
       setLoadingSave(false);
       setColumnsCreated(true);
@@ -244,7 +204,20 @@ const Table: React.FC<Props> = (props): JSX.Element => {
     showSnackBar("Columns created successfully.", "success");
   };
 
-  const createColumn = async (data: { title: string; dataType: string }) => {
+  const createColumn = async (data: {
+    title: string;
+    dataType: string | undefined;
+    hasTimestamp: string | undefined;
+    hasUnit: string | undefined;
+    identifier: boolean | undefined;
+    isMeasurementOf: string | undefined;
+    label: string | undefined;
+    measurement: boolean | undefined;
+    measurementMadeBy: string | undefined;
+    ontologyType: string | undefined;
+    ontologyURI: string | undefined;
+    prefix: string | undefined;
+  }) => {
     const accessToken = Cookies.get("accessToken");
 
     try {
@@ -353,20 +326,14 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           />
 
           <OntologyDialog
-            setOntologySelected={setOntologySelected}
-            ontologySelected={ontologySelected}
             headerMapping={props.headerMapping}
-            selectedOntology={selectedOntology}
-            setSelectedOntology={setSelectedOntology}
-            measurementColumnData={measurementColumnData}
-            setMeasurementColumnData={setMeasurementColumnData}
-            mainColumnSelected={mainColumnSelected}
-            setMainColumnSelected={setMainColumnSelected}
             setHeaderMapping={props.setHeaderMapping}
             setIsTableChanged={setIsTableChanged}
             setIsRDFGenerated={setIsRDFGenerated}
             setPrefixesURI={setPrefixesURI}
             prefixesURI={prefixesURI}
+            columnsData={props.columnsData}
+            setColumnsData={props.setColumnsData}
           ></OntologyDialog>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography>Private</Typography>

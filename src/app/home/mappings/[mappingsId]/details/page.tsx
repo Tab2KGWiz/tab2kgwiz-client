@@ -497,7 +497,7 @@ const MappingDetailsPage: React.FC<{
                       color="text.primary"
                       sx={{ marginTop: "1.5vh", marginLeft: "2vh" }}
                     >
-                      http://165.232.127.94:8081/generateLinkedData
+                      http://104.248.240.80:8081/generateLinkedData
                     </Typography>
                   </Card>
 

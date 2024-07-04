@@ -10,18 +10,8 @@ import Table from "@/app/components/table/table";
 import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
-
-interface MappingResponseData {
-  fileContent: string;
-  fileName: string;
-  accessible: boolean;
-  title: string;
-  providedBy: string;
-  columns: {
-    title: string;
-    dataType: string;
-  }[];
-}
+import MappingResponseData from "@/app/utils/mappingResponseData";
+import MeasurementColumnData from "@/app/utils/measurementColumnData";
 
 const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   params,
@@ -42,6 +32,9 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   const [CSVFile, setCSVFile] = React.useState<File | null>(null);
   const [isAccessible, setIsAccessible] = React.useState(false);
   const [mappingTitle, setMappingTitle] = React.useState<string>("");
+  const [columnsData, setColumnsData] = React.useState<MeasurementColumnData[]>(
+    [],
+  );
 
   const router = useRouter();
 
@@ -78,6 +71,8 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
     setCSVFile,
     setIsAccessible,
     setMappingTitle,
+    setColumnsData,
+    columnsData,
   );
 
   return (
@@ -110,6 +105,8 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
               setIsAccessible={setIsAccessible}
               mappingTitle={mappingTitle}
               setMappingTitle={setMappingTitle}
+              columnsData={columnsData}
+              setColumnsData={setColumnsData}
             />
           )}
         </>
@@ -131,6 +128,10 @@ const useGetMappingSWR = (
   setCSVFile: React.Dispatch<React.SetStateAction<File | null>>,
   setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>,
   setMappingTitle: React.Dispatch<React.SetStateAction<string>>,
+  setColumnsData: React.Dispatch<
+    React.SetStateAction<MappingResponseData["columns"]>
+  >,
+  columnsData: MappingResponseData["columns"],
 ) => {
   const { data, error } = useSWR(
     " ",
@@ -190,16 +191,49 @@ const useGetMappingSWR = (
         const headerMapping = new Map<string, string>();
 
         if (responseData.columns.length === 0) {
+          const tempColumnsData: MappingResponseData["columns"] = [
+            ...columnsData,
+          ];
           headers.forEach(async (header, index) => {
             // Check and assign the format of the data and set the format to the Map
             formatAssigner(rowsWithoutNull, index, headerMapping, header);
+            const data: MeasurementColumnData = {
+              id: undefined,
+              title: header,
+              dataType: `string:${headerMapping.get(header)}`,
+              ontologyPrefix: undefined,
+              measurement: false,
+              recommendation: undefined,
+              selectedRecommendation: undefined,
+              identifier: false,
+              ontologyType: undefined,
+              ontologyURI: undefined,
+              label: undefined,
+              prefix: undefined,
+              isMeasurementOf: undefined,
+              hasTimestamp: undefined,
+              hasUnit: undefined,
+              hasValue: undefined,
+              measurementMadeBy: undefined,
+              relatedTo: undefined,
+              relatesToProperty: undefined,
+              relationShip: undefined,
+              subjectOntology: undefined,
+            };
+
+            tempColumnsData.push(data);
           });
+          setColumnsData(tempColumnsData);
           setHeaderMapping(headerMapping);
         } else {
           responseData.columns.forEach((column) => {
-            headerMapping.set(column.title, column.dataType.split(":")[1]);
+            headerMapping.set(
+              column.title,
+              column.dataType ? column.dataType.split(":")[1] : "",
+            );
           });
           setHeaderMapping(headerMapping);
+          setColumnsData(responseData.columns);
         }
       } catch (error) {
         showSnackBar("An error occurred while processing the file.", "error");
