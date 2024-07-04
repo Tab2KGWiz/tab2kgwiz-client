@@ -211,7 +211,6 @@ const useGetMappingSWR = (
               isMeasurementOf: undefined,
               hasTimestamp: undefined,
               hasUnit: undefined,
-              hasValue: undefined,
               measurementMadeBy: undefined,
               relatedTo: undefined,
               relatesToProperty: undefined,

@@ -12,7 +12,6 @@ interface MeasurementColumnData {
   dataType: string | undefined;
   hasTimestamp: string | undefined;
   hasUnit: string | undefined;
-  hasValue: string | undefined;
   measurementMadeBy: string | undefined;
   relatedTo: string | undefined;
   relatesToProperty: string | undefined;

@@ -42,14 +42,6 @@ const Transition = React.forwardRef(function Transition(
 
 const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   const [open, setOpen] = React.useState(false);
-  const [selectedColumns, setSelectedColumns] = React.useState<{
-    [key: string]: string;
-  }>({});
-
-  const [columns, setColumns] = React.useState<string[]>(
-    Array.from(props.headerMapping.keys()),
-  );
-
   const [ontologyData, setFetchedOntologyData] = React.useState<
     {
       itemText: string;
@@ -74,7 +66,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   const handleDynamicSelectionChange = (
     column: string,
     field: keyof MeasurementColumnData,
-    value: string | boolean | null,
+    value: string | boolean | null | undefined,
   ) => {
     props.setIsTableChanged(true);
     props.setIsRDFGenerated(false);
@@ -103,6 +95,10 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
         )
       ) {
         handleDynamicSelectionChange(key, "identifier", false);
+
+        // When a column is changed to measurement, the identifier field should be cleared
+        handleDynamicSelectionChange(key, "relatedTo", "");
+        handleDynamicSelectionChange(key, "relationShip", "");
       }
     } else if (event.target.value === "Id") {
       handleDynamicSelectionChange(key, "identifier", true);
@@ -113,6 +109,12 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
         )
       ) {
         handleDynamicSelectionChange(key, "measurement", false);
+
+        // When a column is changed to identifier, the measurement field should be cleared
+        handleDynamicSelectionChange(key, "hasUnit", "");
+        handleDynamicSelectionChange(key, "hasTimestamp", "");
+        handleDynamicSelectionChange(key, "isMeasurementOf", "");
+        handleDynamicSelectionChange(key, "measurementMadeBy", "");
       }
     }
   };
@@ -367,7 +369,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                       />
                       <Autocomplete
                         id={`autocomplete-timestamp-${key}`}
-                        options={columns}
+                        options={props.columnsData.map((data) => data.title)}
                         sx={{ width: 300 }}
                         getOptionLabel={(option) => option}
                         onChange={(
