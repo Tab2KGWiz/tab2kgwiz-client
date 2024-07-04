@@ -50,7 +50,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     Array.from(props.headerMapping.keys()),
   );
 
-  const [columnData, setColumnData] = React.useState<
+  const [ontologyData, setFetchedOntologyData] = React.useState<
     {
       itemText: string;
       prefixed: string;
@@ -122,7 +122,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     value: string,
     key: string,
   ) => {
-    columnData?.forEach((item) => {
+    ontologyData?.forEach((item) => {
       if (item.itemText === value) {
         handleDynamicSelectionChange(key, "ontologyType", item.prefixed);
         handleDynamicSelectionChange(key, "ontologyURI", item.iri.value);
@@ -142,9 +142,25 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
     value: string,
     key: string,
   ) => {
-    columnData?.forEach((item) => {
+    ontologyData?.forEach((item) => {
       if (item.itemText === value) {
         handleDynamicSelectionChange(key, "hasUnit", item.prefixed);
+        const tempPrefixsURI = new Map(props.prefixesURI);
+        tempPrefixsURI.set(item.prefixedSplitA, item.iriSplitA);
+        props.setPrefixesURI(tempPrefixsURI);
+        return;
+      }
+    });
+  };
+
+  const handleSearchRelationshipForm = (
+    event: SyntheticEvent<Element, Event>,
+    value: string,
+    key: string,
+  ) => {
+    ontologyData?.forEach((item) => {
+      if (item.itemText === value) {
+        handleDynamicSelectionChange(key, "relationShip", item.prefixed);
         const tempPrefixsURI = new Map(props.prefixesURI);
         tempPrefixsURI.set(item.prefixedSplitA, item.iriSplitA);
         props.setPrefixesURI(tempPrefixsURI);
@@ -169,7 +185,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
       prefixedSplitA: string;
     }[] = response.data;
 
-    setColumnData(ontologyData);
+    setFetchedOntologyData(ontologyData);
   };
 
   return (
@@ -232,7 +248,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                     freeSolo
                     id={`${key}-autocomplete`}
                     disableClearable
-                    options={columnData?.map((item) => item.itemText) || []}
+                    options={ontologyData?.map((item) => item.itemText) || []}
                     sx={{ width: 300 }}
                     filterOptions={(x) => x}
                     onSelect={handleOntologySearch}
@@ -263,7 +279,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                       handleDynamicSelectionChange(
                         key,
                         "dataType",
-                        `xsd:${value}`,
+                        "xsd:" + value,
                       );
                     }}
                     renderInput={(params) => (
@@ -273,6 +289,58 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                 </Stack>
 
                 {props.columnsData.find((data) => data.title === key)
+                  ?.identifier && (
+                  <Stack direction={"row"} spacing={2}>
+                    <Autocomplete
+                      id={`autocomplete-relatedTo-${key}`}
+                      options={props.columnsData
+                        .filter((data) => data.identifier === true)
+                        .map((data) => data.title)}
+                      sx={{ width: 300 }}
+                      getOptionLabel={(option) => option}
+                      onChange={(
+                        event: SyntheticEvent<Element, Event>,
+                        value: string | null,
+                      ) => {
+                        handleDynamicSelectionChange(key, "relatedTo", value);
+                      }}
+                      defaultValue={
+                        props.columnsData.find((data) => data.title === key)
+                          ?.relatedTo
+                      }
+                      renderInput={(params) => (
+                        <TextField {...params} label="Related to" />
+                      )}
+                    />
+
+                    {props.columnsData.find((data) => data.title === key)
+                      ?.relatedTo && (
+                      <Autocomplete
+                        freeSolo
+                        id={`autocomplete-relationship-${key}`}
+                        disableClearable
+                        options={
+                          ontologyData?.map((item) => item.itemText) || []
+                        }
+                        sx={{ width: 300 }}
+                        filterOptions={(x) => x}
+                        onSelect={handleOntologySearch}
+                        onChange={(event, value) => {
+                          handleSearchRelationshipForm(event, value, key);
+                        }}
+                        defaultValue={
+                          props.columnsData.find((data) => data.title === key)
+                            ?.relationShip
+                        }
+                        renderInput={(params) => (
+                          <TextField {...params} label="Relationship" />
+                        )}
+                      />
+                    )}
+                  </Stack>
+                )}
+
+                {props.columnsData.find((data) => data.title === key)
                   ?.measurement === true && (
                   <>
                     <Stack direction={"row"} spacing={2}>
@@ -280,7 +348,9 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
                         freeSolo
                         id={`autocomplete-unit-${key}`}
                         disableClearable
-                        options={columnData?.map((item) => item.itemText) || []}
+                        options={
+                          ontologyData?.map((item) => item.itemText) || []
+                        }
                         sx={{ width: 300 }}
                         filterOptions={(x) => x}
                         onSelect={handleOntologySearch}

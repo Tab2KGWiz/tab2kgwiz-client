@@ -121,6 +121,12 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           isMeasurementOf: props.columnsData.find(
             (data) => data.title === title,
           )?.isMeasurementOf,
+
+          relatedTo: props.columnsData.find((data) => data.title === title)
+            ?.relatedTo,
+
+          relationShip: props.columnsData.find((data) => data.title === title)
+            ?.relationShip,
         };
 
         try {
@@ -145,9 +151,6 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           dataType: props.columnsData.find(
             (data) => data.title === column.title,
           )?.dataType,
-          subjectOntology: props.columnsData.find(
-            (data) => data.title === column.title,
-          )?.selectedRecommendation,
 
           hasUnit: props.columnsData.find((data) => data.title === column.title)
             ?.hasUnit,
@@ -185,6 +188,14 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           isMeasurementOf: props.columnsData.find(
             (data) => data.title === column.title,
           )?.isMeasurementOf,
+
+          relatedTo: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.relatedTo,
+
+          relationShip: props.columnsData.find(
+            (data) => data.title === column.title,
+          )?.relationShip,
         };
 
         const response = await axios.put(

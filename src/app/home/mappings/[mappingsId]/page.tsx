@@ -200,11 +200,9 @@ const useGetMappingSWR = (
             const data: MeasurementColumnData = {
               id: undefined,
               title: header,
-              dataType: `string:${headerMapping.get(header)}`,
+              dataType: `xsd:${headerMapping.get(header)}`,
               ontologyPrefix: undefined,
               measurement: false,
-              recommendation: undefined,
-              selectedRecommendation: undefined,
               identifier: false,
               ontologyType: undefined,
               ontologyURI: undefined,
@@ -218,7 +216,6 @@ const useGetMappingSWR = (
               relatedTo: undefined,
               relatesToProperty: undefined,
               relationShip: undefined,
-              subjectOntology: undefined,
             };
 
             tempColumnsData.push(data);

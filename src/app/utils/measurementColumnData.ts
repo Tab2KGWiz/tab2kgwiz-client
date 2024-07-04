@@ -3,8 +3,6 @@ interface MeasurementColumnData {
   title: string;
   ontologyPrefix: string | undefined;
   measurement: boolean;
-  recommendation: string[] | undefined;
-  selectedRecommendation: string | undefined;
   identifier: boolean;
   ontologyType: string | undefined;
   ontologyURI: string | undefined;
@@ -19,7 +17,6 @@ interface MeasurementColumnData {
   relatedTo: string | undefined;
   relatesToProperty: string | undefined;
   relationShip: string | undefined;
-  subjectOntology: string | undefined;
 }
 
 export default MeasurementColumnData;
