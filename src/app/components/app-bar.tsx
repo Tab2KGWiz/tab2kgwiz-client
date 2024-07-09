@@ -165,14 +165,25 @@ const PageAppBar: React.FC<Props> = (): JSX.Element => {
             >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Link
-                    href={"/home/" + setting.toLowerCase()}
-                    underline="none"
-                    color="inherit"
-                    sx={{ paddingX: "1vh" }}
-                  >
-                    <Typography textAlign="center">{setting}</Typography>
-                  </Link>
+                  {setting === "Logout" ? (
+                    <Link
+                      href={"signin"}
+                      underline="none"
+                      color="inherit"
+                      sx={{ paddingX: "1vh" }}
+                    >
+                      <Typography textAlign="center">{setting}</Typography>
+                    </Link>
+                  ) : (
+                    <Link
+                      href={"/home/" + setting.toLowerCase()}
+                      underline="none"
+                      color="inherit"
+                      sx={{ paddingX: "1vh" }}
+                    >
+                      <Typography textAlign="center">{setting}</Typography>
+                    </Link>
+                  )}
                 </MenuItem>
               ))}
             </Menu>
