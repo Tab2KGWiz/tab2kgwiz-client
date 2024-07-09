@@ -1,8 +1,8 @@
-import React, { lazy, useEffect } from "react";
+import React from "react";
 import Pagination from "./pagination";
 import TableUI from "@/app/ui/table/table";
-import { postYaml } from "../../services/post-yaml";
-import { postYarrrml } from "../../services/post-yarrrml";
+import postYaml from "@/app/services/post-yaml";
+import postYarrrml from "@/app/services/post-yarrrml";
 import { useSnackBar } from "../snackbar-provider";
 import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from "@mui/icons-material/Save";
@@ -276,11 +276,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       setLoadingRDF(false);
     } else {
       showSnackBar("Yaml file generated successfully", "success");
-      const response = await postYarrrml(
-        props.mappingName ? props.mappingName : "",
-        props.mappingFile,
-        props.mappingId,
-      );
+      const response = await postYarrrml(props.mappingFile, props.mappingId);
 
       if (response === "-1") {
         showSnackBar("Error parsing yarrrml", "error");
