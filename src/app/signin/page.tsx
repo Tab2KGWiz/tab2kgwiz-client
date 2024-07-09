@@ -19,9 +19,9 @@ export default function SignIn() {
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = event.target;
-      setFormData({ ...formData, [name]: value });
+      setFormData((prevData) => ({ ...prevData, [name]: value }));
     },
-    [formData],
+    [],
   );
 
   const handleSubmit = useCallback(async () => {
