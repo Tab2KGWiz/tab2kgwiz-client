@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import { useSnackBar } from "../components/snackbar-provider";
@@ -16,46 +16,60 @@ export default function SignIn() {
 
   const { showSnackBar } = useSnackBar();
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = event.target;
+      setFormData({ ...formData, [name]: value });
+    },
+    [formData],
+  );
 
-  const handleSubmit = async () => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/signin`,
-      {
-        method: "POST",
-        body: JSON.stringify(formData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    if (res.ok) {
-      const json = await res.json();
-      //localStorage.setItem("token", json.token);
-
-      const expirationTime = new Date(
-        new Date().getTime() + 24 * 60 * 60 * 1000, // 24 hours
-      );
-
-      Cookies.set("accessToken", json.token, {
-        expires: expirationTime,
-        path: "/",
-      });
-
-      Cookies.set("username", formData.username, {
-        expires: expirationTime,
-        path: "/",
-      });
-
-      showSnackBar("You have successfully signed in.", "success");
-      router.push("/home");
-    } else {
-      showSnackBar("Invalid username or password. Please try again.", "error");
+  const handleSubmit = useCallback(async () => {
+    if (!formData.username || !formData.password) {
+      showSnackBar("Please fill in all fields.", "error");
+      return;
     }
-  };
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/signin`,
+        {
+          method: "POST",
+          body: JSON.stringify(formData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      if (res.ok) {
+        const json = await res.json();
+
+        const expirationTime = new Date(
+          new Date().getTime() + 24 * 60 * 60 * 1000, // 24 hours
+        );
+
+        Cookies.set("accessToken", json.token, {
+          expires: expirationTime,
+          path: "/",
+        });
+
+        Cookies.set("username", formData.username, {
+          expires: expirationTime,
+          path: "/",
+        });
+
+        showSnackBar("You have successfully signed in.", "success");
+        router.push("/home");
+      } else {
+        showSnackBar(
+          "Invalid username or password. Please try again.",
+          "error",
+        );
+      }
+    } catch (error) {
+      showSnackBar("An error occurred. Please try again.", "error");
+    }
+  }, [formData, router, showSnackBar]);
 
   return (
     <>
@@ -73,10 +87,7 @@ export default function SignIn() {
             </div>
 
             <div className="flex items-center justify-center mt-6">
-              <a
-                //href="#"
-                className="w-1/3 pb-4 font-medium text-center text-gray-800 capitalize border-b-2 border-blue-500 dark:border-blue-400 dark:text-white"
-              >
+              <a className="w-1/3 pb-4 font-medium text-center text-gray-800 capitalize border-b-2 border-blue-500 dark:border-blue-400 dark:text-white">
                 sign in
               </a>
 
@@ -157,16 +168,5 @@ export default function SignIn() {
         </div>
       </section>
     </>
-    // <Layout>
-
-    //   <div className={styles.container}>
-    //     <h1 className={styles.title}>Sign In</h1>
-    //     <div className={styles.form}>
-    //       <input className={styles.input} type="text" name="username" placeholder="username" value={state.username} onChange={handleChange} autoComplete="off" />
-    //       <input className={styles.input} type="password" name="password" placeholder="password" value={state.password} onChange={handleChange} />
-    //       <button className={styles.btn} onClick={handleSubmit}>Submit</button>
-    //     </div>
-    //   </div>
-    // </Layout>
   );
 }
