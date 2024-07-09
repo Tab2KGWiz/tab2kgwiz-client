@@ -1,7 +1,4 @@
-"use client";
-
-import { Snackbar } from "@mui/material";
-import { Alert, AlertColor } from "@mui/material";
+import { Alert, AlertColor, Snackbar } from "@mui/material";
 import React, { createContext, useContext, useState } from "react";
 
 type SnackBarContextActions = {
@@ -26,7 +23,6 @@ const SnackBarProvider: React.FC<SnackBarContextProviderProps> = ({
   const handleClose = () => {
     setQueue([]);
     marginBottomRef.current = 0;
-    //setQueue((prevQueue) => prevQueue.slice(1)); // Remove the first item from the queue
   };
 
   const showSnackBar = (text: string, color: AlertColor) => {

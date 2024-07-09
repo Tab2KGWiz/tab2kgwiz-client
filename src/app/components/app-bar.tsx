@@ -14,9 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "@mui/material";
 
-const pages: any[] = [
-  /*"Products", "Pricing", "Blog"*/
-];
+const pages: any[] = [];
 const settings = ["Profile", "Board", "Logout"];
 
 interface Props {}
