@@ -1,7 +1,7 @@
 "use client";
 
 import { useFile } from "@/app/components/file-provider";
-import { formatAssigner } from "@/app/lib/formatAssigner";
+import formatAssigner from "@/app/lib/formatAssigner";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSnackBar } from "@/app/components/snackbar-provider";

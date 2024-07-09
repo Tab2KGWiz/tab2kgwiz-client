@@ -25,7 +25,7 @@ interface Props {
   pages: number;
   page: number;
   pageSize: number;
-  onPageChange: Function;
+  onPageChange: (newPage: number) => void;
   previousText: string;
   nextText: string;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
