@@ -1,8 +1,8 @@
-import { checkDecimalOrInteger } from "./checkDecimalOrInteger";
-import { checkDayMonthYear } from "./checkDayMonthYear";
-import { detectXSD } from "./XSDDetector";
+import checkDecimalOrInteger from "./checkDecimalOrInteger";
+import checkDayMonthYear from "./checkDayMonthYear";
+import detectXSD from "./XSDDetector";
 
-export function formatAssigner(
+function formatAssigner(
   rowsWithoutNull: string[][],
   index: number,
   headerMapping: Map<string, string>,
@@ -27,3 +27,5 @@ export function formatAssigner(
     headerMapping.set(header, detectXSD(rowsWithoutNull[0][index]));
   }
 }
+
+export default formatAssigner;
