@@ -17,7 +17,7 @@ import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { TextField, Paper } from "@mui/material";
 import OntologyDialog from "./ontology-dialog";
 import MappingResponseData from "@/app/utils/mappingResponseData";
-import MeasurementColumnData from "@/app/utils/measurementColumnData";
+import ColumnData from "@/app/utils/columnData";
 
 interface Props {
   header: string[] | undefined;
@@ -38,7 +38,7 @@ interface Props {
   setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>;
   mappingTitle: string;
   setMappingTitle: React.Dispatch<React.SetStateAction<string>>;
-  columnsData: MeasurementColumnData[];
+  columnsData: ColumnData[];
   setColumnsData: React.Dispatch<
     React.SetStateAction<MappingResponseData["columns"]>
   >;
@@ -146,7 +146,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
         }
       }
     } else {
-      response.data.forEach(async (column: MeasurementColumnData) => {
+      response.data.forEach(async (column: ColumnData) => {
         const data = {
           dataType: props.columnsData.find(
             (data) => data.title === column.title,

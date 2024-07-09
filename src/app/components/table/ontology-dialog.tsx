@@ -18,7 +18,7 @@ import { useSnackBar } from "../snackbar-provider";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { SyntheticEvent } from "react";
 import xsdDataType from "@/app/utils/xsdDataTypes";
-import MeasurementColumnData from "@/app/utils/measurementColumnData";
+import ColumnData from "@/app/utils/columnData";
 
 interface Props {
   headerMapping: Map<string, string>;
@@ -29,8 +29,8 @@ interface Props {
     React.SetStateAction<Map<string, string> | undefined>
   >;
   prefixesURI: Map<string, string> | undefined;
-  columnsData: MeasurementColumnData[];
-  setColumnsData: React.Dispatch<React.SetStateAction<MeasurementColumnData[]>>;
+  columnsData: ColumnData[];
+  setColumnsData: React.Dispatch<React.SetStateAction<ColumnData[]>>;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -65,7 +65,7 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
 
   const handleDynamicSelectionChange = (
     column: string,
-    field: keyof MeasurementColumnData,
+    field: keyof ColumnData,
     value: string | boolean | null | undefined,
   ) => {
     props.setIsTableChanged(true);
