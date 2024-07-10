@@ -1,4 +1,4 @@
-export function checkDayMonthYear(value: string[]) {
+function checkDayMonthYear(value: string[]) {
   // From less rescritive to more restrictive
   if (value.every((v) => v.match(/^(0[1-9]|1[0-2])$/))) {
     return "gMonth";
@@ -9,3 +9,5 @@ export function checkDayMonthYear(value: string[]) {
   }
   return "integer";
 }
+
+export default checkDayMonthYear;

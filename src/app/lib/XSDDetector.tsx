@@ -1,4 +1,6 @@
-export function detectXSD(value: string) {
+import exp from "constants";
+
+function detectXSD(value: string) {
   const pattern = [
     {
       type: "anyURI",
@@ -46,3 +48,5 @@ export function detectXSD(value: string) {
 
   return "unknown type";
 }
+
+export default detectXSD;

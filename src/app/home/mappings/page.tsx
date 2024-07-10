@@ -17,7 +17,7 @@ interface MappingResponseData {
   fileContent: string;
 }
 
-const MappingPage: React.FC<Props> = (props): JSX.Element => {
+const MappingPage: React.FC<Props> = (): JSX.Element => {
   const { file, setFile } = useFile();
   const router = useRouter();
   const { showSnackBar } = useSnackBar();

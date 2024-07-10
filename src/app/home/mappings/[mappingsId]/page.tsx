@@ -1,7 +1,7 @@
 "use client";
 
 import { useFile } from "@/app/components/file-provider";
-import { formatAssigner } from "@/app/lib/formatAssigner";
+import formatAssigner from "@/app/lib/formatAssigner";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSnackBar } from "@/app/components/snackbar-provider";
@@ -11,7 +11,7 @@ import useSWR from "swr";
 import axios from "axios";
 import Cookies from "js-cookie";
 import MappingResponseData from "@/app/utils/mappingResponseData";
-import MeasurementColumnData from "@/app/utils/measurementColumnData";
+import ColumnData from "@/app/utils/columnData";
 
 const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   params,
@@ -32,9 +32,7 @@ const MappingsPage: React.FC<{ params: { mappingsId: string } }> = ({
   const [CSVFile, setCSVFile] = React.useState<File | null>(null);
   const [isAccessible, setIsAccessible] = React.useState(false);
   const [mappingTitle, setMappingTitle] = React.useState<string>("");
-  const [columnsData, setColumnsData] = React.useState<MeasurementColumnData[]>(
-    [],
-  );
+  const [columnsData, setColumnsData] = React.useState<ColumnData[]>([]);
 
   const router = useRouter();
 
@@ -197,7 +195,7 @@ const useGetMappingSWR = (
           headers.forEach(async (header, index) => {
             // Check and assign the format of the data and set the format to the Map
             formatAssigner(rowsWithoutNull, index, headerMapping, header);
-            const data: MeasurementColumnData = {
+            const data: ColumnData = {
               id: undefined,
               title: header,
               dataType: `xsd:${headerMapping.get(header)}`,
