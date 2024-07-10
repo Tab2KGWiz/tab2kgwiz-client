@@ -29,10 +29,8 @@ interface Props {
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>;
-  setPrefixesURI: React.Dispatch<
-    React.SetStateAction<Map<string, string> | undefined>
-  >;
-  prefixesURI: Map<string, string> | undefined;
+  setPrefixesURI: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+  prefixesURI: Map<string, string>;
   columnsData: ColumnData[];
   setColumnsData: React.Dispatch<React.SetStateAction<ColumnData[]>>;
 }
