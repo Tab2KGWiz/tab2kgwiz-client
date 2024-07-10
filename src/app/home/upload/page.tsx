@@ -8,7 +8,7 @@ import { useFile } from "../../components/file-provider";
 
 interface Props {}
 
-const UploadFilePage: React.FC<Props> = (props): JSX.Element => {
+const UploadFilePage: React.FC<Props> = (): JSX.Element => {
   const { file, setFile } = useFile();
   const { processUploadedFile } = useProcessFile();
 
@@ -20,11 +20,7 @@ const UploadFilePage: React.FC<Props> = (props): JSX.Element => {
     }
   };
 
-  return (
-    <>
-      <UploadFile handleChange={handleChange} />
-    </>
-  );
+  return <UploadFile handleChange={handleChange} />;
 };
 
 const useProcessFile = () => {
@@ -52,6 +48,7 @@ const useProcessFile = () => {
       router.push("/home/mappings");
     } catch (error) {
       showSnackBar("An error occurred while processing the file.", "error");
+      setFile(null);
     }
   };
 
