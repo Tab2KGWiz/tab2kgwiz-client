@@ -112,6 +112,15 @@ const OntologyDialog: React.FC<Props> = ({
       handleDynamicSelectionChange(key, "hasTimestamp", "");
       handleDynamicSelectionChange(key, "isMeasurementOf", "");
       handleDynamicSelectionChange(key, "measurementMadeBy", "");
+    } else if (value === "Nothing") {
+      handleDynamicSelectionChange(key, "identifier", false);
+      handleDynamicSelectionChange(key, "measurement", false);
+      handleDynamicSelectionChange(key, "relatedTo", "");
+      handleDynamicSelectionChange(key, "relationShip", "");
+      handleDynamicSelectionChange(key, "hasUnit", "");
+      handleDynamicSelectionChange(key, "hasTimestamp", "");
+      handleDynamicSelectionChange(key, "isMeasurementOf", "");
+      handleDynamicSelectionChange(key, "measurementMadeBy", "");
     }
   };
 
@@ -211,30 +220,16 @@ const OntologyDialog: React.FC<Props> = ({
                   ? "Measurement"
                   : columnData?.identifier
                     ? "Id"
-                    : undefined
+                    : "Nothing"
               }
             >
               <MenuItem value={"Id"}>Identifier</MenuItem>
               <MenuItem value={"Measurement"}>Measurement</MenuItem>
-              <MenuItem value={"Other"}>Other</MenuItem>
+              {/* <MenuItem value={"Other"}>Other</MenuItem> */}
+              <MenuItem value={"Nothing"}>Not mapped</MenuItem>
             </Select>
           </FormControl>
-          <Autocomplete
-            freeSolo
-            id={`${key}-autocomplete`}
-            disableClearable
-            options={ontologyData?.map((item) => item.itemText) || []}
-            sx={{ width: 300 }}
-            filterOptions={(x) => x}
-            onSelect={handleOntologySearch}
-            onChange={(event, value) => {
-              handleSearchOntoForm(event, value, key);
-            }}
-            renderInput={(params) => (
-              <TextField {...params} label="What is it measuring?" />
-            )}
-            defaultValue={columnData?.ontologyType}
-          />
+
           <Autocomplete
             id={`xsd-autocomplete-${key}`}
             options={xsdDataType}
@@ -250,6 +245,44 @@ const OntologyDialog: React.FC<Props> = ({
               <TextField {...params} label="XSD Data Type" />
             )}
           />
+
+          {columnData?.measurement && (
+            <Autocomplete
+              freeSolo
+              id={`${key}-measuring-autocomplete`}
+              disableClearable
+              options={ontologyData?.map((item) => item.itemText) || []}
+              sx={{ width: 300 }}
+              filterOptions={(x) => x}
+              onSelect={handleOntologySearch}
+              onChange={(event, value) => {
+                handleSearchOntoForm(event, value, key);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="What is it measuring?" />
+              )}
+              defaultValue={columnData?.ontologyType}
+            />
+          )}
+
+          {columnData?.identifier && (
+            <Autocomplete
+              freeSolo
+              id={`${key}-typeentity-autocomplete`}
+              disableClearable
+              options={ontologyData?.map((item) => item.itemText) || []}
+              sx={{ width: 300 }}
+              filterOptions={(x) => x}
+              onSelect={handleOntologySearch}
+              onChange={(event, value) => {
+                handleSearchOntoForm(event, value, key);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Type of entity" />
+              )}
+              defaultValue={columnData?.ontologyType}
+            />
+          )}
         </Stack>
 
         {columnData?.measurement && renderMeasurementFields(key, columnData)}
@@ -275,7 +308,8 @@ const OntologyDialog: React.FC<Props> = ({
             handleDynamicSelectionChange(key, "relatedTo", value);
           }}
           defaultValue={
-            columnsData.find((data) => data.title === key)?.relatedTo
+            columnsData.find((data) => data.title === key)?.relatedTo ||
+            "Not mapped"
           }
           renderInput={(params) => <TextField {...params} label="Related to" />}
         />
