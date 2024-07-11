@@ -4,7 +4,7 @@ interface Props {
   handleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const UploadFile: React.FC<Props> = (props): JSX.Element => {
+const UploadFile: React.FC<Props> = ({ handleChange }): JSX.Element => {
   return (
     <div className="flex items-center justify-center w-full">
       <label
@@ -40,7 +40,9 @@ const UploadFile: React.FC<Props> = (props): JSX.Element => {
           id="dropzone-file"
           type="file"
           className="hidden"
-          onChange={props.handleChange}
+          onChange={handleChange}
+          aria-label="Upload CSV file"
+          role="button"
         />
       </label>
     </div>

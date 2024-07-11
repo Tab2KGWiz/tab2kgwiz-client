@@ -1,69 +1,38 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Slide from "@mui/material/Slide";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Slide,
+  Autocomplete,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
-import Autocomplete from "@mui/material/Autocomplete";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import { Stack, TextField, Typography } from "@mui/material";
-import useSWR from "swr";
 import axios from "axios";
 import { useSnackBar } from "../snackbar-provider";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { SyntheticEvent } from "react";
 import xsdDataType from "@/app/utils/xsdDataTypes";
+import ColumnData from "@/app/utils/columnData";
 
 interface Props {
-  setOntologySelected: React.Dispatch<React.SetStateAction<string>>;
-  ontologySelected: string;
   headerMapping: Map<string, string>;
-  selectedOntology: string;
-  setSelectedOntology: React.Dispatch<React.SetStateAction<string>>;
-  measurementColumnData: measurementColumnData[];
-  setMeasurementColumnData: React.Dispatch<
-    React.SetStateAction<measurementColumnData[]>
-  >;
-  mainColumnSelected: string;
-  setMainColumnSelected: React.Dispatch<React.SetStateAction<string>>;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>;
-  setPrefixesURI: React.Dispatch<
-    React.SetStateAction<Map<string, string> | undefined>
-  >;
-  prefixesURI: Map<string, string> | undefined;
-}
-
-interface Prefix {
-  prefix: string;
-  uri: string;
-}
-
-interface measurementColumnData {
-  column: string;
-  ontology: string;
-  property: string;
-  value: string;
-  unit: string;
-  timestamp: string;
-  madeBy: string;
-  ontologyPrefix: string;
-  measurement: string;
-  recommendation: string[];
-  selectedRecommendation: string;
-  identifier: string;
-  ontologyType: string;
-  ontologyURI: string;
-  label: string;
-  prefix: string;
-  isMeasurementOf: string;
+  setPrefixesURI: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+  prefixesURI: Map<string, string>;
+  columnsData: ColumnData[];
+  setColumnsData: React.Dispatch<React.SetStateAction<ColumnData[]>>;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -73,17 +42,18 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="down" ref={ref} {...props} />;
 });
 
-const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
+const OntologyDialog: React.FC<Props> = ({
+  headerMapping,
+  setHeaderMapping,
+  setIsTableChanged,
+  setIsRDFGenerated,
+  setPrefixesURI,
+  prefixesURI,
+  columnsData,
+  setColumnsData,
+}): JSX.Element => {
   const [open, setOpen] = React.useState(false);
-  const [selectedColumns, setSelectedColumns] = React.useState<{
-    [key: string]: string;
-  }>({});
-
-  const [columns, setColumns] = React.useState<string[]>(
-    Array.from(props.headerMapping.keys()),
-  );
-
-  const [columnData, setColumnData] = React.useState<
+  const [ontologyData, setFetchedOntologyData] = React.useState<
     {
       itemText: string;
       prefixed: string;
@@ -93,10 +63,6 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
       prefixedSplitA: string;
     }[]
   >();
-
-  const [identifierColumns, setIdentifierColumns] = React.useState<string[]>(
-    [],
-  );
 
   const { showSnackBar } = useSnackBar();
 
@@ -109,109 +75,93 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
   };
 
   const handleDynamicSelectionChange = (
-    column: string,
-    field: keyof measurementColumnData,
-    value: string | null,
+    column: React.Key,
+    field: keyof ColumnData,
+    value: string | boolean | null | undefined,
   ) => {
-    props.setIsTableChanged(true);
-    props.setIsRDFGenerated(false);
+    setIsTableChanged(true);
+    setIsRDFGenerated(false);
 
-    props.setMeasurementColumnData((prev) => {
-      const existingColumn = prev.find((data) => data.column === column);
+    setColumnsData((prev) => {
+      const existingColumn = prev.find((data) => data.title === column);
       if (existingColumn) {
         return prev.map((data) =>
-          data.column === column ? { ...data, [field]: value } : data,
+          data.title === column ? { ...data, [field]: value } : data,
         );
-      } else {
-        const newEntry: measurementColumnData = {
-          column,
-          ontology: "",
-          property: "",
-          value: "",
-          unit: "",
-          timestamp: "",
-          madeBy: "",
-          ontologyPrefix: "",
-          measurement: "",
-          recommendation: [],
-          selectedRecommendation: "",
-          identifier: "",
-          ontologyType: "",
-          ontologyURI: "",
-          label: "",
-          prefix: "",
-          isMeasurementOf: "",
-
-          [field]: value,
-        };
-        return [...prev, newEntry];
       }
+      return prev;
     });
   };
 
   const handleMeasurementColumnSelect = (
     event: SelectChangeEvent<string>,
-    key: string,
+    key: React.Key,
   ) => {
-    setSelectedColumns({
-      ...selectedColumns,
-      [key]: event.target.value,
-    });
-
-    if (event.target.value === "Measurement") {
-      handleDynamicSelectionChange(key, "measurement", "true");
-
-      if (
-        props.measurementColumnData.find(
-          (data) => data.column === key && data.identifier === "true",
-        )
-      ) {
-        handleDynamicSelectionChange(key, "identifier", "false");
-      }
-    } else if (event.target.value === "Id") {
-      handleDynamicSelectionChange(key, "identifier", "true");
-
-      if (
-        props.measurementColumnData.find(
-          (data) => data.column === key && data.measurement === "true",
-        )
-      ) {
-        handleDynamicSelectionChange(key, "measurement", "false");
-      }
+    const value = event.target.value;
+    if (value === "Measurement") {
+      handleDynamicSelectionChange(key, "measurement", true);
+      handleDynamicSelectionChange(key, "identifier", false);
+      // When a column is changed to measurement, the identifier field should be cleared
+      handleDynamicSelectionChange(key, "relatedTo", "");
+      handleDynamicSelectionChange(key, "relationShip", "");
+    } else if (value === "Id") {
+      handleDynamicSelectionChange(key, "identifier", true);
+      handleDynamicSelectionChange(key, "measurement", false);
+      // When a column is changed to identifier, the measurement field should be cleared
+      handleDynamicSelectionChange(key, "hasUnit", "");
+      handleDynamicSelectionChange(key, "hasTimestamp", "");
+      handleDynamicSelectionChange(key, "isMeasurementOf", "");
+      handleDynamicSelectionChange(key, "measurementMadeBy", "");
     }
   };
 
   const handleSearchOntoForm = (
-    event: SyntheticEvent<Element, Event>,
+    event: React.SyntheticEvent<Element, Event>,
     value: string,
-    key: string,
+    key: React.Key,
   ) => {
-    columnData?.forEach((item) => {
+    ontologyData?.forEach((item) => {
       if (item.itemText === value) {
         handleDynamicSelectionChange(key, "ontologyType", item.prefixed);
         handleDynamicSelectionChange(key, "ontologyURI", item.iri.value);
         handleDynamicSelectionChange(key, "label", item.label);
         handleDynamicSelectionChange(key, "prefix", item.prefixedSplitA);
 
-        const tempPrefixsURI = new Map(props.prefixesURI);
+        const tempPrefixsURI = new Map(prefixesURI);
         tempPrefixsURI.set(item.prefixedSplitA, item.iriSplitA);
-        props.setPrefixesURI(tempPrefixsURI);
+        setPrefixesURI(tempPrefixsURI);
         return;
       }
     });
   };
 
   const handleSearchUnitForm = (
-    event: SyntheticEvent<Element, Event>,
+    event: React.SyntheticEvent<Element, Event>,
     value: string,
-    key: string,
+    key: React.Key,
   ) => {
-    columnData?.forEach((item) => {
+    ontologyData?.forEach((item) => {
       if (item.itemText === value) {
-        handleDynamicSelectionChange(key, "unit", item.prefixed);
-        const tempPrefixsURI = new Map(props.prefixesURI);
+        handleDynamicSelectionChange(key, "hasUnit", item.prefixed);
+        const tempPrefixsURI = new Map(prefixesURI);
         tempPrefixsURI.set(item.prefixedSplitA, item.iriSplitA);
-        props.setPrefixesURI(tempPrefixsURI);
+        setPrefixesURI(tempPrefixsURI);
+        return;
+      }
+    });
+  };
+
+  const handleSearchRelationshipForm = (
+    event: React.SyntheticEvent<Element, Event>,
+    value: string,
+    key: React.Key,
+  ) => {
+    ontologyData?.forEach((item) => {
+      if (item.itemText === value) {
+        handleDynamicSelectionChange(key, "relationShip", item.prefixed);
+        const tempPrefixsURI = new Map(prefixesURI);
+        tempPrefixsURI.set(item.prefixedSplitA, item.iriSplitA);
+        setPrefixesURI(tempPrefixsURI);
         return;
       }
     });
@@ -233,7 +183,202 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
       prefixedSplitA: string;
     }[] = response.data;
 
-    setColumnData(ontologyData);
+    setFetchedOntologyData(ontologyData);
+  };
+
+  const renderColumnFields = (key: React.Key) => {
+    const columnData = columnsData.find((data) => data.title === key);
+
+    return (
+      <>
+        <Typography
+          key={key}
+          variant="body1"
+          fontWeight={"bold"}
+        >{`${key}`}</Typography>
+        <Stack key={key} direction={"row"} spacing={2}>
+          <FormControl sx={{ width: 300 }}>
+            <InputLabel id={`${key}-input-label`}>Column Type</InputLabel>
+            <Select
+              labelId={`${key}-label`}
+              id={`${key}-select-id`}
+              label="Column Type"
+              onChange={(event: SelectChangeEvent<string>) =>
+                handleMeasurementColumnSelect(event, key)
+              }
+              defaultValue={
+                columnData?.measurement
+                  ? "Measurement"
+                  : columnData?.identifier
+                    ? "Id"
+                    : undefined
+              }
+            >
+              <MenuItem value={"Id"}>Identifier</MenuItem>
+              <MenuItem value={"Measurement"}>Measurement</MenuItem>
+              <MenuItem value={"Other"}>Other</MenuItem>
+            </Select>
+          </FormControl>
+          <Autocomplete
+            freeSolo
+            id={`${key}-autocomplete`}
+            disableClearable
+            options={ontologyData?.map((item) => item.itemText) || []}
+            sx={{ width: 300 }}
+            filterOptions={(x) => x}
+            onSelect={handleOntologySearch}
+            onChange={(event, value) => {
+              handleSearchOntoForm(event, value, key);
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="What is it measuring?" />
+            )}
+            defaultValue={columnData?.ontologyType}
+          />
+          <Autocomplete
+            id={`xsd-autocomplete-${key}`}
+            options={xsdDataType}
+            sx={{ width: 300 }}
+            getOptionLabel={(option) => option}
+            defaultValue={columnData?.dataType?.split(":")[1]}
+            onChange={(event, value) => {
+              setIsTableChanged(true);
+              setIsRDFGenerated(false);
+              handleDynamicSelectionChange(key, "dataType", "xsd:" + value);
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="XSD Data Type" />
+            )}
+          />
+        </Stack>
+
+        {columnData?.measurement && renderMeasurementFields(key, columnData)}
+        {columnData?.identifier && renderIdentifierFields(key, columnData)}
+      </>
+    );
+  };
+
+  const renderIdentifierFields = (key: React.Key, columnData: ColumnData) => {
+    return (
+      <Stack direction={"row"} spacing={2}>
+        <Autocomplete
+          id={`autocomplete-relatedTo-${key}`}
+          options={columnsData
+            .filter((data) => data.identifier === true)
+            .map((data) => data.title)}
+          sx={{ width: 300 }}
+          getOptionLabel={(option) => option}
+          onChange={(
+            event: SyntheticEvent<Element, Event>,
+            value: string | null,
+          ) => {
+            handleDynamicSelectionChange(key, "relatedTo", value);
+          }}
+          defaultValue={
+            columnsData.find((data) => data.title === key)?.relatedTo
+          }
+          renderInput={(params) => <TextField {...params} label="Related to" />}
+        />
+
+        {columnData.relatedTo && (
+          <Autocomplete
+            freeSolo
+            id={`autocomplete-relationship-${key}`}
+            disableClearable
+            options={ontologyData?.map((item) => item.itemText) || []}
+            sx={{ width: 300 }}
+            filterOptions={(x) => x}
+            onSelect={handleOntologySearch}
+            onChange={(event, value) => {
+              handleSearchRelationshipForm(event, value, key);
+            }}
+            defaultValue={
+              columnsData.find((data) => data.title === key)?.relationShip
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Relationship" />
+            )}
+          />
+        )}
+      </Stack>
+    );
+  };
+
+  const renderMeasurementFields = (key: React.Key, columnData: ColumnData) => {
+    return (
+      <>
+        <Stack direction={"row"} spacing={2}>
+          <Autocomplete
+            freeSolo
+            id={`autocomplete-unit-${key}`}
+            disableClearable
+            options={ontologyData?.map((item) => item.itemText) || []}
+            sx={{ width: 300 }}
+            filterOptions={(x) => x}
+            onSelect={handleOntologySearch}
+            onChange={(event, value) => {
+              handleSearchUnitForm(event, value, key);
+            }}
+            defaultValue={columnData.hasUnit}
+            renderInput={(params) => <TextField {...params} label="Has unit" />}
+          />
+          <Autocomplete
+            id={`autocomplete-timestamp-${key}`}
+            options={columnsData.map((data) => data.title)}
+            sx={{ width: 300 }}
+            getOptionLabel={(option) => option}
+            onChange={(
+              event: SyntheticEvent<Element, Event>,
+              value: string | null,
+            ) => {
+              handleDynamicSelectionChange(key, "hasTimestamp", value);
+            }}
+            defaultValue={columnData.hasTimestamp}
+            renderInput={(params) => (
+              <TextField {...params} label="Has timestamp" />
+            )}
+          />
+          <Autocomplete
+            id={`autocomplete-isMeasurementOf-${key}`}
+            options={columnsData
+              .filter((data) => data.identifier === true)
+              .map((data) => data.title)}
+            sx={{ width: 300 }}
+            getOptionLabel={(option) => option}
+            onChange={(
+              event: SyntheticEvent<Element, Event>,
+              value: string | null,
+            ) => {
+              handleDynamicSelectionChange(key, "isMeasurementOf", value);
+            }}
+            defaultValue={columnData.isMeasurementOf}
+            renderInput={(params) => (
+              <TextField {...params} label="Is measurement of" />
+            )}
+          />
+        </Stack>
+
+        <Autocomplete
+          freeSolo
+          id={`autocomplete-made-by-${key}`}
+          disableClearable
+          options={[]}
+          sx={{ width: 300 }}
+          getOptionLabel={(option) => option}
+          onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+            handleDynamicSelectionChange(
+              key,
+              "measurementMadeBy",
+              event.target.value,
+            );
+          }}
+          defaultValue={columnData.measurementMadeBy}
+          renderInput={(params) => (
+            <TextField {...params} label="Measurement made by" />
+          )}
+        />
+      </>
+    );
   };
 
   return (
@@ -258,148 +403,9 @@ const OntologyDialog: React.FC<Props> = (props): JSX.Element => {
               ontology
             </DialogContentText>
 
-            {Array.from(props.headerMapping.entries()).map(([key, value]) => (
-              <>
-                <Typography
-                  key={key}
-                  variant="body1"
-                  fontWeight={"bold"}
-                >{`${key}`}</Typography>
-                <Stack key={key} direction={"row"} spacing={2}>
-                  <FormControl sx={{ width: 300 }}>
-                    <InputLabel id={`${key}-input-label`}>
-                      Column Type
-                    </InputLabel>
-                    <Select
-                      labelId={`${key}-label`}
-                      id={`${key}-select-id`}
-                      label="Column Type"
-                      value={selectedColumns[key] || ""}
-                      onChange={(event: SelectChangeEvent<string>) =>
-                        handleMeasurementColumnSelect(event, key)
-                      }
-                    >
-                      <MenuItem value={"Id"}>Identifier</MenuItem>
-                      <MenuItem value={"Measurement"}>Measurement</MenuItem>
-                      <MenuItem value={"Other"}>Other</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <Autocomplete
-                    freeSolo
-                    id={`${key}-autocomplete`}
-                    disableClearable
-                    options={columnData?.map((item) => item.itemText) || []}
-                    sx={{ width: 300 }}
-                    filterOptions={(x) => x}
-                    onSelect={handleOntologySearch}
-                    onChange={(event, value) => {
-                      handleSearchOntoForm(event, value, key);
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} label="What is it measuring?" />
-                    )}
-                  />
-                  <Autocomplete
-                    id={`xsd-autocomplete-${key}`}
-                    options={xsdDataType}
-                    sx={{ width: 300 }}
-                    getOptionLabel={(option) => option}
-                    defaultValue={props.headerMapping.get(key)}
-                    onChange={(event, value) => {
-                      props.setIsTableChanged(true);
-                      props.setIsRDFGenerated(false);
-                      props.setHeaderMapping((prev) => {
-                        const newMap = new Map(prev);
-                        newMap.set(key, value ? value : "");
-                        return newMap;
-                      });
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} label="XSD Data Type" />
-                    )}
-                  />
-                </Stack>
-
-                {selectedColumns[key] === "Measurement" && (
-                  <>
-                    <Stack direction={"row"} spacing={2}>
-                      <Autocomplete
-                        freeSolo
-                        id={`autocomplete-unit-${key}`}
-                        disableClearable
-                        options={columnData?.map((item) => item.itemText) || []}
-                        sx={{ width: 300 }}
-                        filterOptions={(x) => x}
-                        onSelect={handleOntologySearch}
-                        onChange={(event, value) => {
-                          handleSearchUnitForm(event, value, key);
-                        }}
-                        renderInput={(params) => (
-                          <TextField {...params} label="Has unit" />
-                        )}
-                      />
-                      <Autocomplete
-                        id={`autocomplete-timestamp-${key}`}
-                        options={columns}
-                        sx={{ width: 300 }}
-                        getOptionLabel={(option) => option}
-                        onChange={(
-                          event: SyntheticEvent<Element, Event>,
-                          value: string | null,
-                        ) => {
-                          handleDynamicSelectionChange(key, "timestamp", value);
-                        }}
-                        renderInput={(params) => (
-                          <TextField {...params} label="Has timestamp" />
-                        )}
-                      />
-                      <Autocomplete
-                        id={`autocomplete-isMeasurementOf-${key}`}
-                        options={props.measurementColumnData
-                          .filter((data) => data.identifier === "true")
-                          .map((data) => data.column)}
-                        sx={{ width: 300 }}
-                        getOptionLabel={(option) => option}
-                        onChange={(
-                          event: SyntheticEvent<Element, Event>,
-                          value: string | null,
-                        ) => {
-                          handleDynamicSelectionChange(
-                            key,
-                            "isMeasurementOf",
-                            value,
-                          );
-                        }}
-                        renderInput={(params) => (
-                          <TextField {...params} label="Is measurement of" />
-                        )}
-                      />
-                    </Stack>
-
-                    <Autocomplete
-                      freeSolo
-                      id={`autocomplete-made-by-${key}`}
-                      disableClearable
-                      options={[]}
-                      sx={{ width: 300 }}
-                      getOptionLabel={(option) => option}
-                      onSelect={(
-                        event: React.ChangeEvent<HTMLInputElement>,
-                      ) => {
-                        handleDynamicSelectionChange(
-                          key,
-                          "madeBy",
-                          event.target.value,
-                        );
-                      }}
-                      renderInput={(params) => (
-                        <TextField {...params} label="Measurement made by" />
-                      )}
-                    />
-                  </>
-                )}
-              </>
-            ))}
+            {Array.from(headerMapping.entries()).map(([key, value]) =>
+              renderColumnFields(key),
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>

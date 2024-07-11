@@ -99,26 +99,21 @@ const MappingDetailsPage: React.FC<{
     router.push(`/home/mappings/${mappingIdHook}`);
   };
 
-  const handleDownloadYAML = () => {
+  const handleDownload = (content: BlobPart, fileName: string) => {
     const element = document.createElement("a");
-    const file = new Blob([data?.yamlFile as BlobPart], {
-      type: "text/plain",
-    });
+    const file = new Blob([content], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
-    element.download = `file.yaml`;
+    element.download = fileName;
     document.body.appendChild(element); // Required for this to work in FireFox
     element.click();
   };
 
+  const handleDownloadYAML = () => {
+    handleDownload(data?.yamlFile as BlobPart, "file.yaml");
+  };
+
   const handleDownloadCSV = () => {
-    const element = document.createElement("a");
-    const file = new Blob([data?.fileContent as BlobPart], {
-      type: "text/plain",
-    });
-    element.href = URL.createObjectURL(file);
-    element.download = `${data?.fileName}`;
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
+    handleDownload(data?.fileContent as BlobPart, data?.fileName ?? "");
   };
 
   const handleDownloadRDF = () => {
@@ -488,8 +483,6 @@ const MappingDetailsPage: React.FC<{
                     sx={{
                       height: 50,
                       width: 400,
-                      // marginTop: "2vh",
-                      // marginLeft: "17vh",
                     }}
                   >
                     <Typography
@@ -497,7 +490,7 @@ const MappingDetailsPage: React.FC<{
                       color="text.primary"
                       sx={{ marginTop: "1.5vh", marginLeft: "2vh" }}
                     >
-                      http://165.232.127.94:8081/generateLinkedData
+                      http://104.248.240.80:8081/generateLinkedData
                     </Typography>
                   </Card>
 
@@ -541,12 +534,12 @@ const useGetMappingSWR = (
 ) => {
   const { data, error } = useSWR(
     // If URL is blank with space, sometimes it will not enter the fetch function
-    "http://localhost:8080/mappings/",
+    `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/`,
     async () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;
       const response = await axios.get(
-        `http://localhost:8080/mappings/${mappingIdHook}`,
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${mappingIdHook}`,
       );
 
       if (response.status !== 200) {

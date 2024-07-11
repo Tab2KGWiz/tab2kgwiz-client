@@ -17,7 +17,7 @@ interface MappingResponseData {
   fileContent: string;
 }
 
-const MappingPage: React.FC<Props> = (props): JSX.Element => {
+const MappingPage: React.FC<Props> = (): JSX.Element => {
   const { file, setFile } = useFile();
   const router = useRouter();
   const { showSnackBar } = useSnackBar();
@@ -45,7 +45,7 @@ const MappingPage: React.FC<Props> = (props): JSX.Element => {
 };
 
 const useCreateMappingSWR = (file: File | null) => {
-  const url = "http://localhost:8080/mappings";
+  const url = `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`;
   const shouldFetch = !!file; // Only fetch if file available
   const { showSnackBar } = useSnackBar();
 
@@ -68,17 +68,14 @@ const useCreateMappingSWR = (file: File | null) => {
           fileContent: reformatedDf ? toCSV(reformatedDf) : "",
           fileFormat: file.type.split("/")[1],
           fileName: file.name.replace(/\s+/g, ""),
-          mainOntology: "schema:Pork",
           isAccessible: false,
-          // prefixesURIS:
-          //   "http://www.example.com/,http://myontology.com/,http://schema.org/",
         };
 
         axios.defaults.headers.common["Authorization"] =
           `Bearer ${Cookies.get("accessToken")}`;
 
         const response = await axios.post(
-          "http://localhost:8080/mappings",
+          `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`,
           mappingData,
         );
 

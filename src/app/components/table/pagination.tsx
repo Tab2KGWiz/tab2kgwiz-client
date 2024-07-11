@@ -5,14 +5,14 @@ interface Props {
   pages: number;
   page: number;
   pageSize: number;
-  onPageChange: Function;
+  onPageChange: (newPage: number) => void;
   previousText: string;
   nextText: string;
   rowsNum: number | undefined;
   totalRows: number;
 }
 
-const Pagination: React.FunctionComponent<Props> = ({
+const Pagination: React.FC<Props> = ({
   rowsNum,
   page,
   pages,

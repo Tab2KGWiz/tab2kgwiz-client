@@ -2,12 +2,11 @@ import React from "react";
 import { Paper } from "@mui/material";
 
 interface Props {
-  body: string[][] | undefined;
-  header: string[] | undefined;
-  headerMapping: Map<string, string>;
+  body?: string[][];
+  header?: string[];
 }
 
-const TableUI: React.FC<Props> = (props): JSX.Element => {
+const TableUI: React.FC<Props> = ({ body, header }): JSX.Element => {
   return (
     <Paper
       sx={{
@@ -18,19 +17,19 @@ const TableUI: React.FC<Props> = (props): JSX.Element => {
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            {props.header?.map((item, index) => (
+            {header?.map((item, index) => (
               <th key={index} scope="col" className="px-6 py-3">
-                {item.toString()}
+                {item}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {props.body?.map((items, index) => (
-            <tr key={index} className="border-b dark:border-gray-700">
-              {items.map((item, index) => (
-                <td key={index} className="px-6 py-3">
-                  {item.toString()}
+          {body?.map((items, rowIndex) => (
+            <tr key={rowIndex} className="border-b dark:border-gray-700">
+              {items.map((item, cellIndex) => (
+                <td key={cellIndex} className="px-6 py-3">
+                  {item}
                 </td>
               ))}
             </tr>

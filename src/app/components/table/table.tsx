@@ -1,8 +1,8 @@
-import React, { lazy, useEffect } from "react";
+import React from "react";
 import Pagination from "./pagination";
 import TableUI from "@/app/ui/table/table";
-import { postYaml } from "../../services/post-yaml";
-import { postYarrrml } from "../../services/post-yarrrml";
+import postYaml from "@/app/services/post-yaml";
+import postYarrrml from "@/app/services/post-yarrrml";
 import { useSnackBar } from "../snackbar-provider";
 import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from "@mui/icons-material/Save";
@@ -16,6 +16,8 @@ import { Button, Stack, Switch, Typography } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { TextField, Paper } from "@mui/material";
 import OntologyDialog from "./ontology-dialog";
+import MappingResponseData from "@/app/utils/mappingResponseData";
+import ColumnData from "@/app/utils/columnData";
 
 interface Props {
   header: string[] | undefined;
@@ -23,7 +25,7 @@ interface Props {
   pages: number;
   page: number;
   pageSize: number;
-  onPageChange: Function;
+  onPageChange: (newPage: number) => void;
   previousText: string;
   nextText: string;
   setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>;
@@ -36,33 +38,146 @@ interface Props {
   setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>;
   mappingTitle: string;
   setMappingTitle: React.Dispatch<React.SetStateAction<string>>;
+  columnsData: ColumnData[];
+  setColumnsData: React.Dispatch<
+    React.SetStateAction<MappingResponseData["columns"]>
+  >;
 }
 
-interface ColumnResponseData {
-  uri: string;
-  id: string;
-  title: string;
-}
+const TableControls = (
+  mappingTitle: string,
+  setMappingTitle: React.Dispatch<React.SetStateAction<string>>,
+  isAccessible: boolean,
+  setIsAccessible: React.Dispatch<React.SetStateAction<boolean>>,
+  setIsTableChanged: React.Dispatch<React.SetStateAction<boolean>>,
+  prefixesURI: Map<string, string>,
+  setPrefixesURI: React.Dispatch<React.SetStateAction<Map<string, string>>>,
+  headerMapping: Map<string, string>,
+  setHeaderMapping: React.Dispatch<React.SetStateAction<Map<string, string>>>,
+  setIsRDFGenerated: React.Dispatch<React.SetStateAction<boolean>>,
+  columnsData: ColumnData[],
+  setColumnsData: React.Dispatch<React.SetStateAction<ColumnData[]>>,
+) => {
+  return (
+    <Stack
+      spacing={2}
+      direction="row"
+      sx={{ marginLeft: "4.5%", marginBottom: "1%", color: "#3C3C3C" }}
+    >
+      <TextField
+        id="mapping-title-field"
+        label={mappingTitle}
+        variant="outlined"
+        size="small"
+        onChange={(e) => {
+          setMappingTitle(e.target.value);
+          setIsTableChanged(true);
+        }}
+      />
+      <OntologyDialog
+        headerMapping={headerMapping}
+        setHeaderMapping={setHeaderMapping}
+        setIsTableChanged={setIsTableChanged}
+        setIsRDFGenerated={setIsRDFGenerated}
+        setPrefixesURI={setPrefixesURI}
+        prefixesURI={prefixesURI}
+        columnsData={columnsData}
+        setColumnsData={setColumnsData}
+      />
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography>Private</Typography>
+        <Switch
+          defaultChecked={isAccessible}
+          color="warning"
+          onChange={(e) => {
+            setIsAccessible(e.target.checked);
+            setIsTableChanged(true);
+          }}
+        />
+        <Typography>Public</Typography>
+      </Stack>
+    </Stack>
+  );
+};
 
-interface measurementColumnData {
-  column: string;
-  ontology: string;
-  property: string;
-  value: string;
-  unit: string;
-  timestamp: string;
-  madeBy: string;
-  ontologyPrefix: string;
-  measurement: string;
-  recommendation: string[];
-  selectedRecommendation: string;
-  identifier: string;
-  ontologyType: string;
-  ontologyURI: string;
-  label: string;
-  prefix: string;
-  isMeasurementOf: string;
-}
+const TableContent = (
+  body: string[][] | undefined,
+  header: string[] | undefined,
+  page: number,
+  pages: number,
+  pageSize: number,
+  onPageChange: (newPage: number) => void,
+  totalRows: number,
+) => {
+  return (
+    <div className="mx-auto max-w-full px-6 lg:px-12">
+      <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <TableUI body={body} header={header} />
+        </div>
+        <Pagination
+          page={page}
+          pages={pages}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          previousText="Previous"
+          nextText="Next"
+          rowsNum={body?.length}
+          totalRows={totalRows}
+        />
+      </div>
+    </div>
+  );
+};
+
+const ButtonGroup = (
+  handleSave: () => Promise<void>,
+  handleGenerateRDF: () => Promise<void>,
+  handleDownloadRDF: () => void,
+  loadingSave: boolean,
+  loadingRDF: boolean,
+  isTableChanged: boolean,
+  columnsCreated: boolean,
+  isRDFGenerated: boolean,
+) => {
+  return (
+    <Box className="mt-5 ml-14" sx={{ "& > button": { m: 1 } }}>
+      <LoadingButton
+        color="secondary"
+        className="bg-fuchsia-700"
+        onClick={handleSave}
+        loading={loadingSave}
+        loadingPosition="start"
+        startIcon={<SaveIcon />}
+        variant="contained"
+        disabled={!isTableChanged}
+      >
+        <span>Save</span>
+      </LoadingButton>
+
+      <LoadingButton
+        onClick={handleGenerateRDF}
+        className="bg-blue-600"
+        endIcon={<PostAddOutlinedIcon />}
+        loading={loadingRDF}
+        loadingPosition="end"
+        variant="contained"
+        disabled={!columnsCreated || isTableChanged}
+      >
+        <span>Generate RDF</span>
+      </LoadingButton>
+
+      <Button
+        variant="outlined"
+        startIcon={<DownloadRoundedIcon />}
+        onClick={handleDownloadRDF}
+        disabled={!isRDFGenerated || isTableChanged}
+      >
+        <span>RDF file</span>
+      </Button>
+    </Box>
+  );
+};
 
 const Table: React.FC<Props> = (props): JSX.Element => {
   const { showSnackBar } = useSnackBar();
@@ -74,27 +189,16 @@ const Table: React.FC<Props> = (props): JSX.Element => {
   const [isTableChanged, setIsTableChanged] = React.useState(true);
   const [fileContent, setFileContent] = React.useState<String>("");
   const [isRDFGenerated, setIsRDFGenerated] = React.useState(false);
-  const [ontologySelected, setOntologySelected] = React.useState<string>("");
-
-  const [selectedOntology, setSelectedOntology] = React.useState<string>("");
-  const [measurementColumnData, setMeasurementColumnData] = React.useState<
-    measurementColumnData[]
-  >([]);
-  const [mainColumnSelected, setMainColumnSelected] =
-    React.useState<string>("");
-
-  const [prefixesURI, setPrefixesURI] = React.useState<Map<string, string>>();
+  const [prefixesURI, setPrefixesURI] = React.useState<Map<string, string>>(
+    new Map(),
+  );
 
   const handleSave = async () => {
     setLoadingSave(true);
 
-    let concatenatedPrefixes = "";
-
-    prefixesURI?.forEach((value, key) => {
-      concatenatedPrefixes += `${key};${value},`;
-    });
-
-    concatenatedPrefixes = concatenatedPrefixes.slice(0, -1);
+    const concatenatedPrefixes = Array.from(prefixesURI.entries())
+      .map(([key, value]) => `${key};${value}`)
+      .join(",");
 
     await updateMapping({
       title: props.mappingTitle,
@@ -104,152 +208,56 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
     const accessToken = Cookies.get("accessToken");
 
-    const response = await axios.get(
-      `http://localhost:8080/mappings/${props.mappingId}/columns`,
-      { headers: { Authorization: `Bearer ${accessToken}` } },
-    );
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
 
-    if (response.status !== 200) {
-      throw new Error("Error creating column: " + response.status);
-    }
+      if (response.status !== 200) {
+        throw new Error("Error creating column: " + response.status);
+      }
 
-    if (response.data.length === 0) {
-      props.headerMapping.forEach(async (type, title) => {
-        const data = {
-          title: title,
-          dataType: "xsd:" + type,
-          subjectOntology: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.selectedRecommendation,
-
-          hasUnit: measurementColumnData.find((data) => data.column === title)
-            ?.unit,
-
-          hasTimestamp: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.timestamp,
-
-          measurementMadeBy: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.madeBy,
-
-          measurement: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.measurement,
-
-          identifier: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.identifier,
-
-          ontologyType: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.ontologyType,
-
-          ontologyURI: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.ontologyURI,
-
-          label: measurementColumnData.find((data) => data.column === title)
-            ?.label,
-
-          prefix: measurementColumnData.find((data) => data.column === title)
-            ?.prefix,
-
-          isMeasurementOf: measurementColumnData.find(
-            (data) => data.column === title,
-          )?.isMeasurementOf,
-        };
-
-        try {
+      if (response.data.length === 0) {
+        for (const [title, type] of Array.from(props.headerMapping.entries())) {
+          const data = props.columnsData.find((data) => data.title === title);
           await createColumn(data);
-          setLoadingSave(false);
-          setColumnsCreated(true);
-          setIsTableChanged(false);
-        } catch (error) {
-          showSnackBar(
-            `Error occurred while creating columns: ${error}`,
-            "error",
-          );
-          setLoadingSave(false);
-          setFile(null);
-          router.push("/home/upload");
-          return;
         }
-      });
-    } else {
-      response.data.forEach(async (column: ColumnResponseData) => {
-        props.headerMapping.forEach(async (type, title) => {
-          const data = {
-            title: title,
-            dataType: "xsd:" + type,
-            subjectOntology: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.selectedRecommendation,
+      } else {
+        for (const column of response.data) {
+          const data = props.columnsData.find(
+            (data) => data.title === column.title,
+          );
 
-            hasUnit: measurementColumnData.find((data) => data.column === title)
-              ?.unit,
+          const response = await axios.put(
+            `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns/${column.id}`,
+            data,
+            { headers: { Authorization: `Bearer ${accessToken}` } },
+          );
 
-            hasTimestamp: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.timestamp,
-
-            measurementMadeBy: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.madeBy,
-
-            measurement: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.measurement,
-
-            identifier: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.identifier,
-
-            ontologyType: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.ontologyType,
-
-            ontologyURI: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.ontologyURI,
-
-            label: measurementColumnData.find((data) => data.column === title)
-              ?.label,
-
-            prefix: measurementColumnData.find((data) => data.column === title)
-              ?.prefix,
-
-            isMeasurementOf: measurementColumnData.find(
-              (data) => data.column === title,
-            )?.isMeasurementOf,
-          };
-
-          if (column.title === data.title) {
-            const response = await axios.put(
-              `http://localhost:8080/mappings/${props.mappingId}/columns/${column.id}`,
-              data,
-              { headers: { Authorization: `Bearer ${accessToken}` } },
-            );
-
-            if (response.status !== 200) {
-              throw new Error("Error creating column: " + response.status);
-            }
+          if (response.status !== 200) {
+            throw new Error("Error creating column: " + response.status);
           }
-        });
-      });
+        }
+      }
       setLoadingSave(false);
       setColumnsCreated(true);
       setIsTableChanged(false);
+      showSnackBar("Columns created successfully.", "success");
+    } catch (error) {
+      showSnackBar(`Error occurred while creating columns: ${error}`, "error");
+      setLoadingSave(false);
+      setFile(null);
+      router.push("/home/upload");
     }
-    showSnackBar("Columns created successfully.", "success");
   };
 
-  const createColumn = async (data: { title: string; dataType: string }) => {
+  const createColumn = async (data: ColumnData | undefined) => {
     const accessToken = Cookies.get("accessToken");
 
     try {
       const response = await axios.put(
-        `http://localhost:8080/mappings/${props.mappingId}/columns/-1`,
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}/columns/-1`,
         data,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
@@ -271,7 +279,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:8080/mappings/${props.mappingId}`,
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${props.mappingId}`,
         data,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
@@ -292,11 +300,7 @@ const Table: React.FC<Props> = (props): JSX.Element => {
       setLoadingRDF(false);
     } else {
       showSnackBar("Yaml file generated successfully", "success");
-      const response = await postYarrrml(
-        props.mappingName ? props.mappingName : "",
-        props.mappingFile,
-        props.mappingId,
-      );
+      const response = await postYarrrml(props.mappingFile, props.mappingId);
 
       if (response === "-1") {
         showSnackBar("Error parsing yarrrml", "error");
@@ -332,111 +336,41 @@ const Table: React.FC<Props> = (props): JSX.Element => {
           },
         }}
       >
-        <Stack
-          spacing={2}
-          direction="row"
-          sx={{
-            marginLeft: "4.5%",
-            marginBottom: "1%",
-            color: "#3C3C3C",
-          }}
-        >
-          <TextField
-            id="mapping-title-field"
-            label={props.mappingTitle}
-            variant="outlined"
-            size="small"
-            onChange={(e) => {
-              props.setMappingTitle(e.target.value);
-              setIsTableChanged(true);
-            }}
-          />
+        {TableControls(
+          props.mappingTitle,
+          props.setMappingTitle,
+          props.isAccessible,
+          props.setIsAccessible,
+          setIsTableChanged,
+          prefixesURI,
+          setPrefixesURI,
+          props.headerMapping,
+          props.setHeaderMapping,
+          setIsRDFGenerated,
+          props.columnsData,
+          props.setColumnsData,
+        )}
 
-          <OntologyDialog
-            setOntologySelected={setOntologySelected}
-            ontologySelected={ontologySelected}
-            headerMapping={props.headerMapping}
-            selectedOntology={selectedOntology}
-            setSelectedOntology={setSelectedOntology}
-            measurementColumnData={measurementColumnData}
-            setMeasurementColumnData={setMeasurementColumnData}
-            mainColumnSelected={mainColumnSelected}
-            setMainColumnSelected={setMainColumnSelected}
-            setHeaderMapping={props.setHeaderMapping}
-            setIsTableChanged={setIsTableChanged}
-            setIsRDFGenerated={setIsRDFGenerated}
-            setPrefixesURI={setPrefixesURI}
-            prefixesURI={prefixesURI}
-          ></OntologyDialog>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography>Private</Typography>
-            <Switch
-              defaultChecked={props.isAccessible}
-              color="warning"
-              onChange={(e) => {
-                props.setIsAccessible(e.target.checked);
-                setIsTableChanged(true);
-              }}
-            />
-            <Typography>Public</Typography>
-          </Stack>
-        </Stack>
-        <div className="mx-auto max-w-full px-6 lg:px-12">
-          <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <TableUI
-                body={props.body}
-                header={props.header}
-                headerMapping={props.headerMapping}
-              />
-            </div>
-            <Pagination
-              page={props.page}
-              pages={props.pages}
-              pageSize={props.pageSize}
-              onPageChange={props.onPageChange}
-              previousText="Previous"
-              nextText="Next"
-              rowsNum={props.body?.length}
-              totalRows={props.totalRows}
-            />
-          </div>
-        </div>
-        <Box className="mt-5 ml-14" sx={{ "& > button": { m: 1 } }}>
-          <LoadingButton
-            color="secondary"
-            className="bg-fuchsia-700"
-            onClick={handleSave}
-            loading={loadingSave}
-            loadingPosition="start"
-            startIcon={<SaveIcon />}
-            variant="contained"
-            disabled={!isTableChanged}
-          >
-            <span>Save</span>
-          </LoadingButton>
+        {TableContent(
+          props.body,
+          props.header,
+          props.page,
+          props.pages,
+          props.pageSize,
+          props.onPageChange,
+          props.totalRows,
+        )}
 
-          <LoadingButton
-            onClick={handleGenerateRDF}
-            className="bg-blue-600"
-            endIcon={<PostAddOutlinedIcon />}
-            loading={loadingRDF}
-            loadingPosition="end"
-            variant="contained"
-            disabled={!columnsCreated || isTableChanged}
-          >
-            <span>Generate RDF</span>
-          </LoadingButton>
-
-          <Button
-            variant="outlined"
-            startIcon={<DownloadRoundedIcon />}
-            onClick={handleDownloadRDF}
-            disabled={!isRDFGenerated || isTableChanged}
-          >
-            <span>RDF file</span>
-          </Button>
-        </Box>
+        {ButtonGroup(
+          handleSave,
+          handleGenerateRDF,
+          handleDownloadRDF,
+          loadingSave,
+          loadingRDF,
+          isTableChanged,
+          columnsCreated,
+          isRDFGenerated,
+        )}
       </Paper>
     </>
   );

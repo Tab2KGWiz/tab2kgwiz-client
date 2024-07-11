@@ -14,9 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "@mui/material";
 
-const pages: any[] = [
-  /*"Products", "Pricing", "Blog"*/
-];
+const pages: any[] = [];
 const settings = ["Profile", "Board", "Logout"];
 
 interface Props {}
@@ -165,14 +163,25 @@ const PageAppBar: React.FC<Props> = (): JSX.Element => {
             >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Link
-                    href={"/home/" + setting.toLowerCase()}
-                    underline="none"
-                    color="inherit"
-                    sx={{ paddingX: "1vh" }}
-                  >
-                    <Typography textAlign="center">{setting}</Typography>
-                  </Link>
+                  {setting === "Logout" ? (
+                    <Link
+                      href={"signin"}
+                      underline="none"
+                      color="inherit"
+                      sx={{ paddingX: "1vh" }}
+                    >
+                      <Typography textAlign="center">{setting}</Typography>
+                    </Link>
+                  ) : (
+                    <Link
+                      href={"/home/" + setting.toLowerCase()}
+                      underline="none"
+                      color="inherit"
+                      sx={{ paddingX: "1vh" }}
+                    >
+                      <Typography textAlign="center">{setting}</Typography>
+                    </Link>
+                  )}
                 </MenuItem>
               ))}
             </Menu>

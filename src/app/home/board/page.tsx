@@ -13,8 +13,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import Toolbar from "@mui/material/Toolbar";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
@@ -27,6 +25,9 @@ import { visuallyHidden } from "@mui/utils";
 import PropTypes from "prop-types";
 import { alpha } from "@mui/material/styles";
 import { useRouter } from "next/navigation";
+import { getComparator, stableSort } from "./helpers";
+import EnhancedTableHead from "./EnhancedTableHead";
+import EnhancedTableToolbar from "./EnhancedTableToolbar";
 
 interface Props {}
 
@@ -57,209 +58,8 @@ function createData(
   };
 }
 
-function descendingComparator(
-  a: { [x: string]: number },
-  b: { [x: string]: number },
-  orderBy: string | number,
-) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order: string | boolean, orderBy: string) {
-  return order === "desc"
-    ? (a: { [x: string]: number }, b: { [x: string]: number }) =>
-        descendingComparator(a, b, orderBy)
-    : (a: { [x: string]: number }, b: { [x: string]: number }) =>
-        -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(
-  array: any[],
-  comparator: {
-    (a: { [x: string]: number }, b: { [x: string]: number }): number;
-    (arg0: any, arg1: any): any;
-  },
-) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-const headCells = [
-  {
-    id: "mappingId",
-    numeric: false,
-    disablePadding: true,
-    label: "Mapping ID",
-  },
-  {
-    id: "title",
-    numeric: false,
-    disablePadding: false,
-    label: "Title",
-  },
-  {
-    id: "fileName",
-    numeric: false,
-    disablePadding: false,
-    label: "File name",
-  },
-  {
-    id: "createdBy",
-    numeric: false,
-    disablePadding: false,
-    label: "Created by",
-  },
-  {
-    id: "accessible",
-    numeric: false,
-    disablePadding: false,
-    label: "Availability",
-  },
-];
-
-function EnhancedTableHead(props: {
-  onSelectAllClick: any;
-  order: SortDirection;
-  orderBy: string;
-  numSelected: number;
-  rowCount: number;
-  onRequestSort: (event: React.MouseEvent, property: string) => void;
-}) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props;
-  const createSortHandler = (property: string) => (event: React.MouseEvent) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all desserts",
-            }}
-          />
-        </TableCell>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
-            padding={headCell.disablePadding ? "none" : "normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              // @ts-ignore - TS doesn't like the ternary operator here
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-EnhancedTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(["asc", "desc"]).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
-};
-
-function EnhancedTableToolbar(props: { numSelected: number }) {
-  const { numSelected } = props;
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.primary.main,
-              theme.palette.action.activatedOpacity,
-            ),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          Mappings List
-        </Typography>
-      )}
-
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
-  );
-}
-
-EnhancedTableToolbar.propTypes = {
-  numSelected: PropTypes.number.isRequired,
-};
-
 const UserBoard: React.FC<Props> = (props): JSX.Element => {
-  const { data, error } = useGetAllMappingsSWR();
+  const { data } = useGetAllMappingsSWR();
   const router = useRouter();
   const [rows, setRows] = React.useState<
     {
@@ -299,7 +99,7 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
     id: string,
   ) => {
     const selectedIndex = selected.indexOf(id);
-    let newSelected: any[] = [];
+    let newSelected: string[] = [];
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, id);
@@ -382,10 +182,10 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
           >
             <EnhancedTableHead
               numSelected={selected.length}
+              onRequestSort={handleRequestSort}
               order={order}
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
             <TableBody>
@@ -486,12 +286,14 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
 
 const useGetAllMappingsSWR = () => {
   const { data, error } = useSWR(
-    "http://localhost:8080/mappings",
+    `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`,
     async () => {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${Cookies.get("accessToken")}`;
 
-      const response = await axios.get("http://localhost:8080/mappings");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings`,
+      );
 
       if (response.status === 200) {
         const data: MappingResponseData[] = response.data;

@@ -1,4 +1,4 @@
-export function checkDecimalOrInteger(value: string[]) {
+function checkDecimalOrInteger(value: string[]) {
   // If contains both comma and dot, then it's a decimal
   for (let v of value) {
     if (v.includes(",") && v.includes(".")) {
@@ -11,3 +11,5 @@ export function checkDecimalOrInteger(value: string[]) {
     ? "integer"
     : "decimal";
 }
+
+export default checkDecimalOrInteger;

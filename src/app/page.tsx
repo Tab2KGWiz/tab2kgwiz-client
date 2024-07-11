@@ -3,8 +3,9 @@
 import React from "react";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSnackBar } from "./components/snackbar-provider";
+import Image from "next/image";
 
 const Home = () => {
   const router = useRouter();
@@ -17,27 +18,47 @@ const Home = () => {
     password: "",
   });
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = event.target;
+      setFormData((prevData) => ({ ...prevData, [name]: value }));
+    },
+    [],
+  );
 
-  const handleSubmit = async () => {
-    const res = await fetch(`http://localhost:8080/signup`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (res.ok) {
-      showSnackBar("You have successfully signed up.", "success");
-
-      router.push("/signin");
-    } else {
-      showSnackBar("Invalid username or password. Please try again.", "error");
+  const handleSubmit = useCallback(async () => {
+    if (!formData.username || !formData.email || !formData.password) {
+      showSnackBar("Please fill in all fields.", "error");
+      return;
     }
-  };
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/signup`,
+        {
+          method: "POST",
+          body: JSON.stringify(formData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      if (res.ok) {
+        showSnackBar("You have successfully signed up.", "success");
+
+        router.push("/signin");
+      } else {
+        const errorData = await res.json();
+        showSnackBar(
+          errorData.message ||
+            "Invalid username or password. Please try again.",
+          "error",
+        );
+      }
+    } catch {
+      showSnackBar("An error occurred. Please try again.", "error");
+    }
+  }, [formData, router, showSnackBar]);
 
   return (
     <>
@@ -45,10 +66,12 @@ const Home = () => {
         <div className="container flex items-center justify-center min-h-screen px-6 mx-auto">
           <form className="w-full max-w-md">
             <div className="flex justify-center mx-auto">
-              <img
+              <Image
                 className="w-auto h-7 sm:h-8"
                 src="https://merakiui.com/images/logo.svg"
                 alt=""
+                width={200}
+                height={200}
               />
             </div>
 
@@ -151,31 +174,6 @@ const Home = () => {
                 placeholder="Password"
               />
             </div>
-
-            {/* <div className="relative flex items-center mt-4">
-              <span className="absolute">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6 mx-3 text-gray-300 dark:text-gray-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </span>
-
-              <input
-                type="password"
-                className="block w-full px-10 py-3 text-gray-700 bg-white border rounded-lg dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                placeholder="Confirm Password"
-              />
-            </div> */}
 
             <div className="mt-6">
               <button

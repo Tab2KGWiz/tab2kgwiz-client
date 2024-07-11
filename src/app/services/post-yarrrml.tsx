@@ -1,22 +1,10 @@
 import axios from "axios";
-import Cookies from "js-cookie";
 
-interface GenerateYamlData {
-  csvFile: File;
-}
-
-export async function postYarrrml(
-  mappingName: string,
+async function postYarrrml(
   mappingFile: File | null,
   mappingId: number,
 ): Promise<String> {
   try {
-    // axios.defaults.headers.common["Authorization"] =
-    //   `Bearer ${Cookies.get("accessToken")}`;
-    // const response = await axios.post(
-    //   "http://localhost:8080/yaml/yarrrmlmapper",
-    // );
-
     if (!mappingFile) {
       console.error("No se ha seleccionado ningún archivo.");
       return "-1";
@@ -26,7 +14,7 @@ export async function postYarrrml(
     formData.append("csvFile", mappingFile);
 
     const response = await axios.post(
-      `http://localhost:8080/mappings/${mappingId}/generate`,
+      `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/mappings/${mappingId}/generate`,
       formData,
       {
         headers: {
@@ -43,3 +31,5 @@ export async function postYarrrml(
     return "-1";
   }
 }
+
+export default postYarrrml;
