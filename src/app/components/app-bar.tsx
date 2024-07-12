@@ -66,7 +66,7 @@ const PageAppBar: React.FC<Props> = (): JSX.Element => {
               textDecoration: "none",
             }}
           >
-            LOGO
+            TAB2KGWIZ
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
