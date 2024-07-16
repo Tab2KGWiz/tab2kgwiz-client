@@ -171,116 +171,137 @@ const UserBoard: React.FC<Props> = (props): JSX.Element => {
   }, [data]);
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
-        <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
-          >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              onRequestSort={handleRequestSort}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.mappingId);
-                const labelId = `enhanced-table-checkbox-${index}`;
+    <Paper
+      sx={{
+        maxHeight: "100vh",
+        overflow: "auto",
+        padding: "12px",
+        "@media (min-width: 640px)": {
+          padding: "20px",
+        },
+      }}
+    >
+      <Box sx={{ width: "100%" }}>
+        <Paper sx={{ width: "100%", mb: 2 }}>
+          <EnhancedTableToolbar numSelected={selected.length} />
+          <TableContainer>
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size={dense ? "small" : "medium"}
+            >
+              <EnhancedTableHead
+                numSelected={selected.length}
+                onRequestSort={handleRequestSort}
+                order={order}
+                orderBy={orderBy}
+                onSelectAllClick={handleSelectAllClick}
+                rowCount={rows.length}
+              />
+              <TableBody>
+                {visibleRows.map((row, index) => {
+                  const isItemSelected = isSelected(row.mappingId);
+                  const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
+                  return (
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      <TableCell
+                        onClick={(event) => handleClick(event, row.mappingId)}
+                        padding="checkbox"
+                      >
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          inputProps={{
+                            "aria-labelledby": labelId,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell
+                        onClick={(event) =>
+                          handleRowClick(event, row.mappingId)
+                        }
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                      >
+                        {row.mappingId}
+                      </TableCell>
+                      <TableCell
+                        onClick={(event) =>
+                          handleRowClick(event, row.mappingId)
+                        }
+                        align="left"
+                      >
+                        {row.title}
+                      </TableCell>
+                      <TableCell
+                        onClick={(event) =>
+                          handleRowClick(event, row.mappingId)
+                        }
+                        align="left"
+                      >
+                        {row.fileName}
+                      </TableCell>
+                      <TableCell
+                        onClick={(event) =>
+                          handleRowClick(event, row.mappingId)
+                        }
+                        align="left"
+                      >
+                        {row.createdBy}
+                      </TableCell>
+                      <TableCell
+                        onClick={(event) =>
+                          handleRowClick(event, row.mappingId)
+                        }
+                        align="left"
+                      >
+                        <Chip
+                          label={row.accessible ? "Public" : "Private"}
+                          color={row.accessible ? "info" : "warning"}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {emptyRows > 0 && (
                   <TableRow
-                    hover
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: "pointer" }}
+                    style={{
+                      height: (dense ? 33 : 53) * emptyRows,
+                    }}
                   >
-                    <TableCell
-                      onClick={(event) => handleClick(event, row.mappingId)}
-                      padding="checkbox"
-                    >
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        inputProps={{
-                          "aria-labelledby": labelId,
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      onClick={(event) => handleRowClick(event, row.mappingId)}
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                    >
-                      {row.mappingId}
-                    </TableCell>
-                    <TableCell
-                      onClick={(event) => handleRowClick(event, row.mappingId)}
-                      align="left"
-                    >
-                      {row.title}
-                    </TableCell>
-                    <TableCell
-                      onClick={(event) => handleRowClick(event, row.mappingId)}
-                      align="left"
-                    >
-                      {row.fileName}
-                    </TableCell>
-                    <TableCell
-                      onClick={(event) => handleRowClick(event, row.mappingId)}
-                      align="left"
-                    >
-                      {row.createdBy}
-                    </TableCell>
-                    <TableCell
-                      onClick={(event) => handleRowClick(event, row.mappingId)}
-                      align="left"
-                    >
-                      <Chip
-                        label={row.accessible ? "Public" : "Private"}
-                        color={row.accessible ? "info" : "warning"}
-                      />
-                    </TableCell>
+                    <TableCell colSpan={6} />
                   </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+        <FormControlLabel
+          control={<Switch checked={dense} onChange={handleChangeDense} />}
+          label="Dense padding"
         />
-      </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
-    </Box>
+      </Box>
+    </Paper>
   );
 };
 
