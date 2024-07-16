@@ -183,7 +183,7 @@ const MappingDetailsPage: React.FC<{
 
       try {
         const response = await axios.post(
-          "http://165.232.127.94:8081/generateLinkedData",
+          "http://104.248.240.80:8081/generateLinkedData",
           data,
           {
             headers: {
@@ -517,7 +517,7 @@ const MappingDetailsPage: React.FC<{
                     </LoadingButton>
 
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       startIcon={<DownloadRoundedIcon />}
                       onClick={handleDownloadRDF}
                       disabled={!isRDFGenerated}
