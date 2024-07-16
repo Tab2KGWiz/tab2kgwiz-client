@@ -29,7 +29,7 @@ const UploadFileComp: React.FC = (): JSX.Element => {
       >
         <Stack spacing={2}>
           <Button
-            variant="outlined"
+            variant="contained"
             size="large"
             startIcon={<AddCircleOutlineOutlinedIcon />}
             onClick={handleCreateNewMapping}
@@ -37,7 +37,7 @@ const UploadFileComp: React.FC = (): JSX.Element => {
             Create New Mapping
           </Button>
           <Button
-            variant="outlined"
+            variant="contained"
             size="large"
             startIcon={<DashboardOutlinedIcon />}
             onClick={handleDashboard}

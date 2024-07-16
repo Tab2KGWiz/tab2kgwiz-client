@@ -5,16 +5,48 @@ import { createTheme } from "@mui/material/styles";
 export const CustomTheme = createTheme({
   palette: {
     primary: {
-      main: "#556cd6",
+      main: "#CCD5AE",
     },
     secondary: {
-      main: "#19857b",
-    },
-    error: {
-      main: "#f44336",
+      main: "#E9EDC9",
     },
     background: {
-      default: "#f3f4f6",
+      default: "#FFFFF",
+    },
+  },
+  components: {
+    MuiSwitch: {
+      styleOverrides: {
+        root: {
+          width: 46,
+          height: 27,
+          padding: 0,
+          margin: 8,
+        },
+        switchBase: {
+          padding: 1,
+          "&$checked, &$colorPrimary$checked, &$colorSecondary$checked": {
+            transform: "translateX(16px)",
+            color: "#fff",
+            "& + $track": {
+              opacity: 1,
+              border: "none",
+            },
+          },
+        },
+        thumb: {
+          width: 24,
+          height: 24,
+        },
+        track: {
+          borderRadius: 13,
+          border: "1px solid #bdbdbd",
+          backgroundColor: "#fafafa",
+          opacity: 1,
+          transition:
+            "background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
+        },
+      },
     },
   },
 });

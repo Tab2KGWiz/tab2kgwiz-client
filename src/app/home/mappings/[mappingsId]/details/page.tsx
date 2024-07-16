@@ -183,7 +183,7 @@ const MappingDetailsPage: React.FC<{
 
       try {
         const response = await axios.post(
-          "http://165.232.127.94:8081/generateLinkedData",
+          "http://104.248.240.80:8081/generateLinkedData",
           data,
           {
             headers: {
@@ -216,18 +216,32 @@ const MappingDetailsPage: React.FC<{
 
   return (
     <>
-      <Typography
-        variant="h5"
+      <Stack
+        direction="row"
+        spacing={2}
         sx={{
           marginTop: "3vh",
           marginLeft: "10vh",
           marginRight: "5vh",
-          color: "#000000",
+          marginBottom: "2vh",
         }}
       >
-        Details
-      </Typography>
-      <br />
+        <Typography variant="h5">Details</Typography>
+
+        <Button
+          size="small"
+          variant="contained"
+          color="primary"
+          startIcon={<EditNoteOutlinedIcon />}
+          disabled={mappingUser !== Cookies.get("username")}
+          onClick={handleEdit}
+          sx={{
+            marginLeft: 2,
+          }}
+        >
+          <span>Edit</span>
+        </Button>
+      </Stack>
       <Stack
         direction="row"
         spacing={1}
@@ -246,7 +260,7 @@ const MappingDetailsPage: React.FC<{
                 maxWidth: 360,
                 bgcolor: "background.paper",
               }}
-              aria-label="mailbox folders"
+              aria-label="columns"
             >
               <ListItem>
                 <Typography variant="subtitle2" gutterBottom>
@@ -299,23 +313,10 @@ const MappingDetailsPage: React.FC<{
               </Typography>
             </CardContent>
 
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<EditNoteOutlinedIcon />}
-              disabled={mappingUser !== Cookies.get("username")}
-              onClick={handleEdit}
-              sx={{
-                marginLeft: 2,
-              }}
-            >
-              <span>Edit</span>
-            </Button>
-
             <List
               sx={{
                 width: "100%",
-                maxWidth: 400,
+                maxWidth: 1000,
                 bgcolor: "background.paper",
                 position: "relative",
                 overflow: "auto",
@@ -335,10 +336,19 @@ const MappingDetailsPage: React.FC<{
                     <Collapse in={isOpen}>
                       <List>
                         <ListItem>
-                          <ListItemText primary={" • " + `${dataType}`} />
+                          <ListItemText
+                            primary={
+                              " • " + `${dataType ? dataType : "Not mapped"}`
+                            }
+                          />
                         </ListItem>
                         <ListItem>
-                          <ListItemText primary={" • " + `${ontologyURI}`} />
+                          <ListItemText
+                            primary={
+                              " • " +
+                              `${ontologyURI ? ontologyURI : "Not mapped"}`
+                            }
+                          />
                         </ListItem>
                       </List>
                     </Collapse>
@@ -481,8 +491,8 @@ const MappingDetailsPage: React.FC<{
                 >
                   <Card
                     sx={{
-                      height: 50,
-                      width: 400,
+                      height: "5vh",
+                      width: "20vw",
                     }}
                   >
                     <Typography
@@ -497,7 +507,6 @@ const MappingDetailsPage: React.FC<{
                   <Stack direction="row" spacing={2}>
                     <LoadingButton
                       onClick={handlePostRDF}
-                      className="bg-blue-600"
                       endIcon={<SendIcon />}
                       loading={loadingRDF}
                       loadingPosition="end"
@@ -508,7 +517,7 @@ const MappingDetailsPage: React.FC<{
                     </LoadingButton>
 
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       startIcon={<DownloadRoundedIcon />}
                       onClick={handleDownloadRDF}
                       disabled={!isRDFGenerated}

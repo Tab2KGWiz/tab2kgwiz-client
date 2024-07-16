@@ -418,7 +418,7 @@ const OntologyDialog: React.FC<Props> = ({
   return (
     <React.Fragment>
       <Button variant="outlined" onClick={handleClickOpen}>
-        Ontology
+        Map
       </Button>
       <Dialog
         open={open}

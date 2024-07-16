@@ -60,13 +60,12 @@ const PageAppBar: React.FC<Props> = (): JSX.Element => {
               mr: 2,
               display: { xs: "none", md: "flex" },
               fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
+              fontWeight: 300,
               color: "inherit",
               textDecoration: "none",
             }}
           >
-            LOGO
+            TAB2KGWIZ
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -105,25 +104,7 @@ const PageAppBar: React.FC<Props> = (): JSX.Element => {
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: "flex", md: "none" },
-              flexGrow: 1,
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
-              color: "inherit",
-              textDecoration: "none",
-            }}
-          >
-            LOGO
-          </Typography>
+
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
               <Button
@@ -142,6 +123,7 @@ const PageAppBar: React.FC<Props> = (): JSX.Element => {
                 <Avatar
                   alt="Remy Sharp"
                   src="src/app/static/images/avatar/2.jpg"
+                  sx={{ bgcolor: "secondary.main" }}
                 />
               </IconButton>
             </Tooltip>

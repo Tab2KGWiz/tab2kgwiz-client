@@ -143,8 +143,7 @@ const ButtonGroup = (
   return (
     <Box className="mt-5 ml-14" sx={{ "& > button": { m: 1 } }}>
       <LoadingButton
-        color="secondary"
-        className="bg-fuchsia-700"
+        color="primary"
         onClick={handleSave}
         loading={loadingSave}
         loadingPosition="start"
@@ -157,7 +156,6 @@ const ButtonGroup = (
 
       <LoadingButton
         onClick={handleGenerateRDF}
-        className="bg-blue-600"
         endIcon={<PostAddOutlinedIcon />}
         loading={loadingRDF}
         loadingPosition="end"
