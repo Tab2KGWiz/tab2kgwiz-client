@@ -183,7 +183,7 @@ const MappingDetailsPage: React.FC<{
 
       try {
         const response = await axios.post(
-          "http://104.248.240.80:8081/generateLinkedData",
+          `${process.env.GENERATE_LINKED_DATA_API_URL}`,
           data,
           {
             headers: {
@@ -500,7 +500,7 @@ const MappingDetailsPage: React.FC<{
                       color="text.primary"
                       sx={{ marginTop: "1.5vh", marginLeft: "2vh" }}
                     >
-                      http://104.248.240.80:8081/generateLinkedData
+                      {process.env.GENERATE_LINKED_DATA_API_URL}
                     </Typography>
                   </Card>
 
