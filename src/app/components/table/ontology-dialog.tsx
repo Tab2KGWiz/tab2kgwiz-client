@@ -177,10 +177,65 @@ const OntologyDialog: React.FC<Props> = ({
   };
 
   const handleOntologySearch = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.SyntheticEvent<Element, Event>,
+    value: string,
+    key: React.Key,
+    type: string,
   ) => {
+    const reformetedValue = value;
+    if (
+      reformetedValue.match(
+        /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
+      )
+    ) {
+      if (type === "measuring" || type === "typeentity") {
+        handleDynamicSelectionChange(
+          key,
+          "ontologyType",
+          "base:" + reformetedValue.split("/").pop(),
+        );
+        handleDynamicSelectionChange(key, "ontologyURI", reformetedValue);
+        handleDynamicSelectionChange(
+          key,
+          "label",
+          reformetedValue.split("/").pop(),
+        );
+        handleDynamicSelectionChange(
+          key,
+          "prefix",
+          reformetedValue.split("/").pop(),
+        );
+      } else if (type === "relationship") {
+        handleDynamicSelectionChange(key, "relationShip", reformetedValue);
+        // const tempPrefixsURI = new Map(prefixesURI);
+        // tempPrefixsURI.set("base", reformetedValue);
+        // setPrefixesURI(tempPrefixsURI);
+      } else if (type === "unit") {
+        handleDynamicSelectionChange(key, "hasUnit", reformetedValue);
+      }
+    } else {
+      if (type === "measuring" || type === "typeentity") {
+        handleDynamicSelectionChange(
+          key,
+          "ontologyType",
+          "base:" + reformetedValue,
+        );
+        handleDynamicSelectionChange(
+          key,
+          "ontologyURI",
+          "https://tab2kgwiz.udl.cat/" + reformetedValue,
+        );
+        handleDynamicSelectionChange(key, "label", reformetedValue);
+        handleDynamicSelectionChange(key, "prefix", reformetedValue);
+      } else if (type === "relationship") {
+        handleDynamicSelectionChange(key, "relationShip", reformetedValue);
+      } else if (type === "unit") {
+        handleDynamicSelectionChange(key, "hasUnit", reformetedValue);
+      }
+    }
+
     const response = await axios.get(
-      `https://prefix.zazuko.com/api/v1/search?q=${event.target.value}`,
+      `https://prefix.zazuko.com/api/v1/search?q=${value}`,
     );
 
     const ontologyData: {
@@ -254,7 +309,9 @@ const OntologyDialog: React.FC<Props> = ({
               options={ontologyData?.map((item) => item.itemText) || []}
               sx={{ width: 300 }}
               filterOptions={(x) => x}
-              onSelect={handleOntologySearch}
+              onInputChange={(event, value) => {
+                handleOntologySearch(event, value, key, "measuring");
+              }}
               onChange={(event, value) => {
                 handleSearchOntoForm(event, value, key);
               }}
@@ -273,7 +330,9 @@ const OntologyDialog: React.FC<Props> = ({
               options={ontologyData?.map((item) => item.itemText) || []}
               sx={{ width: 300 }}
               filterOptions={(x) => x}
-              onSelect={handleOntologySearch}
+              onInputChange={(event, value) => {
+                handleOntologySearch(event, value, key, "typeentity");
+              }}
               onChange={(event, value) => {
                 handleSearchOntoForm(event, value, key);
               }}
@@ -322,7 +381,9 @@ const OntologyDialog: React.FC<Props> = ({
             options={ontologyData?.map((item) => item.itemText) || []}
             sx={{ width: 300 }}
             filterOptions={(x) => x}
-            onSelect={handleOntologySearch}
+            onInputChange={(event, value) => {
+              handleOntologySearch(event, value, key, "relationship");
+            }}
             onChange={(event, value) => {
               handleSearchRelationshipForm(event, value, key);
             }}
@@ -349,7 +410,9 @@ const OntologyDialog: React.FC<Props> = ({
             options={ontologyData?.map((item) => item.itemText) || []}
             sx={{ width: 300 }}
             filterOptions={(x) => x}
-            onSelect={handleOntologySearch}
+            onInputChange={(event, value) => {
+              handleOntologySearch(event, value, key, "unit");
+            }}
             onChange={(event, value) => {
               handleSearchUnitForm(event, value, key);
             }}

@@ -183,7 +183,7 @@ const MappingDetailsPage: React.FC<{
 
       try {
         const response = await axios.post(
-          `${process.env.GENERATE_LINKED_DATA_API_URL}`,
+          `${process.env.NEXT_PUBLIC_GENERATE_LINKED_DATA_API_URL}`,
           data,
           {
             headers: {
