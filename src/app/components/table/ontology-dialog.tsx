@@ -215,18 +215,14 @@ const OntologyDialog: React.FC<Props> = ({
       }
     } else {
       if (type === "measuring" || type === "typeentity") {
-        handleDynamicSelectionChange(
-          key,
-          "ontologyType",
-          "base:" + reformetedValue,
-        );
+        handleDynamicSelectionChange(key, "ontologyType", reformetedValue);
         handleDynamicSelectionChange(
           key,
           "ontologyURI",
           "https://tab2kgwiz.udl.cat/" + reformetedValue,
         );
         handleDynamicSelectionChange(key, "label", reformetedValue);
-        handleDynamicSelectionChange(key, "prefix", reformetedValue);
+        handleDynamicSelectionChange(key, "prefix", "base");
       } else if (type === "relationship") {
         handleDynamicSelectionChange(key, "relationShip", reformetedValue);
       } else if (type === "unit") {
