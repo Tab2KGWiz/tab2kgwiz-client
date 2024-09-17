@@ -133,7 +133,11 @@ const OntologyDialog: React.FC<Props> = ({
       if (item.itemText === value) {
         handleDynamicSelectionChange(key, "ontologyType", item.prefixed);
         handleDynamicSelectionChange(key, "ontologyURI", item.iri.value);
-        handleDynamicSelectionChange(key, "label", item.label);
+        handleDynamicSelectionChange(
+          key,
+          "label",
+          item.label.replace(/ /g, ""),
+        );
         handleDynamicSelectionChange(key, "prefix", item.prefixedSplitA);
 
         const tempPrefixsURI = new Map(prefixesURI);
@@ -188,30 +192,26 @@ const OntologyDialog: React.FC<Props> = ({
         /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
       )
     ) {
+      const { ontologyURI, ontologyPrefix, value } =
+        extractOntologyAndValues(reformetedValue);
+
+      const tempPrefixsURI = new Map(prefixesURI);
+      tempPrefixsURI.set(ontologyPrefix, ontologyURI);
+      setPrefixesURI(tempPrefixsURI);
+
       if (type === "measuring" || type === "typeentity") {
         handleDynamicSelectionChange(
           key,
           "ontologyType",
-          "base:" + reformetedValue.split("/").pop(),
+          ontologyPrefix + ":" + value,
         );
-        handleDynamicSelectionChange(key, "ontologyURI", reformetedValue);
-        handleDynamicSelectionChange(
-          key,
-          "label",
-          reformetedValue.split("/").pop(),
-        );
-        handleDynamicSelectionChange(
-          key,
-          "prefix",
-          reformetedValue.split("/").pop(),
-        );
+        handleDynamicSelectionChange(key, "ontologyURI", ontologyURI);
+        handleDynamicSelectionChange(key, "label", value);
+        handleDynamicSelectionChange(key, "prefix", value);
       } else if (type === "relationship") {
-        handleDynamicSelectionChange(key, "relationShip", reformetedValue);
-        // const tempPrefixsURI = new Map(prefixesURI);
-        // tempPrefixsURI.set("base", reformetedValue);
-        // setPrefixesURI(tempPrefixsURI);
+        handleDynamicSelectionChange(key, "relationShip", value);
       } else if (type === "unit") {
-        handleDynamicSelectionChange(key, "hasUnit", reformetedValue);
+        handleDynamicSelectionChange(key, "hasUnit", value);
       }
     } else {
       if (type === "measuring" || type === "typeentity") {
@@ -514,5 +514,27 @@ const OntologyDialog: React.FC<Props> = ({
     </React.Fragment>
   );
 };
+
+function extractOntologyAndValues(uri: string): {
+  ontologyURI: string;
+  ontologyPrefix: string;
+  value: string;
+} {
+  let delimiter: string;
+
+  if (uri.includes("#")) {
+    delimiter = "#";
+  } else {
+    delimiter = "/";
+  }
+
+  const value: string = uri.split(delimiter).pop() || "";
+
+  const ontologyURI: string = uri.substring(0, uri.lastIndexOf(delimiter));
+
+  const ontologyPrefix: string = ontologyURI.split("/").pop() || "";
+
+  return { ontologyURI, ontologyPrefix, value };
+}
 
 export default OntologyDialog;
