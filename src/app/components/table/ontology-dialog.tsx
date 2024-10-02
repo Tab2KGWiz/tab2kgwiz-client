@@ -227,10 +227,6 @@ const OntologyDialog: React.FC<Props> = ({
     setLoading(false);
   };
 
-  const handleWhatIsItMeasuringField = (value: React.Key) => {
-    handleDefaultOntologySearch(value);
-  };
-
   const handleSearchOntoForm = (
     event: React.SyntheticEvent<Element, Event>,
     value: string,
@@ -426,7 +422,7 @@ const OntologyDialog: React.FC<Props> = ({
                 handleSearchOntoForm(event, value, key);
               }}
               onOpen={() => {
-                handleWhatIsItMeasuringField(key);
+                handleDefaultOntologySearch(key);
               }}
               loading={loading}
               renderInput={(params) => (
@@ -442,6 +438,12 @@ const OntologyDialog: React.FC<Props> = ({
               id={`${key}-typeentity-autocomplete`}
               disableClearable
               options={ontologyData?.map((item) => item.itemText) || []}
+              groupBy={(option) => {
+                const item = ontologyData?.find(
+                  (data) => data.itemText === option,
+                );
+                return item ? item.getFrom : "";
+              }}
               sx={{ width: 300 }}
               filterOptions={(x) => x}
               onInputChange={(event, value) => {
@@ -450,6 +452,10 @@ const OntologyDialog: React.FC<Props> = ({
               onChange={(event, value) => {
                 handleSearchOntoForm(event, value, key);
               }}
+              onOpen={() => {
+                handleDefaultOntologySearch(key);
+              }}
+              loading={loading}
               renderInput={(params) => (
                 <TextField {...params} label="Type of entity" />
               )}
@@ -521,6 +527,12 @@ const OntologyDialog: React.FC<Props> = ({
             freeSolo
             id={`autocomplete-unit-${key}`}
             disableClearable
+            groupBy={(option) => {
+              const item = ontologyData?.find(
+                (data) => data.itemText === option,
+              );
+              return item ? item.getFrom : "";
+            }}
             options={ontologyData?.map((item) => item.itemText) || []}
             sx={{ width: 300 }}
             filterOptions={(x) => x}
@@ -530,6 +542,10 @@ const OntologyDialog: React.FC<Props> = ({
             onChange={(event, value) => {
               handleSearchUnitForm(event, value, key);
             }}
+            onOpen={() => {
+              handleDefaultOntologySearch(key);
+            }}
+            loading={loading}
             defaultValue={columnData.hasUnit}
             renderInput={(params) => <TextField {...params} label="Has unit" />}
           />
