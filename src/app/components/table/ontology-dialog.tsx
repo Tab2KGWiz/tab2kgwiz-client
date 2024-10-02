@@ -55,6 +55,7 @@ const OntologyDialog: React.FC<Props> = ({
   const [open, setOpen] = React.useState(false);
   const [ontologyData, setFetchedOntologyData] = React.useState<
     {
+      getFrom: string;
       itemText: string;
       prefixed: string;
       iri: { value: string };
@@ -63,6 +64,8 @@ const OntologyDialog: React.FC<Props> = ({
       prefixedSplitA: string;
     }[]
   >();
+
+  const [loading, setLoading] = React.useState(false);
 
   const { showSnackBar } = useSnackBar();
 
@@ -122,6 +125,110 @@ const OntologyDialog: React.FC<Props> = ({
       handleDynamicSelectionChange(key, "isMeasurementOf", "");
       handleDynamicSelectionChange(key, "measurementMadeBy", "");
     }
+  };
+
+  const handleDefaultOntologySearch = async (value: React.Key) => {
+    setFetchedOntologyData([]);
+
+    setLoading(true);
+    const response = await axios.get(`http://localhost:4000/api/${value}`);
+
+    const data: {
+      agroportal: [
+        {
+          label: string;
+          prefixedName: string;
+          uri: string;
+        },
+      ];
+      bioportal: [
+        {
+          label: string;
+          prefixedName: string;
+          uri: string;
+        },
+      ];
+      lov: [
+        {
+          label: string;
+          prefixedName: string;
+          uri: string;
+        },
+      ];
+      zazuko: [
+        {
+          label: string;
+          prefixedName: string;
+          uri: string;
+        },
+      ];
+    } = response.data;
+
+    data.lov.forEach((item) => {
+      setFetchedOntologyData((prev) => [
+        ...(prev || []),
+        {
+          getFrom: "LOV",
+          itemText: item.prefixedName + " (" + item.label + ")",
+          prefixed: item.prefixedName,
+          iri: { value: item.uri },
+          label: item.label,
+          iriSplitA: item.uri,
+          prefixedSplitA: item.prefixedName.split(":").pop() || "",
+        },
+      ]);
+    });
+
+    data.agroportal.forEach((item) => {
+      setFetchedOntologyData((prev) => [
+        ...(prev || []),
+        {
+          getFrom: "Agroportal",
+          itemText: item.prefixedName + " (" + item.label + ")",
+          prefixed: item.prefixedName,
+          iri: { value: item.uri },
+          label: item.label,
+          iriSplitA: item.uri,
+          prefixedSplitA: item.prefixedName.split(":").pop() || "",
+        },
+      ]);
+    });
+
+    data.zazuko.forEach((item) => {
+      setFetchedOntologyData((prev) => [
+        ...(prev || []),
+        {
+          getFrom: "Zazuko",
+          itemText: item.prefixedName + " (" + item.label + ")",
+          prefixed: item.prefixedName,
+          iri: { value: item.uri },
+          label: item.label,
+          iriSplitA: item.uri,
+          prefixedSplitA: item.prefixedName.split(":").pop() || "",
+        },
+      ]);
+    });
+
+    data.bioportal.forEach((item) => {
+      setFetchedOntologyData((prev) => [
+        ...(prev || []),
+        {
+          getFrom: "Bioportal",
+          itemText: item.prefixedName + " (" + item.label + ")",
+          prefixed: item.prefixedName,
+          iri: { value: item.uri },
+          label: item.label,
+          iriSplitA: item.uri,
+          prefixedSplitA: item.prefixedName.split(":").pop() || "",
+        },
+      ]);
+    });
+
+    setLoading(false);
+  };
+
+  const handleWhatIsItMeasuringField = (value: React.Key) => {
+    handleDefaultOntologySearch(value);
   };
 
   const handleSearchOntoForm = (
@@ -235,6 +342,7 @@ const OntologyDialog: React.FC<Props> = ({
     );
 
     const ontologyData: {
+      getFrom: string;
       itemText: string;
       prefixed: string;
       iri: { value: string };
@@ -303,6 +411,12 @@ const OntologyDialog: React.FC<Props> = ({
               id={`${key}-measuring-autocomplete`}
               disableClearable
               options={ontologyData?.map((item) => item.itemText) || []}
+              groupBy={(option) => {
+                const item = ontologyData?.find(
+                  (data) => data.itemText === option,
+                );
+                return item ? item.getFrom : "";
+              }}
               sx={{ width: 300 }}
               filterOptions={(x) => x}
               onInputChange={(event, value) => {
@@ -311,6 +425,10 @@ const OntologyDialog: React.FC<Props> = ({
               onChange={(event, value) => {
                 handleSearchOntoForm(event, value, key);
               }}
+              onOpen={() => {
+                handleWhatIsItMeasuringField(key);
+              }}
+              loading={loading}
               renderInput={(params) => (
                 <TextField {...params} label="What is it measuring?" />
               )}
