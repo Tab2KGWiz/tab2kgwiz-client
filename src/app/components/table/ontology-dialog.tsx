@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
   Button,
@@ -15,6 +17,10 @@ import {
   Stack,
   TextField,
   Typography,
+  ToggleButton,
+  ToggleButtonGroup,
+  FormHelperText,
+  Tooltip,
 } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
 import axios from "axios";
@@ -23,6 +29,12 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import { SyntheticEvent } from "react";
 import xsdDataType from "@/app/utils/xsdDataTypes";
 import ColumnData from "@/app/utils/columnData";
+import handleDefaultOntologySearch from "@/app/hooks/handleDefaultOntologySearch";
+import { extractOntologyAndValues } from "../../lib/extractOntologyAndValues";
+import Cookies from "js-cookie";
+import SearchIcon from "@mui/icons-material/Search";
+import SavedSearchIcon from "@mui/icons-material/SavedSearch";
+import useDebounce from "@/app/hooks/useDebounce";
 
 interface Props {
   headerMapping: Map<string, string>;
@@ -66,7 +78,7 @@ const OntologyDialog: React.FC<Props> = ({
   >();
 
   const [loading, setLoading] = React.useState(false);
-
+  const accessToken = Cookies.get("accessToken");
   const { showSnackBar } = useSnackBar();
 
   const handleClickOpen = () => {
@@ -76,6 +88,53 @@ const OntologyDialog: React.FC<Props> = ({
   const handleClose = () => {
     setOpen(false);
   };
+
+  const [ontologyURIData, setOntologyURIData] = React.useState<
+    {
+      uri: string;
+      prefix: string;
+      label: string;
+      description: string;
+    }[]
+  >([]);
+
+  const [viewByColumn, setViewByColumn] = React.useState<{
+    [key: string]: string;
+  }>({});
+
+  const handleChangeToogleButton = (
+    event: React.MouseEvent<HTMLElement>,
+    key: string,
+    nextView: string,
+  ) => {
+    if (nextView !== null) {
+      setViewByColumn((prevView) => ({
+        ...prevView,
+        [key]: nextView,
+      }));
+    }
+  };
+
+  React.useEffect(() => {
+    const fetchOntologyList = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_TAB2KGWIZ_API_URL}/userontologylists`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          },
+        );
+
+        if (response.status === 200) {
+          setOntologyURIData(response.data);
+        }
+      } catch (error) {
+        showSnackBar("Failed to load ontology list", "error");
+      }
+    };
+
+    fetchOntologyList();
+  }, []);
 
   const handleDynamicSelectionChange = (
     column: React.Key,
@@ -125,106 +184,6 @@ const OntologyDialog: React.FC<Props> = ({
       handleDynamicSelectionChange(key, "isMeasurementOf", "");
       handleDynamicSelectionChange(key, "measurementMadeBy", "");
     }
-  };
-
-  const handleDefaultOntologySearch = async (value: React.Key) => {
-    setFetchedOntologyData([]);
-
-    setLoading(true);
-    const response = await axios.get(`http://localhost:4000/api/${value}`);
-
-    const data: {
-      agroportal: [
-        {
-          label: string;
-          prefixedName: string;
-          uri: string;
-        },
-      ];
-      bioportal: [
-        {
-          label: string;
-          prefixedName: string;
-          uri: string;
-        },
-      ];
-      lov: [
-        {
-          label: string;
-          prefixedName: string;
-          uri: string;
-        },
-      ];
-      zazuko: [
-        {
-          label: string;
-          prefixedName: string;
-          uri: string;
-        },
-      ];
-    } = response.data;
-
-    data.lov.forEach((item) => {
-      setFetchedOntologyData((prev) => [
-        ...(prev || []),
-        {
-          getFrom: "LOV",
-          itemText: item.prefixedName + " (" + item.label + ")",
-          prefixed: item.prefixedName,
-          iri: { value: item.uri },
-          label: item.label,
-          iriSplitA: item.uri,
-          prefixedSplitA: item.prefixedName.split(":").pop() || "",
-        },
-      ]);
-    });
-
-    data.agroportal.forEach((item) => {
-      setFetchedOntologyData((prev) => [
-        ...(prev || []),
-        {
-          getFrom: "Agroportal",
-          itemText: item.prefixedName + " (" + item.label + ")",
-          prefixed: item.prefixedName,
-          iri: { value: item.uri },
-          label: item.label,
-          iriSplitA: item.uri,
-          prefixedSplitA: item.prefixedName.split(":").pop() || "",
-        },
-      ]);
-    });
-
-    data.zazuko.forEach((item) => {
-      setFetchedOntologyData((prev) => [
-        ...(prev || []),
-        {
-          getFrom: "Zazuko",
-          itemText: item.prefixedName + " (" + item.label + ")",
-          prefixed: item.prefixedName,
-          iri: { value: item.uri },
-          label: item.label,
-          iriSplitA: item.uri,
-          prefixedSplitA: item.prefixedName.split(":").pop() || "",
-        },
-      ]);
-    });
-
-    data.bioportal.forEach((item) => {
-      setFetchedOntologyData((prev) => [
-        ...(prev || []),
-        {
-          getFrom: "Bioportal",
-          itemText: item.prefixedName + " (" + item.label + ")",
-          prefixed: item.prefixedName,
-          iri: { value: item.uri },
-          label: item.label,
-          iriSplitA: item.uri,
-          prefixedSplitA: item.prefixedName.split(":").pop() || "",
-        },
-      ]);
-    });
-
-    setLoading(false);
   };
 
   const handleSearchOntoForm = (
@@ -333,25 +292,41 @@ const OntologyDialog: React.FC<Props> = ({
       }
     }
 
-    const response = await axios.get(
-      `https://prefix.zazuko.com/api/v1/search?q=${value}`,
-    );
-
-    const ontologyData: {
-      getFrom: string;
-      itemText: string;
-      prefixed: string;
-      iri: { value: string };
-      label: string;
-      iriSplitA: string;
-      prefixedSplitA: string;
-    }[] = response.data;
-
-    setFetchedOntologyData(ontologyData);
+    handleDefaultOntologySearch(value, setFetchedOntologyData);
   };
+
+  const handleSavedOntologySearch = (
+    event: React.SyntheticEvent<Element, Event>,
+    value: string,
+    key: React.Key,
+  ) => {
+    ontologyURIData.forEach((item) => {
+      if (item.label === value.split(":")[1].split(" ")[0]) {
+        handleDynamicSelectionChange(
+          key,
+          "ontologyType",
+          item.prefix + ":" + item.label,
+        );
+        handleDynamicSelectionChange(key, "ontologyURI", item.uri);
+        handleDynamicSelectionChange(key, "label", item.label);
+        handleDynamicSelectionChange(key, "prefix", item.prefix);
+
+        const { ontologyURI } = extractOntologyAndValues(item.uri);
+
+        const tempPrefixsURI = new Map(prefixesURI);
+        tempPrefixsURI.set(item.prefix, ontologyURI);
+        setPrefixesURI(tempPrefixsURI);
+
+        return;
+      }
+    });
+  };
+
+  const debounceHandleOntologySearch = useDebounce(handleOntologySearch, 500);
 
   const renderColumnFields = (key: React.Key) => {
     const columnData = columnsData.find((data) => data.title === key);
+    const currentView = viewByColumn[key as string] || "free";
 
     return (
       <>
@@ -402,65 +377,185 @@ const OntologyDialog: React.FC<Props> = ({
           />
 
           {columnData?.measurement && (
-            <Autocomplete
-              freeSolo
-              id={`${key}-measuring-autocomplete`}
-              disableClearable
-              options={ontologyData?.map((item) => item.itemText) || []}
-              groupBy={(option) => {
-                const item = ontologyData?.find(
-                  (data) => data.itemText === option,
-                );
-                return item ? item.getFrom : "";
-              }}
-              sx={{ width: 300 }}
-              filterOptions={(x) => x}
-              onInputChange={(event, value) => {
-                handleOntologySearch(event, value, key, "measuring");
-              }}
-              onChange={(event, value) => {
-                handleSearchOntoForm(event, value, key);
-              }}
-              onOpen={() => {
-                handleDefaultOntologySearch(key);
-              }}
-              loading={loading}
-              renderInput={(params) => (
-                <TextField {...params} label="What is it measuring?" />
+            <>
+              {viewByColumn[key as string] === "recommended" ? (
+                <Autocomplete
+                  freeSolo
+                  id={`${key}-measuring-autocomplete`}
+                  disableClearable
+                  options={ontologyData?.map((item) => item.itemText) || []}
+                  groupBy={(option) => {
+                    const item = ontologyData?.find(
+                      (data) => data.itemText === option,
+                    );
+                    return item ? item.getFrom : "";
+                  }}
+                  sx={{ width: 300 }}
+                  filterOptions={(x) => x}
+                  onInputChange={(event, value) => {
+                    handleOntologySearch(event, value, key, "measuring");
+                  }}
+                  onChange={(event, value) => {
+                    handleSearchOntoForm(event, value, key);
+                  }}
+                  onOpen={async () => {
+                    setLoading(true);
+                    await handleDefaultOntologySearch(
+                      key,
+                      setFetchedOntologyData,
+                    );
+                    setLoading(false);
+                  }}
+                  loading={loading}
+                  renderInput={(params) => (
+                    <TextField {...params} label="What is it measuring?" />
+                  )}
+                  defaultValue={columnData?.ontologyType}
+                />
+              ) : (
+                <Autocomplete
+                  id={`autocomplete-savedOntologies-${key}`}
+                  disablePortal
+                  options={ontologyURIData.map(
+                    (item) =>
+                      `${item.prefix}:${item.label} (${item.description})`,
+                  )}
+                  sx={{ width: 300 }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Saved Ontologies" />
+                  )}
+                  onChange={(event, value) => {
+                    if (value) {
+                      handleSavedOntologySearch(event, value, key);
+                    }
+                  }}
+                />
               )}
-              defaultValue={columnData?.ontologyType}
-            />
+              <ToggleButtonGroup
+                id={`toggle-button-group-${key}`}
+                orientation="vertical"
+                value={currentView}
+                exclusive
+                onChange={(event, nextView) =>
+                  handleChangeToogleButton(event, key as string, nextView)
+                }
+                size="small"
+              >
+                <Tooltip
+                  title="Select ontology recommender and search for the ontology as a type of entity"
+                  arrow
+                  placement="right"
+                >
+                  <ToggleButton value="recommended" aria-label="recommended">
+                    <SearchIcon />
+                  </ToggleButton>
+                </Tooltip>
+
+                <Tooltip
+                  title="Select from the saved ontologies list"
+                  arrow
+                  placement="right"
+                >
+                  <ToggleButton value="free" aria-label="free">
+                    <SavedSearchIcon />
+                  </ToggleButton>
+                </Tooltip>
+              </ToggleButtonGroup>
+            </>
           )}
 
           {columnData?.identifier && (
-            <Autocomplete
-              freeSolo
-              id={`${key}-typeentity-autocomplete`}
-              disableClearable
-              options={ontologyData?.map((item) => item.itemText) || []}
-              groupBy={(option) => {
-                const item = ontologyData?.find(
-                  (data) => data.itemText === option,
-                );
-                return item ? item.getFrom : "";
-              }}
-              sx={{ width: 300 }}
-              filterOptions={(x) => x}
-              onInputChange={(event, value) => {
-                handleOntologySearch(event, value, key, "typeentity");
-              }}
-              onChange={(event, value) => {
-                handleSearchOntoForm(event, value, key);
-              }}
-              onOpen={() => {
-                handleDefaultOntologySearch(key);
-              }}
-              loading={loading}
-              renderInput={(params) => (
-                <TextField {...params} label="Type of entity" />
+            <>
+              {viewByColumn[key as string] === "recommended" ? (
+                <Autocomplete
+                  freeSolo
+                  id={`${key}-typeentity-autocomplete`}
+                  disableClearable
+                  options={ontologyData?.map((item) => item.itemText) || []}
+                  groupBy={(option) => {
+                    const item = ontologyData?.find(
+                      (data) => data.itemText === option,
+                    );
+                    return item ? item.getFrom : "";
+                  }}
+                  sx={{ width: 300 }}
+                  filterOptions={(x) => x}
+                  onInputChange={(event, value) => {
+                    // handleOntologySearch(event, value, key, "typeentity");
+                    debounceHandleOntologySearch(
+                      event,
+                      value,
+                      key,
+                      "typeentity",
+                    );
+                  }}
+                  onChange={(event, value) => {
+                    handleSearchOntoForm(event, value, key);
+                  }}
+                  onOpen={async () => {
+                    setLoading(true);
+                    await handleDefaultOntologySearch(
+                      key,
+                      setFetchedOntologyData,
+                    );
+                    setLoading(false);
+                  }}
+                  loading={loading}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Type of entity" />
+                  )}
+                  defaultValue={columnData?.ontologyType}
+                />
+              ) : (
+                <Autocomplete
+                  id={`autocomplete-savedOntologies-${key}`}
+                  disablePortal
+                  options={ontologyURIData.map(
+                    (item) =>
+                      `${item.prefix}:${item.label} (${item.description})`,
+                  )}
+                  sx={{ width: 300 }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Saved Ontologies" />
+                  )}
+                  onChange={(event, value) => {
+                    if (value) {
+                      handleSavedOntologySearch(event, value, key);
+                    }
+                  }}
+                />
               )}
-              defaultValue={columnData?.ontologyType}
-            />
+              <ToggleButtonGroup
+                id={`toggle-button-group-${key}`}
+                orientation="vertical"
+                value={currentView}
+                exclusive
+                onChange={(event, nextView) =>
+                  handleChangeToogleButton(event, key as string, nextView)
+                }
+                size="small"
+              >
+                <Tooltip
+                  title="Select ontology recommender and search for the ontology as a type of entity"
+                  arrow
+                  placement="right"
+                >
+                  <ToggleButton value="recommended" aria-label="recommended">
+                    <SearchIcon />
+                  </ToggleButton>
+                </Tooltip>
+
+                <Tooltip
+                  title="Select from the saved ontologies list"
+                  arrow
+                  placement="right"
+                >
+                  <ToggleButton value="free" aria-label="free">
+                    <SavedSearchIcon />
+                  </ToggleButton>
+                </Tooltip>
+              </ToggleButtonGroup>
+            </>
           )}
         </Stack>
 
@@ -542,8 +637,10 @@ const OntologyDialog: React.FC<Props> = ({
             onChange={(event, value) => {
               handleSearchUnitForm(event, value, key);
             }}
-            onOpen={() => {
-              handleDefaultOntologySearch(key);
+            onOpen={async () => {
+              setLoading(true);
+              await handleDefaultOntologySearch(key, setFetchedOntologyData);
+              setLoading(false);
             }}
             loading={loading}
             defaultValue={columnData.hasUnit}
@@ -644,27 +741,5 @@ const OntologyDialog: React.FC<Props> = ({
     </React.Fragment>
   );
 };
-
-function extractOntologyAndValues(uri: string): {
-  ontologyURI: string;
-  ontologyPrefix: string;
-  value: string;
-} {
-  let delimiter: string;
-
-  if (uri.includes("#")) {
-    delimiter = "#";
-  } else {
-    delimiter = "/";
-  }
-
-  const value: string = uri.split(delimiter).pop() || "";
-
-  const ontologyURI: string = uri.substring(0, uri.lastIndexOf(delimiter));
-
-  const ontologyPrefix: string = ontologyURI.split("/").pop() || "";
-
-  return { ontologyURI, ontologyPrefix, value };
-}
 
 export default OntologyDialog;
