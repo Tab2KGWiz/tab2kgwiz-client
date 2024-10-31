@@ -15,6 +15,7 @@
     "@mui/icons-material": "^5.15.17",
     "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.17",
+    "@react-icons/all-files": "https://github.com/react-icons/react-icons/releases/download/v4.10.1/react-icons-all-files-4.10.1.tgz",
     "axios": "^1.6.8",
     "danfojs": "^1.1.2",
     "js-cookie": "^3.0.5",
