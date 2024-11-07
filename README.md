@@ -1,94 +1,129 @@
-# Tabular Data to Knowledge Graph Wizard - Client
+# Tabular Data to Knowledge Graph Wizard (tab2kgwiz) - Client
 
-[![Open Issues](https://img.shields.io/github/issues-raw/Tab2KGWiz/tab2kgwiz-client?logo=github)](https://github.com/orgs/Tab2KGWiz/projects/2)
+This is the frontend for the **Tabular Data to Knowledge Graph Wizard (Tab2KGWiz)** project. It is built using **React** and **Next.js** to cooperate with tab2kgwiz server.
+
+## Features
+
+- **Dynamic Tabular Data Rendering**: Display tabular data seamlessly.
+- **Knowledge Graph Integration**: Integration with backend APIs for knowledge graph functionality.
+- **Server-Side Rendering** (SSR): Utilizing Next.js for server-side rendering and improved SEO.
+- **Dockerized**: Includes Docker support for easy deployment.
 
 ## Requirements
 
-For development, you will only need Node.js installed on your environement.
-And please use the appropriate [Editorconfig](http://editorconfig.org/) plugin for your Editor (not mandatory).
+To get started, you need to have **Node.js** installed on your machine.
 
-### Node
+### Node.js
 
-[Node](http://nodejs.org/) is really easy to install & now include [NPM](https://npmjs.org/).
-You should be able to run the following command after the installation procedure
-below.
+Install **Node.js** which comes with **npm** (Node Package Manager). You can install it from the [official website](https://nodejs.org/).
 
-    $ node --version
-    v21.5.0
+Check your installed versions by running:
 
-    $ npm --version
-    10.2.4
+```bash
+$ node --version
+v21.x.x
 
-#### Node installation on OS X
+$ npm --version
+10.x.x
+```
 
-You will need to use a Terminal. On OS X, you can find the default terminal in
-`/Applications/Utilities/Terminal.app`.
+If you don’t have Node.js installed, follow the platform-specific instructions below:
 
-Please install [Homebrew](http://brew.sh/) if it's not already done with the following command.
+#### Installation on macOS
 
-    $ ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+Install Node.js using Homebrew:
 
-If everything when fine, you should run
+```bash
+$ brew install node
+```
 
-    brew install node
+#### Installation on Linux (Ubuntu/Debian)
 
-#### Node installation on Linux
+For Linux (Ubuntu/Debian-based), you can install Node.js using:
 
-    sudo apt-get install python-software-properties
-    sudo add-apt-repository ppa:chris-lea/node.js
-    sudo apt-get update
-    sudo apt-get install nodejs
+```bash
+$ sudo apt-get install python-software-properties
+$ sudo add-apt-repository ppa:chris-lea/node.js
+$ sudo apt-get update
+$ sudo apt-get install nodejs
+```
 
-#### Node installation on Windows
+#### Installation on Windows
 
-Just go on [official Node.js website](http://nodejs.org/) & grab the installer.
-Also, be sure to have `git` available in your PATH, `npm` might need it.
+For Windows, download the installer from the [Node.js website](http://nodejs.org/) and follow the instructions.
 
----
+## Installation
 
-## Install
+Clone the project repository to your local machine:
 
-    $ git clone https://github.com/Tab2KGWiz/tab2kgwiz-client
-    $ cd tab2kgwiz-client
-    $ npm install
+```bash
+$ git clone https://github.com/Tab2KGWiz/tab2kgwiz-client
+$ cd tab2kgwiz-client
+```
 
-### Configure app
+Install the required dependencies:
 
-Copy `config.sample.json` to `config.json` then edit it with the url where you have setup:
+```bash
+$ npm install
+```
 
-- backend api
-- oauth like endpoint for auth
-- development
+## Development Server
 
-## Start & watch
+To start the development server and run the application locally:
 
-    $ npm start
+```bash
+$ npm start
+```
 
-## Simple build for production
+## Production Build
 
-    $ npm run build
+To generate an optimized production build, run:
 
-## Update sources
+```bash
+$ npm run build
+```
 
-Some packages usages might change so you should run `npm prune` & `npm install` often.
-A common way to update is by doing
+This will create a **.next** folder with the production-optimized files.
 
-    $ git pull
-    $ npm prune
-    $ npm install
+## Updating Dependencies
 
-To run those 3 commands you can just do
+To keep the project dependencies up-to-date, you can run the following:
 
-    $ npm run pull
+```bash
+$ npm prune
+$ npm install
+```
 
----
+Alternatively, you can use the custom script to update everything:
 
-## Docker
+```bash
+$ npm run pull
+```
 
-### Install
+This will pull the latest changes, prune unused dependencies, and reinstall all packages.
 
-    $ docker build -t frontend .
+## Dockerization
 
-### Run
+This project comes with a Dockerfile to make deployment easier by Dockerizing the frontend application.
 
-    $ docker run -p 3000:3000 -it frontend
+### 1. Build Docker Image
+
+To build the Docker image, use the following command:
+
+```bash
+$ docker build -t frontend .
+```
+
+### 2. Run Docker Container
+
+Once the image is built, you can run the frontend inside a Docker container with:
+
+```bash
+$ docker run -p 3000:3000 -it frontend
+```
+
+This will expose the application at http://localhost:3000 inside your container.
+
+## License
+
+This project is licensed under the MIT License.
