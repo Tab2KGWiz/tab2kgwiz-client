@@ -15,6 +15,7 @@ const UploadFilePage: React.FC<Props> = (): JSX.Element => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFile = event.target.files && event.target.files[0];
     setFile(newFile);
+
     if (newFile) {
       processUploadedFile(newFile, setFile);
     }
@@ -33,17 +34,24 @@ const useProcessFile = () => {
   ) => {
     try {
       if (!file) return;
+      const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
-      if (file.type !== "text/csv") {
-        showSnackBar("Invalid file type. Please upload a CSV file.", "error");
+      if (!["csv", "tsv", "xlsx", "xls", "ods"].includes(fileExtension ?? "")) {
+        showSnackBar(
+          "Unsupported file type. Please upload a CSV file.",
+          "error",
+        );
         setFile(null);
         return;
-      } else if (file.size > 10000000) {
+      }
+
+      if (file.size > 10000000) {
         // Allow only files less than 10MB
         showSnackBar("File size too large", "error");
         setFile(null);
         return;
       }
+
       showSnackBar("File uploaded successfully. Processing...", "info");
       router.push("/home/mappings");
     } catch (error) {

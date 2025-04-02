@@ -2,6 +2,12 @@
 
 This is the frontend for the **Tabular Data to Knowledge Graph Wizard (Tab2KGWiz)** project. It is built using **React** and **Next.js** to cooperate with tab2kgwiz server.
 
+## Documentation (Guide)
+
+This project is part of the **TFG** (Trabajo de Fin de Grado) by **Zihan Chen** at the **Universidad de Lleida**. The project aims to provide a user-friendly interface for transforming tabular data into knowledge graphs.
+
+Chen, Z. (2024). [Asistente para la transformación de datos tabulares a Grafos de Conocimiento](https://repositori.udl.cat/items/20ea8d13-c336-46d2-af4b-cb3379931bcf). Guía de la aplicación.
+
 ## Features
 
 - **Dynamic Tabular Data Rendering**: Display tabular data seamlessly.
