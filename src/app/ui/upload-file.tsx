@@ -33,7 +33,7 @@ const UploadFile: React.FC<Props> = ({ handleChange }): JSX.Element => {
             <span className="font-semibold">Click to upload</span>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            CSV (Max. import size 10 MB)
+            CSV, TSV, Excel (xlsx, xls), ODS (max. 10MB)
           </p>
         </div>
         <input

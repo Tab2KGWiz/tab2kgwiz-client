@@ -128,18 +128,22 @@ const MappingDetailsPage: React.FC<{
   const handleUploadCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFile = event.target.files && event.target.files[0];
     setCsvFile(newFile);
+    const fileExtension = newFile?.name.split(".").pop()?.toLowerCase();
+
     if (newFile) {
-      if (newFile.type !== "text/csv") {
+      if (!["csv", "tsv", "xlsx", "xls", "ods"].includes(fileExtension ?? "")) {
         showSnackBar("Invalid file type. Please upload a CSV file.", "error");
         setCsvFile(null);
         return;
-      } else if (newFile.size > 10000000) {
-        // Allow only files less than 10MB
-        showSnackBar("CSV file size too large", "error");
-        setCsvFile(null);
-        return;
+      } else if (newFile) {
+        if (newFile.size > 10000000) {
+          // Allow only files less than 10MB
+          showSnackBar("CSV file size too large", "error");
+          setCsvFile(null);
+          return;
+        }
+        showSnackBar("CSV file uploaded successfully.", "info");
       }
-      showSnackBar("CSV file uploaded successfully.", "info");
     }
   };
 
@@ -183,7 +187,7 @@ const MappingDetailsPage: React.FC<{
 
       try {
         const response = await axios.post(
-          "http://104.248.240.80:8081/generateLinkedData",
+          "https://rdfgenerator.agrospai.udl.cat/generateLinkedData",
           data,
           {
             headers: {
@@ -500,7 +504,7 @@ const MappingDetailsPage: React.FC<{
                       color="text.primary"
                       sx={{ marginTop: "1.5vh", marginLeft: "2vh" }}
                     >
-                      http://104.248.240.80:8081/generateLinkedData
+                      https://rdfgenerator.agrospai.udl.cat/generateLinkedData
                     </Typography>
                   </Card>
 
