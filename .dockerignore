@@ -1,6 +1,10 @@
 node_modules
 npm-debug.log
 build
+target
+*.class
+*.jar
+*.log
 .git
 *.md
 .gitignore

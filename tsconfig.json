@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -14,12 +18,15 @@
     "incremental": true,
     "plugins": [
       {
-        "name": "next",
-      },
+        "name": "next"
+      }
     ],
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": [
+        "./src/*"
+      ]
     },
+    "target": "ES2017"
   },
   "include": [
     "next-env.d.ts",
@@ -28,7 +35,9 @@
     ".next/types/**/*.ts",
     "__tests__/xsdDetector.test.tsx",
     "src/app/components/layout-authenticated.js",
-    "src/app/signin/page.tsx",
+    "src/app/signin/page.tsx"
   ],
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules"
+  ]
 }
